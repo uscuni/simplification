@@ -15,5 +15,9 @@ dependencies:
   - ipykernel
   - pyarrow
   - esda
+  - pyogrio
   - contextily
-  - opencv-python
+  # - opencv-python
+  - graphblas-algorithms
+  - pip:
+    - cityseer

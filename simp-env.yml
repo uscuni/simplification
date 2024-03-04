@@ -15,3 +15,5 @@ dependencies:
   - ipykernel
   - pyarrow
   - esda
+  - contextily
+  - opencv-python

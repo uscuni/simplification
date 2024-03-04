@@ -1,0 +1,7 @@
+# THOUGHTS on OSMnx simplification
+
+* first `simplify_graph`, only then consolidate. (Otherwise the interstitial nodes are merged in an incorrect way)
+* to determine the most meaningful tolerance threshold for a given network, the node degree distribution of the resulting graph could be used. too many nodes of too high degrees point to issues. In the above example of Amsterdam: for a tolerance > 10m, there seem to be too many high-degree nodes
+* [OSMnx](https://osmnx.readthedocs.io/en/stable/user-reference.html#osmnx.simplification.consolidate_intersections) does specify that "the tolerance argument should be adjusted to approximately match street design standards in the specific street network" but this caution-raising is not enough - since we give one "hard-coded" threshold for the entire graph. Ideally, the tolerance argument could be locally computed (node density in surroundings)? 
+* it seems to be useful but only up to a certain degree - it only deals with the "face artifact" cases that appear at multilane intersections, but not e.g. with large motorway intersections
+* videos of different use cases (roundabout/intersection/parkinglot/highway) with different simplification thresholds: osmnx node merging seems to be useful for only SOME of the use cases. e.g. when we KNOW we have a roundabout - this simplification strategy makes sense. when we KNOW that we have something else (like a regular grid pattern, pointing to a parking lot or the like) this simplification strategy does NOT make sense.

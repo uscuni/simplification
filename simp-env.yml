@@ -1,0 +1,23 @@
+name: simp-env
+channels:
+  - conda-forge
+  - conda
+  - pip
+  - nodefaults
+dependencies:
+  - python=3.11
+  - pip
+  - geopandas
+  - momepy
+  - osmnx=1.9.1
+  - scikit-learn
+  - jupyter
+  - ipykernel
+  - pyarrow
+  - esda
+  - pyogrio
+  - contextily
+  # - opencv-python
+  - graphblas-algorithms
+  - pip:
+    - cityseer

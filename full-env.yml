@@ -1,0 +1,33 @@
+name: py311_uscuni_simplification
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.11
+  - contextily
+  - esda
+  - geopandas
+  - ipykernel
+  - jupyterlab
+  - momepy
+  - osmnx
+  - pip
+  - pyarrow
+  - rasterio
+  - scikit-learn
+  - tqdm
+  # opencv-python - see https://github.com/conda-forge/opencv-feedstock
+  - libopencv
+  - opencv
+  - py-opencv
+  # cityseer notebook
+  - utm
+  - watermark
+  # tqdm warning - TqdmWarning: IProgress not found
+  - jupyter
+  - ipywidgets
+  - pip:
+    # cityseer not available via conda-forge
+    - cityseer
+    # from bleeding edge functionality
+    - git+https://github.com/pysal/momepy.git

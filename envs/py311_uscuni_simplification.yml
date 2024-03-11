@@ -13,6 +13,8 @@ dependencies:
   - osmnx>=1.9.1
   - pip
   - pyarrow
+  - graphblas-algorithms
+  - pyogrio
   - rasterio
   - scikit-learn
   - tqdm

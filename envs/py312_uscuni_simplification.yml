@@ -14,6 +14,8 @@ dependencies:
   - pip
   - pyarrow
   - graphblas-algorithms
+  - clustergram
+  - bokeh
   - pyogrio
   - rasterio
   - scikit-learn

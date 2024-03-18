@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=61.0", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+
+[project]
+name = "simplification"
+dynamic = ["version"]
+maintainers = [
+    {name = "Martin Fleischmann"},
+    {name = "Anastassia Vybornova"},
+    {name = "James D. Gaboardi"},
+]
+license = {text = "BSD 3-Clause"}
+description = "State-of-the-Art simplification of street network geometry with Python"
+keywords = ["networks", "graphs", "simplification"]
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+requires-python = ">=3.12"
+dependencies = [
+    "bokeh",
+    "cityseer",
+    "clustergram",
+    "contextily",
+    "esda",
+    "geopandas",
+    "git",
+    "graphblas-algorithms",
+    "ipykernel",
+    "ipywidgets",
+    "jupyter",
+    "jupyterlab",
+    "libopencv",
+    "momepy",
+    "git+https://github.com/pysal/momepy.git",
+    "opencv",
+    "osmnx>=1.9.1",
+    "pip",
+    "pre-commit",
+    "pyarrow",
+    "pyogrio",
+    "py-opencv",
+    "rasterio",
+    "ruff",
+    "scikit-learn",
+    "tqdm",
+    "watermark",
+]
+
+[tool.ruff]
+line-length = 88
+lint.select = ["E", "F", "W", "I", "UP", "N", "B", "A", "C4", "SIM", "ARG"]
+extend-include = ["*.ipynb"]

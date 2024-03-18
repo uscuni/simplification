@@ -5,7 +5,3 @@ repos:
     hooks:
       - id: ruff
       - id: ruff-format
-
-ci:
-  autofix_prs: false
-  autoupdate_schedule: quarterly

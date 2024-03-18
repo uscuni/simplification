@@ -25,6 +25,9 @@ dependencies:
   - libopencv
   - opencv
   - py-opencv
+  # standard formatting
+  - pre-commit
+  - ruff
   # tqdm warning - TqdmWarning: IProgress not found
   - jupyter
   - ipywidgets

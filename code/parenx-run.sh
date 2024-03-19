@@ -7,8 +7,8 @@ FOLDERS=$(find ./temp-parenx -type d -mindepth 1)
 for folder in $FOLDERS
 do
 	echo "Simplification for $folder started";
-	skeletonize.py $folder"roads_osm.gpkg" $folder"skeletonize.gpkg"
-	voronoi.py $folder"roads_osm.gpkg" $folder"voronoi.gpkg"
+	skeletonize.py $folder"/roads_osm.gpkg" $folder"/skeletonize.gpkg"
+	voronoi.py $folder"/roads_osm.gpkg" $folder"/voronoi.gpkg"
 done
 
 echo "Done."

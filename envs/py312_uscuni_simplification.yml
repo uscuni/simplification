@@ -32,7 +32,8 @@ dependencies:
   - jupyter
   - ipywidgets
   - pip:
-    # cityseer not available via conda-forge
+    # not available via conda-forge:
     - cityseer
+    - parenx
     # from bleeding edge functionality
     - git+https://github.com/pysal/momepy.git

@@ -21,6 +21,8 @@ dependencies:
   - scikit-learn
   - tqdm
   - watermark
+  - dask
+  - dask-geopandas
   # opencv-python - see https://github.com/conda-forge/opencv-feedstock
   - libopencv
   - opencv

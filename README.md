@@ -23,12 +23,11 @@ Curated data in `parquet` format for 6 example urban areas
 
 ### `./envs/`
 
-Install and activate the `conda` (or mamba) environment as specified in `./envs/`:
-* `py312_uscuni_simplification.yml`
+Install and activate the `conda` (or mamba) environment, which creates an environment name `simplification`:
 
 ```
-conda env create -f <ENV>.yml
-conda activate <ENV
+conda env create -f environment.yml
+conda activate simplification
 ```
 
 ### `./notes/`

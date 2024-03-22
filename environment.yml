@@ -1,4 +1,4 @@
-name: py311_uscuni_simplification
+name: simplification
 channels:
   - conda-forge
   - nodefaults

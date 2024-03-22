@@ -1,9 +1,9 @@
-name: py312_uscuni_simplification
+name: py311_uscuni_simplification
 channels:
   - conda-forge
   - nodefaults
 dependencies:
-  - python=3.12
+  - python=3.11
   - contextily
   - esda
   - geopandas

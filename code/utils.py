@@ -24,6 +24,7 @@ fua_city = {
     809: "Douala",
     1656: "Liège",
     4881: "Salt Lake City",
+    8989: "Wuhan",
 }
 
 # dict of cityname: fua ID

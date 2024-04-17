@@ -1,3 +1,4 @@
+import json
 import pathlib
 
 import geopandas
@@ -9,6 +10,7 @@ __all__ = [
     "read_sample_data",
     "read_parquet_roads",
     "graph_size",
+    "load_usecases",
 ]
 
 
@@ -44,3 +46,11 @@ def read_parquet_roads(fua: int) -> geopandas.GeoDataFrame:
 
 def graph_size(info: str, g: networkx.Graph) -> str:
     return f"{info}\n\t* {g}"
+
+
+def load_usecases(city: str) -> tuple[dict, pathlib.Path]:
+    """Load use cases for a city and also return the directory path."""
+    path_base = pathlib.Path("..", "usecases", str(city_fua[city]))
+    with open(path_base / "points.json") as f:
+        points = json.load(f)
+    return points, path_base

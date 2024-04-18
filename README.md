@@ -20,6 +20,7 @@ Curated data in `parquet` format for 6 example urban areas
 * 1656 – Liège, Belgium, Europe
 * 4617 – Bucaramanga, Colombia, S. America
 * 4881 – Salt Lake City, Utah, USA, N. America
+* 8989 – Wuhan, China, Far East / Asia
 
 ### `./envs/`
 

@@ -1,37 +1,33 @@
 {
-      "0": {
+      "roundabout": {
             "coords": [
                   5.587873,
                   50.641955
             ],
-            "class": "roundabout",
             "address": "Place du Congr\u00e8s",
             "comments": "..."
       },
-      "1": {
+      "highway": {
             "coords": [
                   5.560604,
                   50.632068
             ],
-            "class": "highway",
             "address": "A602 / Rue de Puisatiers",
             "comments": "..."
       },
-      "2": {
+      "parkinglot": {
             "coords": [
                   5.592738,
                   50.616253
             ],
-            "class": "parkinglot",
             "address": "Carrefour Quai des Vennes",
             "comments": "..."
       },
-      "3": {
+      "intersection": {
             "coords": [
                   5.511301,
                   50.618373
             ],
-            "class": "intersection",
             "address": "Pont de Seraing",
             "comments": "..."
       }

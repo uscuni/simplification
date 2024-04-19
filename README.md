@@ -16,9 +16,6 @@ Parameterized notebooks and code.
 * `usecases.ipynb` – interesting example case locations; add more as desired
 * `utils.py` – reusable functions
 
-
-
-
 ### `./data/`
 
 Curated data in `parquet` format for 6 example urban areas

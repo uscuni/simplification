@@ -7,9 +7,14 @@ State-of-the-Art simplification of street network geometry with Python
 ### `./code/`
 
 Parameterized notebooks and code.
-* `momepy.ipynb` – exploration of the `momepy` package
-* `osmnx.ipynb` – exploration of the `osmnx.simplification` module
-* `cityseer.ipynb` – exploration of the `cityseer` package
+
+* `cityseer_*.ipynb` – explorations of the [`cityseer`](https://github.com/benchmark-urbanism/cityseer-api) package
+* `clustering.ipynb` – deadend
+* `momepy.ipynb` – exploration of the [`momepy`](https://github.com/pysal/momepy) package
+* `osmnx.ipynb` – exploration of the [`osmnx.simplification`](https://github.com/gboeing/osmnx/blob/main/osmnx/simplification.py) module
+* `parenx.ipynb` & `parenx-run.sh` - exploration of the [`parenx`](https://github.com/anisotropi4/parenx) package (skeletonization & line voronoi diagrams)
+* `usecases.ipynb` – interesting example case locations; add more as desired
+* `utils.py` – reusable functions
 
 ### `./data/`
 
@@ -47,7 +52,7 @@ Additional resources and previous related research.
 Demonstrations on specific types of urban form.
 
 * 809 (Douala)
-  * `cityseer`
+  * `cityseer` (from `code/cityseer_overview_gaboardi.ipynb`)
     * examples as `douala_{1-5}.png`
 * 1656 (Liège) – `osmnx`
   * highway

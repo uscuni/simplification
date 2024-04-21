@@ -49,13 +49,22 @@ Additional resources and previous related research.
 
 ### `./usecases/`
 
-Demonstrations on specific types of urban form.
+Demonstration visualizations on specific types of urban form.
 
 * 809 (Douala)
   * `cityseer` (from `code/cityseer_overview_gaboardi.ipynb`)
     * examples as `douala_{1-5}.png`
-* 1656 (Liège) – `osmnx`
-  * highway
-  * intersection
-  * parkinglot
-  * roandabout
+* 1656 (Liège)
+  * `cityseer`
+    * `parallel_edges_1_midline_False.mp4`
+    * `parallel_edges_1_midline_True.mp4`
+    * `parallel_edges_2_midline_False.mp4`
+    * `parallel_edges_2_midline_True.mp4`
+    * `parallel_edges_3_midline_False.mp4`
+    * `parallel_edges_3_midline_True.mp4`
+  * `osmnx`
+    * `highway.mp4`
+    * `intersection.mp4`
+    * `parkinglot.mp4`
+    * `roandabout.mp4`
+  * `points.json` - use case locations

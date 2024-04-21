@@ -30,5 +30,29 @@
             ],
             "address": "Pont de Seraing",
             "comments": "..."
+      },
+      "parallel_edges_1": {
+            "coords": [
+                  5.5708487,
+                  50.6236314
+            ],
+            "address": "LIEGE Place des Franchises",
+            "comments": "small, textbook case"
+      },
+      "parallel_edges_2": {
+            "coords": [
+                  5.6192988,
+                  50.6928202
+            ],
+            "address": "WBCC, Rue d'Abhooz 82, 4040 Herstal, Belgium",
+            "comments": "parking lot of parallel edges"
+      },
+      "parallel_edges_3": {
+            "coords": [
+                  5.6202498,
+                  50.6790271
+            ],
+            "address": "Rue du Coq Mosan 7, 4040 Herstal, Belgium",
+            "comments": "collapsed neighborhood - parallel edges"
       }
 }

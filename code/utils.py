@@ -4,10 +4,14 @@ import pathlib
 import contextily as cx
 import cv2
 import geopandas
+import h3
+import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import networkx
+import pandas as pd
 import pyproj
-from shapely.geometry import Point
+from shapely import strtree
+from shapely.geometry import Point, Polygon, mapping
 
 __all__ = [
     "city_fua",
@@ -131,3 +135,120 @@ def viz_class_video(fpath: pathlib.Path):
         video.write(cv2.resize(cv2.imread(str(image)), (width, height)))
     cv2.destroyAllWindows()
     video.release()
+
+
+##################
+# h3 funcs
+##################
+
+
+def make_grid(fua, res, proj_crs):
+    """
+    create a hex grid for given FUA (using original OSM dataset) and resolution.
+    fua: int, ID of city (any of use cases: 809, 869, 1133, 1656, 4617, 4881, 8989)
+    res: int, hex grid resolution
+    (suggested: 8 - with cell side length ~530m or 9 - cell side length ~200m)
+    """
+
+    # CRS for h3 must be 4326
+    orig_crs = "EPSG:4326"
+
+    # get city geom and name
+    meta = geopandas.read_parquet("../data/sample.parquet")
+    geom = meta.loc[meta.eFUA_ID == fua, "geometry"]
+
+    # read in OSM data
+    orig = geopandas.read_parquet(f"../data/{fua}/roads_osm.parquet")
+    orig = orig.to_crs(orig_crs)
+
+    # create h3 grid
+    temp = mapping(geom)["features"][0]["geometry"]
+    temp["coordinates"] = [
+        [[j[1], j[0]] for j in i] for i in temp["coordinates"]
+    ]  # reverse coords
+    hex_pd = pd.DataFrame(list(h3.polyfill(temp, res=res)), columns=["hex_id"])
+    hex_pd["geometry"] = [
+        Polygon(h3.h3_to_geo_boundary(x, geo_json=True)) for x in hex_pd["hex_id"]
+    ]
+    grid = geopandas.GeoDataFrame(hex_pd)
+    grid.set_crs(orig_crs, inplace=True)
+
+    # keep only the grid cells that contain some piece of the orig data
+    mytree = strtree.STRtree(geoms=orig.geometry)
+    q = mytree.query(grid.geometry, predicate="intersects")
+    grid = grid.loc[sorted(set(q[0]))]
+    grid = grid.reset_index(drop=True)
+    grid = grid.to_crs(proj_crs)
+    return grid
+
+
+def read_manual(fua, proj_crs):
+    gdf = geopandas.read_parquet(f"../data/{fua}/manual/{fua}.parquet")
+    gdf = gdf[["geometry"]]
+    gdf = gdf.explode(index_parts=False)
+    gdf = gdf.reset_index(drop=True)
+    gdf = gdf.to_crs(proj_crs)
+    return gdf
+
+
+def read_parenx(fua, option, proj_crs):
+    gdf = geopandas.read_parquet(f"../data/{fua}/parenx/{option}.parquet")
+    gdf = gdf.explode(index_parts=False)
+    gdf = gdf.reset_index(drop=True)
+    gdf = gdf.to_crs(proj_crs)
+    return gdf
+
+
+# singe-cell plot
+def plot_cell(grid_id, grid, orig, base, comp):
+    geom = grid.loc[grid_id, "geometry"]
+
+    fig = plt.figure(figsize=(10, 14))
+    spec = gridspec.GridSpec(3, 3, figure=fig)
+
+    ax1 = fig.add_subplot(spec[0, 0])
+
+    ax2 = fig.add_subplot(spec[0, 1])
+    ax2.sharex(ax1)
+    ax2.sharey(ax1)
+
+    ax3 = fig.add_subplot(spec[0, 2])
+    ax3.sharex(ax1)
+    ax3.sharey(ax1)
+
+    ax4 = fig.add_subplot(spec[1:, 0:4])
+    ax4.sharex(ax1)
+    ax4.sharey(ax1)
+
+    # small plot: original network
+    ax = ax1
+    geopandas.clip(orig, geom).plot(ax=ax, color="black")
+    ax.set_title("orig (osm)")
+
+    ax = ax2
+    geopandas.clip(base, geom).plot(ax=ax, color="red")
+    ax.set_title("base")
+
+    ax = ax3
+    geopandas.clip(comp, geom).plot(ax=ax, color="blue")
+    ax.set_title("comp")
+
+    ax = ax4
+    geopandas.clip(base, geom).plot(
+        ax=ax, color="red", alpha=0.5, lw=2, zorder=1, label="base (manual)"
+    )
+    geopandas.clip(comp, geom).plot(
+        ax=ax, color="blue", alpha=1, lw=2, zorder=2, label="simplified (auto)"
+    )
+    geopandas.clip(grid, geom).plot(
+        ax=ax, facecolor=(0, 0, 0, 0), lw=0.5, edgecolor=(0, 0, 0, 1), zorder=3
+    )
+    cx.add_basemap(ax=ax, crs=grid.crs, source=cx.providers.CartoDB.Voyager, zorder=0)
+    ax.set_title("Overlay")
+    ax.legend()
+
+    axs = [ax1, ax2, ax3, ax4]
+    for ax in axs:
+        ax.set_axis_off()
+
+    return fig, ax

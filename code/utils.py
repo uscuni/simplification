@@ -185,8 +185,7 @@ def make_grid(fua, res, proj_crs):
 def read_manual(fua, proj_crs):
     gdf = geopandas.read_parquet(f"../data/{fua}/manual/{fua}.parquet")
     gdf = gdf[["geometry"]]
-    gdf = gdf.explode(index_parts=False)
-    gdf = gdf.reset_index(drop=True)
+    gdf = gdf.explode(ignore_index=True)
     gdf = gdf.to_crs(proj_crs)
     return gdf
 

@@ -171,7 +171,7 @@ def make_grid(fua, res, proj_crs):
         Polygon(h3.h3_to_geo_boundary(x, geo_json=True)) for x in hex_pd["hex_id"]
     ]
     grid = geopandas.GeoDataFrame(hex_pd)
-    grid.set_crs(orig_crs, inplace=True)
+    grid = grid.set_crs(orig_crs)
 
     # keep only the grid cells that contain some piece of the orig data
     mytree = strtree.STRtree(geoms=orig.geometry)

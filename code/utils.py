@@ -199,7 +199,7 @@ def read_parenx(fua, option, proj_crs):
     return gdf
 
 
-# singe-cell plot
+# single-cell plot
 def plot_cell(grid_id, grid, orig, base, comp):
     geom = grid.loc[grid_id, "geometry"]
 

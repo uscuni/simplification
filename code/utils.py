@@ -192,8 +192,7 @@ def read_manual(fua, proj_crs):
 
 def read_parenx(fua, option, proj_crs):
     gdf = geopandas.read_parquet(f"../data/{fua}/parenx/{option}.parquet")
-    gdf = gdf.explode(index_parts=False)
-    gdf = gdf.reset_index(drop=True)
+    gdf = gdf.explode(ingore_index=True)
     gdf = gdf.to_crs(proj_crs)
     return gdf
 

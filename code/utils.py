@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 import networkx
 import pandas as pd
 import pyproj
-from shapely import strtree
 from shapely.geometry import Point, Polygon, mapping
 
 __all__ = [
@@ -154,11 +153,11 @@ def make_grid(fua, res, proj_crs):
     orig_crs = "EPSG:4326"
 
     # get city geom and name
-    meta = geopandas.read_parquet("../data/sample.parquet")
+    meta = read_sample_data()
     geom = meta.loc[meta.eFUA_ID == fua, "geometry"]
 
     # read in OSM data
-    orig = geopandas.read_parquet(f"../data/{fua}/roads_osm.parquet")
+    orig = read_parquet_roads(fua)
     orig = orig.to_crs(orig_crs)
 
     # create h3 grid
@@ -174,9 +173,9 @@ def make_grid(fua, res, proj_crs):
     grid = grid.set_crs(orig_crs)
 
     # keep only the grid cells that contain some piece of the orig data
-    mytree = strtree.STRtree(geoms=orig.geometry)
-    q = mytree.query(grid.geometry, predicate="intersects")
-    grid = grid.loc[sorted(set(q[0]))]
+    mytree = orig.sindex
+    q = mytree.query(grid.geometry, predicate="intersects", sort=True)
+    grid = grid.loc[list(set(q[0]))]
     grid = grid.reset_index(drop=True)
     grid = grid.to_crs(proj_crs)
     return grid

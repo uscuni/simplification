@@ -4,13 +4,12 @@ import pathlib
 import contextily as cx
 import cv2
 import geopandas
-import h3
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import networkx
-import pandas as pd
 import pyproj
-from shapely.geometry import Point, Polygon, mapping
+import tobler
+from shapely.geometry import Point
 
 __all__ = [
     "city_fua",
@@ -160,17 +159,15 @@ def make_grid(fua, res, proj_crs):
     orig = read_parquet_roads(fua)
     orig = orig.to_crs(orig_crs)
 
-    # create h3 grid
-    temp = mapping(geom)["features"][0]["geometry"]
-    temp["coordinates"] = [
-        [[j[1], j[0]] for j in i] for i in temp["coordinates"]
-    ]  # reverse coords
-    hex_pd = pd.DataFrame(list(h3.polyfill(temp, res=res)), columns=["hex_id"])
-    hex_pd["geometry"] = [
-        Polygon(h3.h3_to_geo_boundary(x, geo_json=True)) for x in hex_pd["hex_id"]
-    ]
-    grid = geopandas.GeoDataFrame(hex_pd)
-    grid = grid.set_crs(orig_crs)
+    assert meta.crs == orig.crs
+
+    grid = tobler.util.h3fy(
+        source=geom, resolution=res, clip=False, buffer=False, return_geoms=True
+    )
+
+    # have hex id as column rather than index
+    grid["hex_id"] = grid.index
+    grid = grid.reset_index(drop=True)
 
     # keep only the grid cells that contain some piece of the orig data
     mytree = orig.sindex

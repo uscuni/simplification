@@ -1,5 +1,6 @@
 import json
 import pathlib
+from collections import Counter
 
 import contextily as cx
 import cv2
@@ -136,7 +137,7 @@ def viz_class_video(fpath: pathlib.Path):
 
 
 ##################
-# h3 funcs
+# h3 funcs for gridcell-wise evaluation
 ##################
 
 
@@ -176,6 +177,37 @@ def make_grid(fua, res, proj_crs):
     grid = grid.reset_index(drop=True)
     grid = grid.to_crs(proj_crs)
     return grid
+
+
+def add_node_degree(gdf, graph):
+    gdf["degree"] = gdf.apply(lambda x: networkx.degree(graph, x.nodeID), axis=1)
+    return gdf
+
+
+def get_geom_stats(gdf, geom):
+    """
+    clip gdf to geom (hex cell)
+    return1: geometry count within the cell
+    return2: total length of geometries within the cell
+    """
+    cell = geopandas.clip(gdf, geom)
+    geom_count = len(cell)
+    geom_length = cell.length.sum()
+    return geom_count, geom_length
+
+
+def _avg_degree(histdict):
+    if len(histdict) > 0:
+        return sum([k * v for k, v in histdict.items()]) / sum(list(histdict.values()))
+    return 0
+
+
+def get_node_stats(node_gdf, geom):
+    cell = geopandas.clip(node_gdf, geom)
+    nodecount = len(cell)
+    degree_distr = dict(Counter(cell["degree"]))
+    avg_degree = _avg_degree(degree_distr)
+    return nodecount, degree_distr, avg_degree
 
 
 def read_manual(fua, proj_crs):

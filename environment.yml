@@ -33,6 +33,8 @@ dependencies:
   # tqdm warning - TqdmWarning: IProgress not found
   - jupyter
   - ipywidgets
+  - h3-py
+  - tobler
   - pip:
     # not available via conda-forge:
     - cityseer

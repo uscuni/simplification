@@ -49,8 +49,10 @@ def read_sample_data() -> geopandas.GeoDataFrame:
     return geopandas.read_parquet(samp_parq)
 
 
-def read_parquet_roads(fua: int) -> geopandas.GeoDataFrame:
+def read_parquet_roads(fua: int | str) -> geopandas.GeoDataFrame:
     """Read OSM roads from parquet format; return bare columns."""
+    if isinstance(fua, str):
+        fua = city_fua[fua]
     return geopandas.read_parquet(pathlib.Path(ddir, f"{fua}", f"roads_osm.{parq}"))[
         ["highway", "geometry"]
     ].reset_index(drop=True)

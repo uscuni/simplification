@@ -278,3 +278,51 @@ def plot_cell(grid_id, grid, orig, base, comp):
         ax.set_axis_off()
 
     return fig, ax
+
+
+# single-cell plot
+def plot_cell_featurematching(
+    grid_id,
+    grid,
+    orig,
+    matched_base,
+    unmatched_base,
+    matched_comp=None,
+    unmatched_comp=None,
+):
+    geom = grid.loc[grid_id, "geometry"]
+    orig = geopandas.clip(orig, geom)
+
+    fig, ax = plt.subplots(1, 2, figsize=(20, 10))
+
+    i = 0
+    orig.plot(ax=ax[i], color="black", alpha=0.25, lw=6, zorder=1, label="orig network")
+    geopandas.clip(matched_base, geom).plot(
+        ax=ax[i], color="blue", alpha=1, lw=1, zorder=2, label="matched"
+    )
+    geopandas.clip(unmatched_base, geom).plot(
+        ax=ax[i], color="red", alpha=1, lw=2, zorder=3, label="unmatched"
+    )
+    cx.add_basemap(
+        ax=ax[i], crs=grid.crs, source=cx.providers.CartoDB.Voyager, zorder=0
+    )
+    ax[i].set_title("(un)matched features in base data set")
+    ax[i].legend()
+    ax[i].set_axis_off()
+
+    i = 1
+    orig.plot(ax=ax[i], color="black", alpha=0.25, lw=6, zorder=1, label="orig network")
+    geopandas.clip(matched_comp, geom).plot(
+        ax=ax[i], color="blue", alpha=1, lw=1, zorder=2, label="matched"
+    )
+    geopandas.clip(unmatched_comp, geom).plot(
+        ax=ax[i], color="red", alpha=1, lw=2, zorder=3, label="unmatched"
+    )
+    cx.add_basemap(
+        ax=ax[i], crs=grid.crs, source=cx.providers.CartoDB.Voyager, zorder=0
+    )
+    ax[i].set_title("(un)matched features in comp data set")
+    ax[i].legend()
+    ax[i].set_axis_off()
+
+    return fig, ax

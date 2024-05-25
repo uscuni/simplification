@@ -15,7 +15,7 @@ __all__ = [
 
 parq = "parquet"
 
-# testing hack...
+# testing hack... MUST BE EDITABLE INSTALL < probably need to rethink...
 curr_path = pathlib.Path(__file__).resolve()
 if curr_path.parts[-1] == "utils.py":
     top_dir = curr_path.parents[1]

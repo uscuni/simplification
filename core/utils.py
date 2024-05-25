@@ -15,7 +15,12 @@ __all__ = [
 
 parq = "parquet"
 
-top_dir = pathlib.Path(__file__).resolve().parents[1]
+# testing hack...
+curr_path = pathlib.Path(__file__).resolve()
+if curr_path.parts[-1] == "utils.py":
+    top_dir = curr_path.parents[1]
+else:
+    top_dir = curr_path.parents[0]
 data_dir = top_dir / "data"
 usecase_dir = top_dir / "usecases"
 

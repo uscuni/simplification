@@ -15,7 +15,7 @@ __all__ = [
 
 parq = "parquet"
 
-top_dir = pathlib.Path(__file__).absolute().parents[1]
+top_dir = pathlib.Path(__file__).resolve().parents[1]
 data_dir = top_dir / "data"
 usecase_dir = top_dir / "usecases"
 

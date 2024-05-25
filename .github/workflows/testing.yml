@@ -25,8 +25,8 @@
        matrix:
          os: [ubuntu-latest]
          environment-file: [
-            ci/py311_simplification-oldest.yaml
-            ci/py311_simplification-latest.yaml
+            ci/py311_simplification-oldest.yaml,
+            ci/py311_simplification-latest.yaml,
          ]
          include:
            - environment-file: ci/py311_simplification-latest.yaml
@@ -68,7 +68,7 @@
            core/ \
            --verbose \
            -r a \
-           -numprocesses logical \
+           --numprocesses logical \
            --color yes \
            --cov core \
            --cov-append \

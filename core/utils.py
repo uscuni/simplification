@@ -17,7 +17,10 @@ parq = "parquet"
 
 # testing hack...
 curr_path = pathlib.Path(__file__).resolve()
-top_dir = curr_path.parents[1] if curr_path.parts[-1] == "utils.py" else curr_path
+if curr_path.parts[-1] == "utils.py":
+    top_dir = curr_path.parents[1]
+else:
+    top_dir = curr_path / "simplification"
 data_dir = top_dir / "data"
 usecase_dir = top_dir / "usecases"
 

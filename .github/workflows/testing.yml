@@ -54,7 +54,7 @@
            micromamba-version: "latest"
 
        - name: install package
-         run: "pip install .[tests]"
+         run: "pip install -e .[tests]"
 
        - name: environment info
          run: "micromamba info && micromamba list"

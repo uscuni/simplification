@@ -27,6 +27,7 @@
          environment-file: [
             ci/py311_simplification-oldest.yaml,
             ci/py311_simplification-latest.yaml,
+            ci/py311_simplification-dev.yaml,
          ]
          include:
            - environment-file: ci/py311_simplification-latest.yaml

@@ -1,7 +1,6 @@
 name: py311_simplification-oldest
 channels:
   - conda-forge
-  - nodefaults
 dependencies:
   - python=3.11
   - bokeh

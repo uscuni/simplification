@@ -3,6 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python=3.11
+  - geos # for shapely
   - graphblas-algorithms
   - h3-py
   - ipykernel

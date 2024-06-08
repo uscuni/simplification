@@ -3,6 +3,8 @@ import pathlib
 
 import geopandas
 import networkx
+import pyproj
+import shapely
 
 __all__ = [
     "city_fua",
@@ -11,6 +13,8 @@ __all__ = [
     "read_parquet_roads",
     "graph_size",
     "load_usecases",
+    "viz_class_path",
+    "viz_class_location",
 ]
 
 parq = "parquet"
@@ -24,6 +28,10 @@ else:
 data_dir = top_dir / "data"
 usecase_dir = top_dir / "usecases"
 
+
+##################
+# basic utils
+##################
 
 # dict of fua ID: cityname
 fua_city = {
@@ -61,3 +69,26 @@ def load_usecases(city: str) -> tuple[dict, pathlib.Path]:
     with open(path_base / "points.json") as f:
         points = json.load(f)
     return points, path_base
+
+
+##################
+# Viz funcs
+##################
+
+
+def viz_class_path(myclass: str, fpath_pack: pathlib.Path) -> pathlib.Path:
+    """make subfolder for plot saving"""
+    fpath_class = fpath_pack / myclass
+    fpath_class.mkdir(parents=True, exist_ok=True)
+    return fpath_class
+
+
+def viz_class_location(
+    mypoint: tuple[float, float], crs: pyproj.CRS, buffer: int = 250
+) -> geopandas.GeoSeries:
+    """get center frame for clipping"""
+    return (
+        geopandas.GeoDataFrame(geometry=[shapely.Point(mypoint)], crs="epsg:4326")
+        .to_crs(crs)
+        .buffer(buffer, cap_style=3)
+    )

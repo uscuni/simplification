@@ -21,7 +21,8 @@ dependencies:
   - ipywidgets
   - pip:
     # not available via conda-forge:
-    - opencv-python-headless
+    #- opencv-python-headless ############################################
+    - opencv-python
     - cityseer
     - parenx
     # dev versions of packages

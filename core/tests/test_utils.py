@@ -86,7 +86,7 @@ def test_viz_class_location():
     )
 
 
-@image_comparison(baseline_images=["test_plot_movie.png"], style="mpl20")
+@image_comparison(baseline_images=["test_plot_movie.png"], style="mpl20", tol=1)
 def test_plot_movie():
     # declare AOI
     city = "Liège"

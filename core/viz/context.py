@@ -8,21 +8,21 @@ import pyproj
 import shapely
 
 __all__ = [
-    "viz_class_path",
-    "viz_class_location",
-    "viz_class_param_plot",
-    "viz_class_video",
+    "path",
+    "location",
+    "param_plot",
+    "video",
 ]
 
 
-def viz_class_path(myclass: str, fpath_pack: pathlib.Path) -> pathlib.Path:
+def path(myclass: str, fpath_pack: pathlib.Path) -> pathlib.Path:
     """make subfolder for plot saving"""
     fpath_class = fpath_pack / myclass
     fpath_class.mkdir(parents=True, exist_ok=True)
     return fpath_class
 
 
-def viz_class_location(
+def location(
     mypoint: tuple[float, float], crs: pyproj.CRS, buffer: int = 250
 ) -> geopandas.GeoSeries:
     """get center frame for clipping"""
@@ -33,7 +33,7 @@ def viz_class_location(
     )
 
 
-def viz_class_param_plot(
+def param_plot(
     n: geopandas.GeoDataFrame,
     e: geopandas.GeoDataFrame,
     loc: geopandas.GeoSeries,
@@ -65,7 +65,7 @@ def viz_class_param_plot(
         plt.close()
 
 
-def viz_class_video(fpath: pathlib.Path):
+def video(fpath: pathlib.Path):
     """make video class-param set"""
     fps = 1
     images = sorted(fpath.glob("*.png"))

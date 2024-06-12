@@ -44,11 +44,13 @@ def read_sample_data() -> geopandas.GeoDataFrame:
     return geopandas.read_parquet(data_dir / f"sample.{parq}")
 
 
-def read_parquet_roads(fua: int) -> geopandas.GeoDataFrame:
+def read_parquet_roads(fua: int | str) -> geopandas.GeoDataFrame:
     """Read OSM roads from parquet format; return bare columns."""
-    return geopandas.read_parquet(data_dir / f"{fua}" / f"roads_osm.{parq}")[
-        ["highway", "geometry"]
-    ].reset_index(drop=True)
+    if isinstance(fua, str):
+        fua = city_fua[fua]
+    return geopandas.read_parquet(
+        pathlib.Path(data_dir, f"{fua}", f"roads_osm.{parq}")
+    )[["highway", "geometry"]].reset_index(drop=True)
 
 
 def graph_size(info: str, g: networkx.Graph) -> str:

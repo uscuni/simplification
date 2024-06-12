@@ -9,10 +9,6 @@ dependencies:
   - ipykernel
   - jupyterlab
   - pip
-  # opencv-python - see https://github.com/conda-forge/opencv-feedstock
-  - libopencv
-  - opencv
-  - py-opencv
   # standard formatting
   - pre-commit
   - ruff
@@ -21,6 +17,7 @@ dependencies:
   - ipywidgets
   - pip:
     # not available via conda-forge:
+    - opencv-python
     - cityseer
     - parenx
     # dev versions of packages

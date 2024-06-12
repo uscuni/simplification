@@ -35,8 +35,8 @@ dependencies = [
     "esda",
     "geopandas",
     "graphblas-algorithms",
-    #"h3-py", # -- from conda
-    "h3", # -- PyPI
+    #"h3-py", # -- via conda
+    "h3", # -- via PyPI
     "ipykernel",
     "jupyterlab",
     "momepy",
@@ -50,11 +50,12 @@ dependencies = [
     "watermark",
     "tqdm>=4.63.0",
     "pointpats>=2.3.0",
-    # opencv-python - see https://github.com/conda-forge/opencv-feedstock
-    # | "libopencv", # -- only conda?
+    "opencv-python", # -- via PyPI
+    # -- via conda -- see https://github.com/conda-forge/opencv-feedstock
+    # | "libopencv",
     # | "opencv",
     # | "py-opencv",
-    # standard formatting
+    # formatting & linting
     "pre-commit",
     "ruff",
     # tqdm warning - TqdmWarning: IProgress not found

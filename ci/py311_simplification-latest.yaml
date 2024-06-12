@@ -1,4 +1,4 @@
-name: simplification
+name: py311_simplification-latest
 channels:
   - conda-forge
 dependencies:
@@ -15,7 +15,7 @@ dependencies:
   - ipykernel
   - jupyterlab
   - momepy
-  - osmnx>=1.9.1
+  - osmnx
   - pip
   - pyarrow
   - pyogrio

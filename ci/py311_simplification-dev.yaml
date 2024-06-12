@@ -1,0 +1,50 @@
+name: py311_simplification-dev
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - geos # for shapely
+  - graphblas-algorithms
+  - h3-py
+  - ipykernel
+  - jupyterlab
+  - pip
+  # standard formatting
+  - pre-commit
+  - ruff
+  # tqdm warning - TqdmWarning: IProgress not found
+  - jupyter
+  - ipywidgets
+  - pip:
+    # not available via conda-forge:
+    - opencv-python
+    - cityseer
+    - parenx
+    # dev versions of packages
+    - --pre \
+      --index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple  \
+      --extra-index-url https://pypi.org/simple
+    - dask
+    - numpy
+    - pandas
+    - pyarrow
+    - pyogrio
+    - rasterio
+    - scikit-learn
+    - scipy
+    - git+https://github.com/bokeh/bokeh.git
+    - git+https://github.com/martinfleis/clustergram.git
+    - git+https://github.com/geopandas/contextily.git
+    - git+https://github.com/geopandas/dask-geopandas.git
+    - git+https://github.com/pysal/esda.git
+    - git+https://github.com/geopandas/geopandas.git
+    - git+https://github.com/pysal/libpysal.git
+    - git+https://github.com/pysal/mapclassify.git
+    - git+https://github.com/pysal/momepy.git
+    - git+https://github.com/networkx/networkx.git
+    - git+https://github.com/gboeing/osmnx.git
+    - git+https://github.com/pysal/pointpats.git
+    - git+https://github.com/shapely/shapely.git
+    - git+https://github.com/pysal/tobler.git
+    - git+https://github.com/tqdm/tqdm.git
+    - git+https://github.com/rasbt/watermark.git

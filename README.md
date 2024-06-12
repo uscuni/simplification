@@ -7,17 +7,47 @@ State-of-the-Art simplification of street network geometry with Python
 
 ## Contents
 
+### `./core/`
+
+The curated & tested code base for the project & publication, including:
+
+* The novel algorithm(s) developed and demonstrated; and
+* Utility and plotting functionality to support the publication and algorithm(s)
+
+```
+- core
+    |-- __init__.py
+    |-- utils.py
+    |-- viz
+    |   |-- __init__.py
+    |   |-- context.py
+    |-- tests
+    |   |-- __init__.py
+    |   |-- conftest.py
+    |   |-- test_utils.py
+    |   |-- test_viz.py
+    |   |-- baseline_images
+    |   |   | -- *controls from image comparison*
+    |   |-- data
+    |   |   | -- test_data_liege.gpkg
+```
+
 ### `./code/`
 
-Parameterized notebooks and code.
+Parameterized notebooks ~~and code~~.
 
+* `_addartifacts_8989.ipynb` –
 * `cityseer_*.ipynb` – explorations of the [`cityseer`](https://github.com/benchmark-urbanism/cityseer-api) package
+* `_clip_networks.ipynb` –
 * `clustering.ipynb` – deadend
+* `_convert.ipynb` –
+* `evaluate_h3cells.ipynb` – 
 * `momepy.ipynb` – exploration of the [`momepy`](https://github.com/pysal/momepy) package
 * `osmnx.ipynb` – exploration of the [`osmnx.simplification`](https://github.com/gboeing/osmnx/blob/main/osmnx/simplification.py) module
 * `parenx.ipynb` & `parenx-run.sh` - exploration of the [`parenx`](https://github.com/anisotropi4/parenx) package (skeletonization & line voronoi diagrams)
+* `simplification_protocol.ipynb` – 
 * `usecases.ipynb` – interesting example case locations; add more as desired
-* `utils.py` – reusable functions
+* ~~`utils.py` – reusable functions~~
 
 ### `./data/`
 

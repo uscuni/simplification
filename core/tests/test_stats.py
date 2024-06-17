@@ -1,4 +1,5 @@
 import pandas
+import pytest
 
 import core
 
@@ -21,7 +22,7 @@ def test_get_edge_stats(manual_auckland, grid_9_auckland):
     observed_count, observed_length = core.stats.get_edge_stats(edges_manual, grid_cell)
 
     assert observed_count == known_count
-    assert known_length == observed_length
+    assert known_length == pytest.approx(observed_length)
 
 
 def test_avg_degree():

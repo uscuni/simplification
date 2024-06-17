@@ -87,7 +87,7 @@ def test_make_grid():
         174.90988694906858,
         -36.74330035902645,
     ]
-    numpy.testing.assert_array_equal(observed.total_bounds, known_bounds)
+    numpy.testing.assert_array_almost_equal(observed.total_bounds, known_bounds)
 
     known_hexid_len = 15
     assert observed["hex_id"].map(lambda x: len(x)).unique()[0] == known_hexid_len

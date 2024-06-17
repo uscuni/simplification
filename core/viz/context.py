@@ -23,7 +23,7 @@ def path(myclass: str, fpath_pack: pathlib.Path) -> pathlib.Path:
 
 
 def location(
-    mypoint: tuple[float, float], crs: pyproj.CRS, buffer: int = 250
+    mypoint: tuple[float, float], crs: str | int | pyproj.CRS, buffer: int = 250
 ) -> geopandas.GeoSeries:
     """get center frame for clipping"""
     return (
@@ -40,10 +40,10 @@ def param_plot(
     fmt_title: str,
     fmt_fname: str,
     fpath: pathlib.Path,
-    crs: pyproj.CRS,
+    crs: str | int | pyproj.CRS,
     close: bool = True,  # use False for image testing
 ):
-    """make 1 class-param plot."""
+    """make 1 context-param plot."""
     # make a plot
     fig, ax = plt.subplots(1, 1, figsize=(8, 8))
 
@@ -66,7 +66,7 @@ def param_plot(
 
 
 def video(fpath: pathlib.Path):
-    """make video class-param set"""
+    """make video context-param set"""
     fps = 1
     images = sorted(fpath.glob("*.png"))
     video_name = pathlib.Path(f"{fpath}.mp4")

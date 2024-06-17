@@ -17,13 +17,16 @@ The curated & tested code base for the project & publication, including:
 ```
 - core
     |-- __init__.py
+    |-- stats.py
     |-- utils.py
     |-- viz
     |   |-- __init__.py
     |   |-- context.py
+    |   |-- h3_hex.py
     |-- tests
     |   |-- __init__.py
     |   |-- conftest.py
+    |   |-- test_stats.py
     |   |-- test_utils.py
     |   |-- test_viz.py
     |   |-- baseline_images
@@ -34,7 +37,7 @@ The curated & tested code base for the project & publication, including:
 
 ### `./code/`
 
-Parameterized notebooks ~~and code~~.
+Parameterized notebooks.
 
 * `_addartifacts_8989.ipynb` –
 * `cityseer_*.ipynb` – explorations of the [`cityseer`](https://github.com/benchmark-urbanism/cityseer-api) package
@@ -47,7 +50,6 @@ Parameterized notebooks ~~and code~~.
 * `parenx.ipynb` & `parenx-run.sh` - exploration of the [`parenx`](https://github.com/anisotropi4/parenx) package (skeletonization & line voronoi diagrams)
 * `simplification_protocol.ipynb` – 
 * `usecases.ipynb` – interesting example case locations; add more as desired
-* ~~`utils.py` – reusable functions~~
 
 ### `./data/`
 

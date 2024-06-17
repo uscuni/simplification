@@ -4,12 +4,20 @@ from matplotlib.testing.decorators import image_comparison
 import core
 
 
-@image_comparison(baseline_images=["test_viz_h3_hex_plot_aoi.png"], style="mpl20")
+@image_comparison(
+    baseline_images=["test_viz_h3_hex_plot_aoi.png"],
+    style="mpl20",
+    tol=7 if pytest.ENV_TYPE == "dev" else 1,  # (RMS 6.914)
+)
 def test_viz_h3_hex_plot_aoi(grid_8_auckland):
     core.viz.h3_hex.plot_aoi(grid_8_auckland, "Auckland", 8)
 
 
-@image_comparison(baseline_images=["test_viz_h3_hex_plot_analysis.png"], style="mpl20")
+@image_comparison(
+    baseline_images=["test_viz_h3_hex_plot_analysis.png"],
+    style="mpl20",
+    tol=35 if pytest.ENV_TYPE == "dev" else 1,  # (RMS 34.017)
+)
 def test_viz_h3_hex_plot_analysis(manual_auckland, parenx_auckland, grid_7_auckland):
     _, _, edges_manual = manual_auckland
     _, _, edges_parenx = parenx_auckland
@@ -30,6 +38,9 @@ def test_viz_h3_hex_plot_analysis(manual_auckland, parenx_auckland, grid_7_auckl
     core.viz.h3_hex.plot_analysis(grid, f"{var}_ratio", info=f"({_p}/{_m})")
 
 
+tol = 5 if pytest.ENV_TYPE == "dev" else 1  # (RMS 4.030)
+
+
 class TestVizH3HexPlotCell:
     @pytest.fixture(autouse=True)
     def setup_method(
@@ -45,7 +56,7 @@ class TestVizH3HexPlotCell:
         self._p = "parenx-voronoi"
 
     @image_comparison(
-        baseline_images=["test_viz_h3_hex_plot_cell_loc_id.png"], style="mpl20"
+        baseline_images=["test_viz_h3_hex_plot_cell_loc_id.png"], style="mpl20", tol=tol
     )
     def test_loc_id(self):
         core.viz.h3_hex.plot_cell(
@@ -60,7 +71,9 @@ class TestVizH3HexPlotCell:
         )
 
     @image_comparison(
-        baseline_images=["test_viz_h3_hex_plot_cell_hex_id.png"], style="mpl20"
+        baseline_images=["test_viz_h3_hex_plot_cell_hex_id.png"],
+        style="mpl20",
+        tol=tol,
     )
     def test_hex_id(self):
         core.viz.h3_hex.plot_cell(

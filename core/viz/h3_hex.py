@@ -13,7 +13,7 @@ def plot_aoi(
     cell_gdf: geopandas.GeoDataFrame,
     city: str,
     res: int,
-):
+) -> None:
     """Plot the H3 cell grid over the AOI.
 
     Parameters
@@ -83,10 +83,16 @@ def plot_cell(
         H3 hexbins covering the FUA that contain data.
     orig : geopandas.GeoDataFrame
         Original (OSM) streets data.
+    orig_name : str
+        Label for ``orig`` in plot.
     base : geopandas.GeoDataFrame
         Baseline street data -- can be any (other than ``orig``).
+    base_name : str
+        Label for ``base`` in plot.
     comp : geopandas.GeoDataFrame
         Comparative street data -- can be any (other than ``orig`` or ``base``).
+    comp_name : str
+        Label for ``comp_name`` in plot.
 
     Returns
     -------

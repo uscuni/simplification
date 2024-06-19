@@ -24,7 +24,7 @@ def test_viz_context_path():
 
 
 def test_viz_context_location():
-    known_crs = "EPSG:3857"
+    known_crs = pytest.epsg_3857
     known_area = 10000.0
     known_x, known_y = -82.3347, 27.214658
     known_point = shapely.Point(known_x, known_y)
@@ -34,7 +34,7 @@ def test_viz_context_location():
     assert known_crs == observed.crs
     assert known_area == observed.squeeze().area
     shapely.testing.assert_geometries_equal(
-        known_point, observed.centroid.to_crs("EPSG:4326").squeeze()
+        known_point, observed.centroid.to_crs(pytest.epsg_4326).squeeze()
     )
 
 

@@ -49,11 +49,15 @@ def read_sample_data() -> geopandas.GeoDataFrame:
     return geopandas.read_parquet(data_dir / f"sample.{parq}")
 
 
-def read_parquet_roads(fua: int, geom_only: bool = True) -> geopandas.GeoDataFrame:
+def read_parquet_roads(
+    fua: int | str, geom_only: bool = True
+) -> geopandas.GeoDataFrame:
     """Read OSM roads from parquet format; return bare columns."""
+    if isinstance(fua, str):
+        fua = city_fua[fua]
     _fua_path = data_dir / f"{fua}" / f"roads_osm.{parq}"
     cols = ["highway", "geometry"] if not geom_only else ["geometry"]
-    return geopandas.read_parquet(_fua_path)[cols].reset_index(drop=True)
+    return geopandas.read_parquet(_fua_path, columns=cols).reset_index(drop=True)
 
 
 def read_manual(fua: int, proj_crs: str | int | pyproj.CRS) -> geopandas.GeoDataFrame:

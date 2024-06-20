@@ -1,5 +1,6 @@
 import geopandas.testing
 import networkx
+import numpy
 import pytest
 
 import core
@@ -9,7 +10,7 @@ def test_read_sample_data():
     df = core.utils.read_sample_data()
     assert isinstance(df, geopandas.GeoDataFrame)
     assert df.shape == (131, 15)
-    assert df.crs == "EPSG:4326"
+    assert df.crs == pytest.epsg_4326
 
 
 cities = core.utils.city_fua.keys()
@@ -26,6 +27,29 @@ def test_read_parquet_roads(city, n_records):
     geopandas.testing.assert_geodataframe_equal(gdf_1, gdf_2)
 
     assert gdf_1.shape[0] == gdf_2.shape[0] == n_records
+
+
+def test_read_manual():
+    fua = pytest.auckland
+
+    observed = core.utils.read_manual(fua, pytest.epsg_4326)
+
+    known_records = 35650
+    assert observed.shape[0] == known_records
+    assert observed.crs == pytest.epsg_4326
+
+
+@pytest.mark.parametrize(
+    "option, n_records", [["skeletonize", 32_029], ["voronoi", 31_251]]
+)
+def test_read_parenex(option, n_records):
+    fua = pytest.auckland
+
+    observed = core.utils.read_parenx(fua, option, pytest.epsg_4326)
+
+    known_records = n_records
+    assert observed.shape[0] == known_records
+    assert observed.crs == pytest.epsg_4326
 
 
 def test_graph_size():
@@ -46,3 +70,24 @@ def test_load_usecases():
 
     known = ("usecases", "1656")
     assert known == path.parts[-2:]
+
+
+def test_make_grid():
+    fua = pytest.auckland
+    resolution = 8
+
+    observed = core.utils.make_grid(fua, resolution, pytest.epsg_4326)
+
+    assert observed.crs == pytest.epsg_4326
+    known_records = 294
+    assert observed.shape[0] == known_records
+    known_bounds = [
+        174.6123711149229,
+        -37.01764879430995,
+        174.90988694906858,
+        -36.74330035902645,
+    ]
+    numpy.testing.assert_array_almost_equal(observed.total_bounds, known_bounds)
+
+    known_hexid_len = 15
+    assert observed["hex_id"].map(lambda x: len(x)).unique()[0] == known_hexid_len

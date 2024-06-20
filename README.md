@@ -1,7 +1,6 @@
 # simplification
 
 [![Continuous Integration](https://github.com/uscuni/simplification/actions/workflows/testing.yml/badge.svg)](https://github.com/uscuni/simplification/actions/workflows/testing.yml)
-[![codecov](https://codecov.io/gh/uscuni/simplification/branch/main/graph/badge.svg)](https://codecov.io/gh/uscuni/simplification)
 
 State-of-the-Art simplification of street network geometry with Python
 

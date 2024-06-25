@@ -8,7 +8,7 @@ __all__ = [
 
 
 def is_within(
-    line: shapely.LineString, poly: shapely.Polygon, rtol: float = -1e6
+    line: shapely.LineString, poly: shapely.Polygon, rtol: float = -1e4
 ) -> bool:
     """Check if the line is within a polygon with a set relative tolerance.
 

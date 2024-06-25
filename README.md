@@ -1,7 +1,6 @@
 # simplification
 
 [![Continuous Integration](https://github.com/uscuni/simplification/actions/workflows/testing.yml/badge.svg)](https://github.com/uscuni/simplification/actions/workflows/testing.yml)
-[![codecov](https://codecov.io/gh/uscuni/simplification/branch/main/graph/badge.svg)](https://codecov.io/gh/uscuni/simplification)
 
 State-of-the-Art simplification of street network geometry with Python
 
@@ -17,8 +16,13 @@ The curated & tested code base for the project & publication, including:
 ```
 - core
     |-- __init__.py
+    |-- geometry.py
     |-- stats.py
     |-- utils.py
+    |-- algorithms
+    |   |-- __init__.py
+    |   |-- common.py
+    |   |-- triangles.py
     |-- viz
     |   |-- __init__.py
     |   |-- context.py
@@ -39,16 +43,17 @@ The curated & tested code base for the project & publication, including:
 
 Parameterized notebooks.
 
-* `_addartifacts_8989.ipynb` –
+* `_addartifacts_8989.ipynb` – ...
 * `cityseer_*.ipynb` – explorations of the [`cityseer`](https://github.com/benchmark-urbanism/cityseer-api) package
-* `_clip_networks.ipynb` –
+* `_clip_networks.ipynb` – ...
 * `clustering.ipynb` – deadend
-* `_convert.ipynb` –
-* `evaluate_h3cells.ipynb` – 
+* `_convert.ipynb` – ...
+* `evaluate_h3cells.ipynb` – ...
 * `momepy.ipynb` – exploration of the [`momepy`](https://github.com/pysal/momepy) package
 * `osmnx.ipynb` – exploration of the [`osmnx.simplification`](https://github.com/gboeing/osmnx/blob/main/osmnx/simplification.py) module
 * `parenx.ipynb` & `parenx-run.sh` - exploration of the [`parenx`](https://github.com/anisotropi4/parenx) package (skeletonization & line voronoi diagrams)
-* `simplification_protocol.ipynb` – 
+* `simplification_protocol.ipynb` – ...
+* `triangles.ipynb` – ...
 * `usecases.ipynb` – interesting example case locations; add more as desired
 
 ### `./data/`
@@ -61,6 +66,12 @@ Curated data in `parquet` format for 6 example urban areas
 * 4617 – Bucaramanga, Colombia, S. America
 * 4881 – Salt Lake City, Utah, USA, N. America
 * 8989 – Wuhan, China, Far East / Asia
+
+Each FUA directory contains (or will contain) the following items housing bespoke data:
+* `manual/`
+* `parenex/`
+* `polygons/`
+* `roads_osm.parquet`
 
 ### `./envs/`
 
@@ -87,8 +98,11 @@ Additional resources and previous related research.
 Demonstration visualizations on specific types of urban form.
 
 * 809 (Douala)
-  * `cityseer` (from `code/cityseer_overview_gaboardi.ipynb`)
+  * `cityseer` (from `notebooks/cityseer_overview_gaboardi.ipynb`)
     * examples as `douala_{1-5}.png`
+* 869 (Auckland)
+  * `averagedegree` (from `notebooks/evaluate_h3cells.ipynb`)
+  * `totallength` (from `notebooks/evaluate_h3cells.ipynb`)
 * 1656 (Liège)
   * `cityseer`
     * `parallel_edges_1_midline_False.mp4`

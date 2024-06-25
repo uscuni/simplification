@@ -18,7 +18,7 @@ def is_within(
         Input line to check relationship.
     poly : shapely.Polygon
         Input polygon to check relationship.
-    rtol : float (default -1e6)
+    rtol : float (default -1e4)
         The set relative tolerance.
 
     Returns

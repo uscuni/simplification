@@ -69,6 +69,7 @@ Curated data in `parquet` format for 6 example urban areas
 
 Each FUA directory contains (or will contain) the following items housing bespoke data:
 * `manual/`
+* `no_degree_2/`
 * `parenex/`
 * `polygons/`
 * `roads_osm.parquet`

@@ -112,3 +112,12 @@ def test_make_grid():
 
     known_hexid_len = 15
     assert observed["hex_id"].map(lambda x: len(x)).unique()[0] == known_hexid_len
+
+
+def test_remove_degree_2_nodes():
+    fua = core.utils.city_fua["Aleppo"]
+
+    known = core.utils.read_no_degree_2_roads(fua)
+    observed = core.utils.remove_degree_2_nodes(fua)
+
+    geopandas.testing.assert_geodataframe_equal(known, observed)

@@ -2,6 +2,7 @@ import json
 import pathlib
 
 import geopandas
+import momepy
 import networkx
 import pyproj
 import tobler
@@ -17,6 +18,7 @@ __all__ = [
     "graph_size",
     "load_usecases",
     "make_grid",
+    "remove_degree_2_nodes",
 ]
 
 parq = "parquet"
@@ -163,3 +165,8 @@ def make_grid(
         .to_crs(proj_crs)
         .reset_index(drop=True)
     )
+
+
+def remove_degree_2_nodes(fua: int | str) -> geopandas.GeoDataFrame:
+    """Remove [interstitial / non-articulation / degree 2] nodes from road network."""
+    return momepy.remove_false_nodes(read_parquet_roads(fua))

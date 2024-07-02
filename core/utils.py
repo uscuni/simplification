@@ -2,6 +2,7 @@ import json
 import pathlib
 
 import geopandas
+import momepy
 import networkx
 import pyproj
 import tobler
@@ -11,11 +12,13 @@ __all__ = [
     "fua_city",
     "read_sample_data",
     "read_parquet_roads",
+    "read_no_degree_2_roads",
     "read_manual",
     "read_parenx",
     "graph_size",
     "load_usecases",
     "make_grid",
+    "remove_degree_2_nodes",
 ]
 
 parq = "parquet"
@@ -60,8 +63,18 @@ def read_parquet_roads(
     return geopandas.read_parquet(_fua_path, columns=cols).reset_index(drop=True)
 
 
+def read_no_degree_2_roads(fua: int | str) -> geopandas.GeoDataFrame:
+    """Read OSM roads from parquet format; return bare columns."""
+    if isinstance(fua, str):
+        fua = city_fua[fua]
+    _fua_path = data_dir / pathlib.Path(f"{fua}", "no_degree_2", f"{fua}.{parq}")
+    return geopandas.read_parquet(_fua_path)
+
+
 def read_manual(fua: int, proj_crs: str | int | pyproj.CRS) -> geopandas.GeoDataFrame:
     """Read in manually prepared simplified road data."""
+    if isinstance(fua, str):
+        fua = city_fua[fua]
     _fua_path = data_dir / pathlib.Path(f"{fua}", "manual", f"{fua}.{parq}")
     return (
         geopandas.read_parquet(_fua_path)[["geometry"]]
@@ -74,6 +87,8 @@ def read_parenx(
     fua: int, option: str, proj_crs: str | int | pyproj.CRS
 ) -> geopandas.GeoDataFrame:
     """Read in prepared parenx data."""
+    if isinstance(fua, str):
+        fua = city_fua[fua]
     _fua_path = data_dir / pathlib.Path(f"{fua}", "parenx", f"{option}.{parq}")
     return (
         geopandas.read_parquet(_fua_path)
@@ -150,3 +165,8 @@ def make_grid(
         .to_crs(proj_crs)
         .reset_index(drop=True)
     )
+
+
+def remove_degree_2_nodes(fua: int | str) -> geopandas.GeoDataFrame:
+    """Remove [interstitial / non-articulation / degree 2] nodes from road network."""
+    return momepy.remove_false_nodes(read_parquet_roads(fua))

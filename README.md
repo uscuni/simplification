@@ -52,6 +52,7 @@ Parameterized notebooks.
 * `momepy.ipynb` – exploration of the [`momepy`](https://github.com/pysal/momepy) package
 * `osmnx.ipynb` – exploration of the [`osmnx.simplification`](https://github.com/gboeing/osmnx/blob/main/osmnx/simplification.py) module
 * `parenx.ipynb` & `parenx-run.sh` - exploration of the [`parenx`](https://github.com/anisotropi4/parenx) package (skeletonization & line voronoi diagrams)
+* `remove_degree_2_nodes.ipynb` - removing degree 2 nodes from FUA road networks
 * `simplification_protocol.ipynb` – ...
 * `triangles.ipynb` – ...
 * `usecases.ipynb` – interesting example case locations; add more as desired
@@ -69,6 +70,7 @@ Curated data in `parquet` format for 6 example urban areas
 
 Each FUA directory contains (or will contain) the following items housing bespoke data:
 * `manual/`
+* `no_degree_2/`
 * `parenex/`
 * `polygons/`
 * `roads_osm.parquet`

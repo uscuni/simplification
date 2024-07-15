@@ -17,7 +17,7 @@ def continuity(roads):
     """
     roads = roads.copy()
     # Measure continuity of street network
-    coins = momepy.COINS(roads)
+    coins = momepy.COINS(roads, 120)
 
     # Assing continuity group
     roads["coins_group"] = coins.stroke_attribute()

@@ -40,6 +40,7 @@ dependencies = [
     "ipykernel",
     "jupyterlab",
     "momepy",
+    "matplotlib>=3.8.4",
     "osmnx>=1.9.1",
     "pip",
     "pyarrow",

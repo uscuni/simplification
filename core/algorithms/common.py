@@ -19,7 +19,7 @@ def continuity(roads, angle_threshold=120):
     coins = momepy.COINS(roads, angle_threshold=angle_threshold, flow_mode=True)
 
     # Assing continuity group
-    group, end = coins.stroke_attribute()
+    group, end = coins.stroke_attribute(True)
     roads["coins_group"] = group
     roads["coins_end"] = end
 

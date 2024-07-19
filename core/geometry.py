@@ -12,13 +12,13 @@ __all__ = ["is_within", "voronoi_skeleton"]
 
 
 def is_within(
-    line: shapely.LineString, poly: shapely.Polygon, rtol: float = -1e4
+    line: np.ndarray[shapely.Geometry], poly: shapely.Polygon, rtol: float = -1e4
 ) -> bool:
     """Check if the line is within a polygon with a set relative tolerance.
 
     Parameters
     ----------
-    line : shapely.LineString
+    line : np.ndarray[shapely.LineString]
         Input line to check relationship.
     poly : shapely.Polygon
         Input polygon to check relationship.
@@ -27,7 +27,7 @@ def is_within(
 
     Returns
     -------
-    bool
+    np.ndarray[bool]
         ``True`` if ``line`` is either entirely within ``poly`` or if
         ``line`` is within `poly`` based on a relaxed ``rtol`` relative tolerance.
     """
@@ -56,10 +56,14 @@ def voronoi_skeleton(lines, poly=None, snap_to=None, distance=2, buffer=None):
         LineStrings connected at endpoints
     poly : shapely.geometry.Polygon
         polygon enclosed by `lines`
+    snap_to : gpd.GeoSeries
+        series of geometries that shall be connected to the skeleton
     distance : float
         distance for interpolation
+    buffer : float
+        optional custom buffer distance for dealing with Voronoi infinity issues
 
-    Returns list of averaged geometries
+    Returns array of averaged geometries
     """
     if buffer is None:
         buffer = distance * 20
@@ -104,43 +108,80 @@ def voronoi_skeleton(lines, poly=None, snap_to=None, distance=2, buffer=None):
             shapely.multilinestrings(voronoi_diagram.vertices[verts])
         )
 
+        # check if the edgeline is within polygon
         if not edgeline.within(poly):
+            # if not, clip it by the polygon with a small negative buffer to keep the
+            # gap between edgeline and poly boundary to avoid possible overlapping lines
             edgeline = shapely.intersection(edgeline, poly.buffer(-distance))
-        # edgelines.append(edgeline)
+
+        # check if a, b lines share a node
         intersection = shapely_lines[b].intersection(shapely_lines[a])
+        # if they do, add shortest line from the edgeline to the shared node and combine
+        # it with the edgeline
         if not intersection.is_empty:
-            # edgeline = shapely.snap(edgeline, intersection, distance * 10)
+            # we need union of edgeline and shortest because snap is buggy in GEOS and
+            # line_merge as well. This results in a MultiLineString but we can deal
+            # with those later. For now, we just need this extended edgeline to be a
+            # single geometry to ensure the component discovery below works as intended
             edgeline = shapely.union(
                 edgeline, shapely.shortest_line(edgeline.boundary, intersection)
             )
-            # to_add.append(shapely.shortest_line(edgeline.boundary, intersection))
+        # add final edgeline to the list
         edgelines.append(edgeline)
 
+    # if there is no explicit snapping target, snap to the boundary of the polygon via
+    # the shortest line. That is by definition always within the polygon (I think)
     if snap_to is None:
         to_add.append(
             shapely.shortest_line(shapely.union_all(edgelines).boundary, poly.boundary)
         )
+
+    # if we have some snapping targets, we need to figure out what shall be snapped to
+    # what
     else:
-        union = shapely.union_all(snap_to)
+        # cast edgelines to gdf
         edgelines_df = gpd.GeoDataFrame(geometry=edgelines)
+        # build queen contiguity on edgelines and extract component labels
         comp_labels = graph.Graph.build_contiguity(
             edgelines_df[~edgelines_df.is_empty], rook=False
         ).component_labels
+        # compute size of each component
         comp_counts = comp_labels.value_counts()
+        # get MultiLineString geometry per connected component
         components = edgelines_df.dissolve(comp_labels)
+
+        # if there are muliple components, loop over all and treat each
         if len(components) > 1:
             for comp_label, comp in components.geometry.items():
+                # if component does not interest the boundary, it needs to be snapped
+                # if it does but has only one part, this part interesect only on one
+                # side (the node remaining from the removed edge) and needs to be
+                # snapped on the other side as well
                 if not comp.intersects(poly.boundary) or comp_counts[comp_label] == 1:
-                    to_add.append(shapely.shortest_line(union, comp.boundary))
+                    # add segment composed of the shortest line to the nearest snapping
+                    # target. We use boundary to snap to endpoints of edgelines only
+                    to_add.append(
+                        shapely.shortest_line(shapely.union_all(snap_to), comp.boundary)
+                    )
         else:
+            # if there is a single component, ensure it gets a shortest line to an
+            # endpoint from each snapping target
+            # TODO: verify that this is correct, writing it I realised that it may
+            # TODO: be wrong
             for target in snap_to:
                 to_add.append(shapely.shortest_line(target, components.boundary.item()))
 
+    # concatenate edgelines and their additions snapping to edge
     edgelines = np.concatenate([edgelines, to_add])
+    # simplify to avoid unnecessary point density and some wobbliness
     edgelines = shapely.simplify(edgelines, distance / 2)
 
+    # TODO: shall we try calling line_merge before returning? It was working weirdly in
+    # TODO: some occasions
     return edgelines
 
+
+# UNUSED AND NOT WORKING CODE FOR CONVEX HULL BASED CONNECTION
 
 # connections_to_fix = new_connnections[~connections_within]
 # new_connnections = new_connnections[connections_within]

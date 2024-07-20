@@ -39,6 +39,7 @@ dependencies = [
     "h3", # -- via PyPI
     "ipykernel",
     "jupyterlab",
+    "matplotlib>=3.9",
     "momepy",
     "osmnx>=1.9.1",
     "pip",

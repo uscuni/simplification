@@ -1,5 +1,6 @@
 import geopandas
 import pandas
+import pytest
 
 import core
 
@@ -24,7 +25,7 @@ class TestContinuity:
         ]
 
         known_counts_coins_end = pandas.DataFrame(
-            {"coins_end": [True, False], "count": [15514, 14511]}
+            {"coins_end": [True, False], "count": [15205, 13401]}
         )
         observed_counts_coins_end = (
             roads["coins_end"].value_counts().to_frame().reset_index()
@@ -32,3 +33,13 @@ class TestContinuity:
         pandas.testing.assert_frame_equal(
             known_counts_coins_end, observed_counts_coins_end
         )
+
+    def test_basic_non_depuded(self):
+        with pytest.raises(
+            ValueError,
+            match=(
+                "Lines are identical. Please revise input data to "
+                "ensure no lines are identical or overlapping."
+            ),
+        ):
+            core.algorithms.common.continuity(self.roads, dedup=False)

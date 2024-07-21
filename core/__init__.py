@@ -1,7 +1,7 @@
 import contextlib
 from importlib.metadata import PackageNotFoundError, version
 
-from . import algorithms, geometry, stats, utils, viz
+from . import algorithms, geometry, protocol, stats, utils, viz
 
 with contextlib.suppress(PackageNotFoundError):
     __version__ = version("core")

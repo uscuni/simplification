@@ -17,6 +17,7 @@ dependencies:
   - momepy
   - osmnx
   - pip
+  - pointpats
   - pyarrow
   - pyogrio
   - rasterio

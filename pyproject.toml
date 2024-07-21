@@ -32,8 +32,8 @@ dependencies = [
     "contextily",
     "dask",
     "dask-geopandas",
-    "esda",
-    "geopandas",
+    "esda>=2.5.1",
+    "geopandas>=0.12.0",
     "graphblas-algorithms",
     #"h3-py", # -- via conda
     "h3", # -- via PyPI
@@ -41,15 +41,14 @@ dependencies = [
     "jupyterlab",
     "momepy",
     "osmnx>=1.9.1",
+    "pointpats>=2.3.0",
     "pip",
     "pyarrow",
     "pyogrio",
-    "scikit-learn",
-    "tobler",
-    "tqdm",
-    "watermark",
+    "scikit-learn>=1.2",
+    "tobler>=0.11.2",
     "tqdm>=4.63.0",
-    "pointpats>=2.3.0",
+    "watermark",
     "opencv-python", # -- via PyPI
     # -- via conda -- see https://github.com/conda-forge/opencv-feedstock
     # | "libopencv",

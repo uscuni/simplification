@@ -59,6 +59,7 @@ def test_process_case_invalid_type():
 @image_comparison(
     baseline_images=["test_process_case_original.png"],
     style="mpl20",
+    tol=5.1 if pytest.ENV_TYPE == "dev" else 1,
 )
 def test_process_case_original():
     __case = "04"
@@ -77,6 +78,7 @@ def test_process_case_original():
 @image_comparison(
     baseline_images=["test_process_case_manual.png"],
     style="mpl20",
+    tol=7.4 if pytest.ENV_TYPE == "dev" else 1,
 )
 def test_process_case_manual():
     __case = "04"

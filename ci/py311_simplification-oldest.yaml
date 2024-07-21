@@ -14,17 +14,15 @@ dependencies:
   - h3-py
   - ipykernel
   - jupyterlab
-  - matplotlib=3.8.4
   - momepy
   - osmnx=1.9.1
   - pip
   - pyarrow
   - pyogrio
-  - pointpats=2.3.0
   - rasterio
   - scikit-learn
   - tobler
-  - tqdm=4.63.0
+  - tqdm
   - watermark
   # standard formatting
   - pre-commit

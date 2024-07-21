@@ -25,7 +25,7 @@ def add_node_degree(
 
     Returns
     -------
-    node_gdf : geopandas.GeoDataFrame
+    geopandas.GeoDataFrame
         Updated node data.
     """
     node_gdf["degree"] = node_gdf["nodeID"].map(lambda x: networkx.degree(graph, x))

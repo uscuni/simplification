@@ -20,7 +20,8 @@ def continuity(
     Returns
     -------
     geopandas.GeoDataFrame
-        The input ``roads`` with additional columns.
+        The input ``roads`` with additional columns where the original
+        index may be reset (see ``dedup`` keyword argument).
     """
     roads = roads.copy()
 

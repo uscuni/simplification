@@ -129,22 +129,29 @@ def voronoi_skeleton(lines, poly=None, snap_to=None, distance=2, buffer=None):
         # add final edgeline to the list
         edgelines.append(edgeline)
 
-    # if there is no explicit snapping target, snap to the boundary of the polygon via
-    # the shortest line. That is by definition always within the polygon (I think)
-    if snap_to is None:
-        to_add.append(
-            shapely.shortest_line(shapely.union_all(edgelines).boundary, poly.boundary)
-        )
+    edgelines = np.array(edgelines)[~shapely.is_empty(edgelines)]
 
-    # if we have some snapping targets, we need to figure out what shall be snapped to
-    # what
-    else:
-        to_add.extend(snap_to_targets(edgelines, poly, snap_to))
+    if edgelines.shape[0] > 0:
+        # if there is no explicit snapping target, snap to the boundary of the polygon
+        # via the shortest line. That is by definition always within the polygon
+        # (I think)
+        if snap_to is None:
+            to_add.append(
+                shapely.shortest_line(
+                    shapely.union_all(edgelines).boundary, poly.boundary
+                )
+            )
 
-    # concatenate edgelines and their additions snapping to edge
-    edgelines = np.concatenate([edgelines, to_add])
-    # simplify to avoid unnecessary point density and some wobbliness
-    edgelines = shapely.simplify(edgelines, distance / 2)
+        # if we have some snapping targets, we need to figure out
+        # what shall be snapped to what
+        else:
+            to_add.extend(snap_to_targets(edgelines, poly, snap_to))
+
+        # concatenate edgelines and their additions snapping to edge
+        edgelines = np.concatenate([edgelines, to_add])
+        # simplify to avoid unnecessary point density and some wobbliness
+        edgelines = shapely.simplify(edgelines, distance / 2)
+    # drop empty
 
     # TODO: shall we try calling line_merge before returning? It was working weirdly in
     # TODO: some occasions

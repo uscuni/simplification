@@ -5,7 +5,7 @@
 files: "code\/|core\/"
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.5.2"
+    rev: "v0.5.4"
     hooks:
       - id: ruff
       - id: ruff-format

@@ -139,37 +139,7 @@ def voronoi_skeleton(lines, poly=None, snap_to=None, distance=2, buffer=None):
     # if we have some snapping targets, we need to figure out what shall be snapped to
     # what
     else:
-        # cast edgelines to gdf
-        edgelines_df = gpd.GeoDataFrame(geometry=edgelines)
-        # build queen contiguity on edgelines and extract component labels
-        comp_labels = graph.Graph.build_contiguity(
-            edgelines_df[~edgelines_df.is_empty], rook=False
-        ).component_labels
-        # compute size of each component
-        comp_counts = comp_labels.value_counts()
-        # get MultiLineString geometry per connected component
-        components = edgelines_df.dissolve(comp_labels)
-
-        # if there are muliple components, loop over all and treat each
-        if len(components) > 1:
-            for comp_label, comp in components.geometry.items():
-                # if component does not interest the boundary, it needs to be snapped
-                # if it does but has only one part, this part interesect only on one
-                # side (the node remaining from the removed edge) and needs to be
-                # snapped on the other side as well
-                if not comp.intersects(poly.boundary) or comp_counts[comp_label] == 1:
-                    # add segment composed of the shortest line to the nearest snapping
-                    # target. We use boundary to snap to endpoints of edgelines only
-                    to_add.append(
-                        shapely.shortest_line(shapely.union_all(snap_to), comp.boundary)
-                    )
-        else:
-            # if there is a single component, ensure it gets a shortest line to an
-            # endpoint from each snapping target
-            # TODO: verify that this is correct, writing it I realised that it may
-            # TODO: be wrong
-            for target in snap_to:
-                to_add.append(shapely.shortest_line(target, components.boundary.item()))
+        to_add.extend(snap_to_targets(edgelines, poly, snap_to))
 
     # concatenate edgelines and their additions snapping to edge
     edgelines = np.concatenate([edgelines, to_add])
@@ -179,6 +149,43 @@ def voronoi_skeleton(lines, poly=None, snap_to=None, distance=2, buffer=None):
     # TODO: shall we try calling line_merge before returning? It was working weirdly in
     # TODO: some occasions
     return edgelines
+
+
+def snap_to_targets(edgelines, poly, snap_to):
+    to_add = []
+    # cast edgelines to gdf
+    edgelines_df = gpd.GeoDataFrame(geometry=edgelines)
+    # build queen contiguity on edgelines and extract component labels
+    comp_labels = graph.Graph.build_contiguity(
+        edgelines_df[~(edgelines_df.is_empty | edgelines_df.geometry.isna())],
+        rook=False,
+    ).component_labels
+    # compute size of each component
+    comp_counts = comp_labels.value_counts()
+    # get MultiLineString geometry per connected component
+    components = edgelines_df.dissolve(comp_labels)
+
+    # if there are muliple components, loop over all and treat each
+    if len(components) > 1:
+        for comp_label, comp in components.geometry.items():
+            # if component does not interest the boundary, it needs to be snapped
+            # if it does but has only one part, this part interesect only on one
+            # side (the node remaining from the removed edge) and needs to be
+            # snapped on the other side as well
+            if not comp.intersects(poly.boundary) or comp_counts[comp_label] == 1:
+                # add segment composed of the shortest line to the nearest snapping
+                # target. We use boundary to snap to endpoints of edgelines only
+                to_add.append(
+                    shapely.shortest_line(shapely.union_all(snap_to), comp.boundary)
+                )
+    else:
+        # if there is a single component, ensure it gets a shortest line to an
+        # endpoint from each snapping target
+        # TODO: verify that this is correct, writing it I realised that it may
+        # TODO: be wrong
+        for target in snap_to:
+            to_add.append(shapely.shortest_line(target, components.boundary.item()))
+    return to_add
 
 
 # UNUSED AND NOT WORKING CODE FOR CONVEX HULL BASED CONNECTION

@@ -8,8 +8,8 @@ dependencies:
   - contextily
   - dask
   - dask-geopandas
-  - esda
-  - geopandas
+  - esda=2.5.1
+  - geopandas=0.13.0
   - graphblas-algorithms
   - h3-py
   - ipykernel
@@ -18,12 +18,13 @@ dependencies:
   - momepy
   - osmnx=1.9.1
   - pip
+  - pointpats=2.3.0
   - pyarrow
   - pyogrio
   - rasterio
-  - scikit-learn
-  - tobler
-  - tqdm
+  - scikit-learn=1.2
+  - tobler=0.11.2
+  - tqdm=4.63.0
   - watermark
   # standard formatting
   - pre-commit

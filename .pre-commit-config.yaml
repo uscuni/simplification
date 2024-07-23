@@ -1,11 +1,11 @@
-###########################################################
-# ruff on both ./code/* and ./core/ during infra prep phase
-###########################################################
-
-files: "code\/|core\/"
+files: "core\/"
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.5.1"
+    rev: "v0.5.4"
     hooks:
       - id: ruff
       - id: ruff-format
+
+ci:
+  autofix_prs: false
+  autoupdate_schedule: quarterly

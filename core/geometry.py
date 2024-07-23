@@ -97,6 +97,7 @@ def voronoi_skeleton(
     # iterate over segment-pairs and keep rigdes between input geometries
     edgelines = []
     to_add = []
+    splitters = []
 
     # determine the negative buffer distance to avoid overclipping of narrow polygons
     # this can still result in some missing links, but only in rare cases
@@ -143,16 +144,20 @@ def voronoi_skeleton(
         # via the shortest line. That is by definition always within the polygon
         # (I think)
         if snap_to is None:
-            to_add.append(
-                shapely.shortest_line(
-                    shapely.union_all(edgelines).boundary, poly.boundary
-                )
+            sl = shapely.shortest_line(
+                shapely.union_all(edgelines).boundary, poly.boundary
             )
+            to_add.append(sl)
+            splitters.append(shapely.get_point(sl, -1))
 
         # if we have some snapping targets, we need to figure out
         # what shall be snapped to what
         else:
-            to_add.extend(snap_to_targets(edgelines, poly, snap_to, secondary_snap_to))
+            additions, splits = snap_to_targets(
+                edgelines, poly, snap_to, secondary_snap_to
+            )
+            to_add.extend(additions)
+            splitters.extend(splits)
 
         # concatenate edgelines and their additions snapping to edge
         edgelines = np.concatenate([edgelines, to_add])
@@ -162,11 +167,12 @@ def voronoi_skeleton(
     edgelines = edgelines[edgelines != None]  # noqa: E711
     # TODO: shall we try calling line_merge before returning? It was working weirdly in
     # TODO: some occasions
-    return edgelines[shapely.length(edgelines) > 0]
+    return edgelines[shapely.length(edgelines) > 0], splitters
 
 
 def snap_to_targets(edgelines, poly, snap_to, secondary_snap_to=None):
     to_add = []
+    to_split = []
     # cast edgelines to gdf
     edgelines_df = gpd.GeoDataFrame(geometry=edgelines)
     # build queen contiguity on edgelines and extract component labels
@@ -192,20 +198,22 @@ def snap_to_targets(edgelines, poly, snap_to, secondary_snap_to=None):
                 sl = shapely.shortest_line(shapely.union_all(snap_to), comp.boundary)
                 if is_within(sl, poly):
                     to_add.append(sl)
+                    to_split.append(shapely.get_point(sl, -1))
                 else:
                     if secondary_snap_to is not None:
                         sl = shapely.shortest_line(
                             shapely.union_all(secondary_snap_to), comp.boundary
                         )
+                        to_split.append(shapely.get_point(sl, -1))
                         to_add.append(sl)
     else:
         # if there is a single component, ensure it gets a shortest line to an
         # endpoint from each snapping target
-        # TODO: verify that this is correct, writing it I realised that it may
-        # TODO: be wrong
         for target in snap_to:
-            to_add.append(shapely.shortest_line(target, components.boundary.item()))
-    return to_add
+            sl = shapely.shortest_line(target, components.boundary.item())
+            to_split.append(shapely.get_point(sl, -1))
+            to_add.append(sl)
+    return to_add, to_split
 
 
 # UNUSED AND NOT WORKING CODE FOR CONVEX HULL BASED CONNECTION

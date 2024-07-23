@@ -45,7 +45,9 @@ def is_within(
     return np.abs(shapely.length(intersection) - shapely.length(line)) <= rtol
 
 
-def voronoi_skeleton(lines, poly=None, snap_to=None, distance=2, buffer=None):
+def voronoi_skeleton(
+    lines, poly=None, snap_to=None, distance=2, buffer=None, secondary_snap_to=None
+):
     """
     Returns average geometry.
 
@@ -95,6 +97,11 @@ def voronoi_skeleton(lines, poly=None, snap_to=None, distance=2, buffer=None):
     # iterate over segment-pairs and keep rigdes between input geometries
     edgelines = []
     to_add = []
+
+    # determine the negative buffer distance to avoid overclipping of narrow polygons
+    # this can still result in some missing links, but only in rare cases
+    dist = min([distance, shapely.ops.polylabel(poly).distance(poly.boundary) * 0.4])
+    limit = poly.buffer(-dist)
     for a, b in combinations(range(len(lines)), 2):
         mask = (
             np.isin(mapped[:, 0], [a, b])
@@ -112,7 +119,7 @@ def voronoi_skeleton(lines, poly=None, snap_to=None, distance=2, buffer=None):
         if not edgeline.within(poly):
             # if not, clip it by the polygon with a small negative buffer to keep the
             # gap between edgeline and poly boundary to avoid possible overlapping lines
-            edgeline = shapely.intersection(edgeline, poly.buffer(-distance))
+            edgeline = shapely.intersection(edgeline, limit)
 
         # check if a, b lines share a node
         intersection = shapely_lines[b].intersection(shapely_lines[a])
@@ -145,7 +152,7 @@ def voronoi_skeleton(lines, poly=None, snap_to=None, distance=2, buffer=None):
         # if we have some snapping targets, we need to figure out
         # what shall be snapped to what
         else:
-            to_add.extend(snap_to_targets(edgelines, poly, snap_to))
+            to_add.extend(snap_to_targets(edgelines, poly, snap_to, secondary_snap_to))
 
         # concatenate edgelines and their additions snapping to edge
         edgelines = np.concatenate([edgelines, to_add])
@@ -158,7 +165,7 @@ def voronoi_skeleton(lines, poly=None, snap_to=None, distance=2, buffer=None):
     return edgelines[shapely.length(edgelines) > 0]
 
 
-def snap_to_targets(edgelines, poly, snap_to):
+def snap_to_targets(edgelines, poly, snap_to, secondary_snap_to=None):
     to_add = []
     # cast edgelines to gdf
     edgelines_df = gpd.GeoDataFrame(geometry=edgelines)
@@ -182,9 +189,15 @@ def snap_to_targets(edgelines, poly, snap_to):
             if not comp.intersects(poly.boundary) or comp_counts[comp_label] == 1:
                 # add segment composed of the shortest line to the nearest snapping
                 # target. We use boundary to snap to endpoints of edgelines only
-                to_add.append(
-                    shapely.shortest_line(shapely.union_all(snap_to), comp.boundary)
-                )
+                sl = shapely.shortest_line(shapely.union_all(snap_to), comp.boundary)
+                if is_within(sl, poly):
+                    to_add.append(sl)
+                else:
+                    if secondary_snap_to is not None:
+                        sl = shapely.shortest_line(
+                            shapely.union_all(secondary_snap_to), comp.boundary
+                        )
+                        to_add.append(sl)
     else:
         # if there is a single component, ensure it gets a shortest line to an
         # endpoint from each snapping target

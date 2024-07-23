@@ -186,7 +186,7 @@ def snap_to_targets(edgelines, poly, snap_to, secondary_snap_to=None):
             # if it does but has only one part, this part interesect only on one
             # side (the node remaining from the removed edge) and needs to be
             # snapped on the other side as well
-            if not comp.intersects(poly.boundary) or comp_counts[comp_label] == 1:
+            if (not comp.intersects(poly.boundary)) or comp_counts[comp_label] == 1:
                 # add segment composed of the shortest line to the nearest snapping
                 # target. We use boundary to snap to endpoints of edgelines only
                 sl = shapely.shortest_line(shapely.union_all(snap_to), comp.boundary)

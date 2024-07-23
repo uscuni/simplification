@@ -14,9 +14,11 @@ dependencies:
   - h3-py
   - ipykernel
   - jupyterlab
+  - matplotlib>=3.9
   - momepy
   - osmnx
   - pip
+  - pointpats
   - pyarrow
   - pyogrio
   - rasterio

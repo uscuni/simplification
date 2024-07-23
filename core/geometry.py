@@ -129,7 +129,7 @@ def voronoi_skeleton(lines, poly=None, snap_to=None, distance=2, buffer=None):
         # add final edgeline to the list
         edgelines.append(edgeline)
 
-    edgelines = np.array(edgelines)[~shapely.is_empty(edgelines)]
+    edgelines = np.array(edgelines)[~(shapely.is_empty(edgelines))]
 
     if edgelines.shape[0] > 0:
         # if there is no explicit snapping target, snap to the boundary of the polygon
@@ -152,10 +152,10 @@ def voronoi_skeleton(lines, poly=None, snap_to=None, distance=2, buffer=None):
         # simplify to avoid unnecessary point density and some wobbliness
         edgelines = shapely.simplify(edgelines, distance / 2)
     # drop empty
-
+    edgelines = edgelines[edgelines != None]  # noqa: E711
     # TODO: shall we try calling line_merge before returning? It was working weirdly in
     # TODO: some occasions
-    return edgelines
+    return edgelines[shapely.length(edgelines) > 0]
 
 
 def snap_to_targets(edgelines, poly, snap_to):

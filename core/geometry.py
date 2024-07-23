@@ -195,14 +195,14 @@ def snap_to_targets(edgelines, poly, snap_to, secondary_snap_to=None):
             if (not comp.intersects(poly.boundary)) or comp_counts[comp_label] == 1:
                 # add segment composed of the shortest line to the nearest snapping
                 # target. We use boundary to snap to endpoints of edgelines only
-                sl = shapely.shortest_line(shapely.union_all(snap_to), comp.boundary)
+                sl = shapely.shortest_line(comp.boundary, shapely.union_all(snap_to))
                 if is_within(sl, poly):
                     to_add.append(sl)
                     to_split.append(shapely.get_point(sl, -1))
                 else:
                     if secondary_snap_to is not None:
                         sl = shapely.shortest_line(
-                            shapely.union_all(secondary_snap_to), comp.boundary
+                            comp.boundary, shapely.union_all(secondary_snap_to)
                         )
                         to_split.append(shapely.get_point(sl, -1))
                         to_add.append(sl)
@@ -210,7 +210,7 @@ def snap_to_targets(edgelines, poly, snap_to, secondary_snap_to=None):
         # if there is a single component, ensure it gets a shortest line to an
         # endpoint from each snapping target
         for target in snap_to:
-            sl = shapely.shortest_line(target, components.boundary.item())
+            sl = shapely.shortest_line(components.boundary.item(), target)
             to_split.append(shapely.get_point(sl, -1))
             to_add.append(sl)
     return to_add, to_split

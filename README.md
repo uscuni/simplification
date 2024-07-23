@@ -17,6 +17,7 @@ The curated & tested code base for the project & publication, including:
 - core
     |-- __init__.py
     |-- geometry.py
+    |-- protocol.py
     |-- stats.py
     |-- utils.py
     |-- algorithms
@@ -27,12 +28,17 @@ The curated & tested code base for the project & publication, including:
     |   |-- __init__.py
     |   |-- context.py
     |   |-- h3_hex.py
+    |   |-- protocol.py
     |-- tests
     |   |-- __init__.py
     |   |-- conftest.py
+    |   |-- test_geometry.py
+    |   |-- test_protocol.py
     |   |-- test_stats.py
     |   |-- test_utils.py
-    |   |-- test_viz.py
+    |   |-- test_viz_context.py
+    |   |-- test_viz_h3_hex.py
+    |   |-- test_viz_protocol.py
     |   |-- baseline_images
     |   |   | -- *controls from image comparison*
     |   |-- data
@@ -48,12 +54,12 @@ Parameterized notebooks.
 * `_clip_networks.ipynb` – ...
 * `clustering.ipynb` – deadend
 * `_convert.ipynb` – ...
-* `evaluate_h3cells.ipynb` – ...
+* `evaluate_h3cells.ipynb` – evaluation of Uber's H3 data and demonstration
 * `momepy.ipynb` – exploration of the [`momepy`](https://github.com/pysal/momepy) package
 * `osmnx.ipynb` – exploration of the [`osmnx.simplification`](https://github.com/gboeing/osmnx/blob/main/osmnx/simplification.py) module
 * `parenx.ipynb` & `parenx-run.sh` - exploration of the [`parenx`](https://github.com/anisotropi4/parenx) package (skeletonization & line voronoi diagrams)
 * `remove_degree_2_nodes.ipynb` - removing degree 2 nodes from FUA road networks
-* `simplification_protocol.ipynb` – ...
+* `simplification_protocol.ipynb` – demonstration of the manual simplification protocol
 * `triangles.ipynb` – ...
 * `usecases.ipynb` – interesting example case locations; add more as desired
 
@@ -90,6 +96,12 @@ Observations & hightlights from each package.
 
 * `osmnx.md`
 * `cityseer.md`
+
+### `./protocol_images/`
+
+Demonstration plots generated through `simplification_protocol.ipynb`.
+
+***This directory only exists once that notebook has been run locally.***
 
 ### `./resources/`
 

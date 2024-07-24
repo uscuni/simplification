@@ -29,3 +29,43 @@ def continuity(roads, angle_threshold=120):
     roads["coins_count"] = coins_grouped.size()[roads.coins_group].values
 
     return roads, coins
+
+
+def get_stroke_info(artifacts, roads):
+    strokes = []
+    c_ = []
+    e_ = []
+    s_ = []
+    for geom in artifacts.geometry:
+        singles = 0
+        ends = 0
+        edges = roads.iloc[roads.sindex.query(geom, predicate="covers")]
+        if (  # roundabout special case
+            edges.coins_group.nunique() == 1
+            and edges.shape[0] == edges.coins_count.iloc[0]
+        ):
+            singles = 1
+            mains = 0
+        else:
+            all_ends = edges[edges.coins_end]
+            mains = edges[
+                ~edges.coins_group.isin(all_ends.coins_group)
+            ].coins_group.nunique()
+
+            visited = []
+            for coins_count, group in zip(
+                all_ends.coins_count, all_ends.coins_group, strict=True
+            ):
+                if (group not in visited) and (
+                    coins_count == (edges.coins_group == group).sum()
+                ):
+                    singles += 1
+                    visited.append(group)
+                elif group not in visited:
+                    ends += 1
+                    # do not add to visited as they may be disjoint within the artifact
+        strokes.append(edges.coins_group.nunique())
+        c_.append(mains)
+        e_.append(ends)
+        s_.append(singles)
+    return strokes, c_, e_, s_

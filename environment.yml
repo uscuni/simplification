@@ -23,7 +23,7 @@ dependencies:
   - pyogrio
   - rasterio
   - scikit-learn>=1.2
-  - tobler>=0.11.2
+  - tobler>=0.11.3
   - tqdm>=4.63.0
   - watermark
   # standard formatting

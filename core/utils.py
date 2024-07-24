@@ -12,7 +12,7 @@ __all__ = [
     "fua_city",
     "read_sample_data",
     "read_original",
-    "read_no_degree_2_roads",
+    "read_no_degree_2",
     "read_manual",
     "read_parenx",
     "graph_size",
@@ -52,27 +52,35 @@ def read_sample_data() -> geopandas.GeoDataFrame:
     return geopandas.read_parquet(data_dir / f"sample.{parq}")
 
 
-def read_original(fua: int | str, geom_only: bool = True) -> geopandas.GeoDataFrame:
-    """Read OSM roads from parquet format; return bare columns."""
+def _fua_code(fua: int | str) -> int:
+    """Helper for converting a city name into a FUA code."""
     if isinstance(fua, str):
         fua = city_fua[fua]
-    _fua_path = data_dir / f"{fua}" / f"roads_osm.{parq}"
+    return fua
+
+
+# def __fua_path(fua: int, dataset: str, option: None | str) -> geopandas.GeoDataFrame
+#    if dataset == "original":
+
+
+def read_original(fua: int | str, geom_only: bool = True) -> geopandas.GeoDataFrame:
+    """Read OSM roads from parquet format; return bare columns."""
+    fua = _fua_code(fua)
+    _fua_path = data_dir / pathlib.Path(f"{fua}", "original", f"{fua}.{parq}")
     cols = ["highway", "geometry"] if not geom_only else ["geometry"]
     return geopandas.read_parquet(_fua_path, columns=cols).reset_index(drop=True)
 
 
-def read_no_degree_2_roads(fua: int | str) -> geopandas.GeoDataFrame:
+def read_no_degree_2(fua: int | str) -> geopandas.GeoDataFrame:
     """Read OSM roads from parquet format; return bare columns."""
-    if isinstance(fua, str):
-        fua = city_fua[fua]
+    fua = _fua_code(fua)
     _fua_path = data_dir / pathlib.Path(f"{fua}", "no_degree_2", f"{fua}.{parq}")
     return geopandas.read_parquet(_fua_path)
 
 
 def read_manual(fua: int, proj_crs: str | int | pyproj.CRS) -> geopandas.GeoDataFrame:
     """Read in manually prepared simplified road data."""
-    if isinstance(fua, str):
-        fua = city_fua[fua]
+    fua = _fua_code(fua)
     _fua_path = data_dir / pathlib.Path(f"{fua}", "manual", f"{fua}.{parq}")
     return (
         geopandas.read_parquet(_fua_path)[["geometry"]]
@@ -85,8 +93,7 @@ def read_parenx(
     fua: int, option: str, proj_crs: str | int | pyproj.CRS
 ) -> geopandas.GeoDataFrame:
     """Read in prepared parenx data."""
-    if isinstance(fua, str):
-        fua = city_fua[fua]
+    fua = _fua_code(fua)
     _fua_path = data_dir / pathlib.Path(f"{fua}", "parenx", f"{option}.{parq}")
     return (
         geopandas.read_parquet(_fua_path)

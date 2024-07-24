@@ -32,6 +32,24 @@ def continuity(roads, angle_threshold=120):
 
 
 def get_stroke_info(artifacts, roads):
+    """Generate information about strokes within the artifacts
+
+    Resulting lists can be assigned as columns to ``artifacts``.
+
+    Parameters
+    ----------
+    artifacts : GeoDataFrame | GeoSeries
+        Polygons representing the artifacts
+    roads : GeoDataFrame | GeoSeries
+        LineStrings representing the road network
+
+    Returns
+    -------
+    stroke_count : list
+    C_count : list
+    E_count : list
+    S_count : list
+    """
     strokes = []
     c_ = []
     e_ = []

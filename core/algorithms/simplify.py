@@ -273,7 +273,15 @@ def one_remaining_c(
     return new_connections
 
 
-def loop(edges, es_mask, highest_hierarchy, artifact, distance, split_points):
+def loop(
+    edges,
+    es_mask,
+    highest_hierarchy,
+    artifact,
+    distance,
+    split_points,
+    min_dangle_length,
+):
     # check if we need to add a deadend to represent the space
     to_add = []
     dropped = edges[es_mask].geometry.item()
@@ -316,7 +324,9 @@ def loop(edges, es_mask, highest_hierarchy, artifact, distance, split_points):
             flow_mode=True,
         ).stroke_gdf()
         candidate = dangle_coins.loc[dangle_coins.length.idxmax()].geometry
-        if candidate.intersects(snap_to.union_all().buffer(1e-6)):
+        if candidate.intersects(snap_to.union_all().buffer(1e-6)) and (
+            candidate.length > min_dangle_length
+        ):
             to_add.append(candidate)
 
     return to_add
@@ -342,7 +352,7 @@ def split(split_points, cleaned_roads, roads):
     return cleaned_roads
 
 
-def n1_g1_identical(edges, *, to_drop, to_add, geom, distance=2):
+def n1_g1_identical(edges, *, to_drop, to_add, geom, distance=2, min_dangle_length=10):
     """If there is only 1 continuity group {C, E, S} and only 1 node
 
     - drop the edge
@@ -384,9 +394,9 @@ def n1_g1_identical(edges, *, to_drop, to_add, geom, distance=2):
     strokes = gpd.GeoDataFrame({"coin": dangle_coins}, geometry=dangle_geoms).dissolve(
         "coin"
     )
-    entry = strokes.intersects(snap_to)
-
-    to_add.extend(strokes[entry].geometry.tolist())
+    entry = strokes.geometry[strokes.intersects(snap_to)].item()
+    if entry.length > min_dangle_length:
+        to_add.append(entry)
 
 
 def nx_gx_identical(edges, *, geom, to_drop, to_add, nodes, angle):
@@ -428,7 +438,17 @@ def nx_gx_identical(edges, *, geom, to_drop, to_add, nodes, angle):
         to_add.extend(lines.tolist())
 
 
-def nx_gx(edges, *, artifact, to_drop, to_add, split_points, nodes, distance=2):
+def nx_gx(
+    edges,
+    *,
+    artifact,
+    to_drop,
+    to_add,
+    split_points,
+    nodes,
+    distance=2,
+    min_dangle_length=10,
+):
     """
     Drop all but highest hierarchy. If there are unconnected nodes after drop, connect
     to nearest remaining edge or nearest intersection if there are more remaining edges.
@@ -664,13 +684,20 @@ def nx_gx(edges, *, artifact, to_drop, to_add, split_points, nodes, distance=2):
         logging.debug("CONDITION is_loop True")
 
         dangles = loop(
-            edges, es_mask, highest_hierarchy, artifact, distance, split_points
+            edges,
+            es_mask,
+            highest_hierarchy,
+            artifact,
+            distance,
+            split_points,
+            min_dangle_length,
         )
         if len(dangles) > 0:
             to_add.extend(dangles)
 
 
 def angle_between_two_lines(line1, line2):
+    # based on momepy.coins but adapted to shapely lines
     # extract points
     a, b, c, d = shapely.get_coordinates([line1, line2]).tolist()
     a, b, c, d = tuple(a), tuple(b), tuple(c), tuple(d)
@@ -738,6 +765,8 @@ def simplify_singletons(artifacts, roads, nodes, distance=2):
                 nodes=nodes,
                 distance=distance,
             )
+        else:
+            logging.debug("NON PLANAR")
 
     cleaned_roads = roads.geometry.drop(to_drop)
     # split lines on new nodes

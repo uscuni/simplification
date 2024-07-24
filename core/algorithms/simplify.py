@@ -11,6 +11,7 @@ from libpysal import graph
 from scipy import sparse
 
 from ..geometry import is_within, snap_to_targets, voronoi_skeleton
+from .common import continuity, get_stroke_info
 
 __all__ = [
     "ccss_special_case",
@@ -750,7 +751,49 @@ def angle_between_two_lines(line1, line2):
     return angle
 
 
-def simplify_singletons(artifacts, roads, nodes, distance=2):
+def simplify_singletons(artifacts, roads, distance=2):
+    # Get nodes from the network.
+    nodes = momepy.nx_to_gdf(momepy.node_degree(momepy.gdf_to_nx(roads)), lines=False)
+
+    # Link nodes to artifacts
+    node_idx, artifact_idx = artifacts.sindex.query(
+        nodes.buffer(0.1), predicate="intersects"
+    )
+    intersects = sparse.coo_array(
+        ([True] * len(node_idx), (node_idx, artifact_idx)),
+        shape=(len(nodes), len(artifacts)),
+        dtype=np.bool_,
+    )
+
+    # Compute number of nodes per artifact
+    artifacts["node_count"] = intersects.sum(axis=0)
+
+    # Compute number of stroke groups per artifact
+    roads, _ = continuity(roads)
+    strokes, c_, e_, s_ = get_stroke_info(artifacts, roads)
+
+    artifacts["stroke_count"] = strokes
+    artifacts["C"] = c_
+    artifacts["E"] = e_
+    artifacts["S"] = s_
+
+    # Filter artifacts caused by non-planar intersections. (TODO: Note that this is not
+    # perfect and some 3CC artifacts were non-planar but not captured here).
+    artifacts["non_planar"] = artifacts["stroke_count"] > artifacts["node_count"]
+    a_idx, r_idx = roads.sindex.query(artifacts.geometry.boundary, predicate="overlaps")
+    artifacts.iloc[np.unique(a_idx), -1] = True
+
+    # Count intersititial nodes (primes).
+    artifacts["interstitial_nodes"] = artifacts.node_count - artifacts[
+        ["C", "E", "S"]
+    ].sum(axis=1)
+
+    # Define the type label.
+    ces_type = []
+    for x in artifacts[["node_count", "C", "E", "S"]].itertuples():
+        ces_type.append(f"{x.node_count}{'C' * x.C}{'E' * x.E}{'S' * x.S}")
+    artifacts["ces_type"] = ces_type
+
     # collect changes
     to_drop = []
     to_add = []

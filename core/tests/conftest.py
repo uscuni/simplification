@@ -34,7 +34,7 @@ def pytest_configure(config):
 
 
 def _osm_auckland():
-    return core.utils.read_parquet_roads(pytest.auckland)
+    return core.utils.read_original(pytest.auckland)
 
 
 @pytest.fixture

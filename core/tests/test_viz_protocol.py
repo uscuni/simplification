@@ -1,3 +1,5 @@
+import pathlib
+
 import geopandas
 import pytest
 import shapely
@@ -18,5 +20,7 @@ def test_plot_case():
 
     protocol_case, protocol_type = "test_case", "test_type"
     title = f"Case {protocol_case} - TEST CASE - {protocol_type}"
-    image_fpath = f"{protocol_case}_{protocol_type}.png"
+    image_fpath = pathlib.Path(f"{protocol_case}_{protocol_type}.png")
     core.viz.protocol.plot_case(lines, verts, title, image_fpath)
+
+    image_fpath.unlink()

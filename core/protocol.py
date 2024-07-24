@@ -5,7 +5,7 @@ import momepy
 import pandas
 import shapely
 
-from .utils import read_manual, read_parquet_roads
+from .utils import read_manual, read_original
 from .viz.protocol import plot_case
 
 __all__ = [
@@ -263,10 +263,10 @@ def process_case(
 
     # collate params
     if protocol_type == "original":
-        in_data = read_parquet_roads(city)
+        in_data = read_original(city)
         remove_false_nodes = True
     else:
-        in_data = read_manual(city, read_parquet_roads(city).crs)
+        in_data = read_manual(city, read_original(city).crs)
         remove_false_nodes = False
 
     # generate the type-case roads & intersections

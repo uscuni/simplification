@@ -66,20 +66,24 @@ Parameterized notebooks.
 ### `./data/`
 
 Curated data in `parquet` format for 6 example urban areas
-* 1133 – Aleppo, Syria, Middle East / Asia
-* 869 – Auckland, New Zealand, Oceania / Asis
-* 809 – Douala, Cameroon, Africa
-* 1656 – Liège, Belgium, Europe
-* 4617 – Bucaramanga, Colombia, S. America
-* 4881 – Salt Lake City, Utah, USA, N. America
-* 8989 – Wuhan, China, Far East / Asia
+
+| FUA  | City                                   |
+| ---  | ---                                    |
+| 1133 | Aleppo, Syria, Middle East / Asia      |
+| 869  | Auckland, New Zealand, Oceania / Asia  |
+| 809  | Douala, Cameroon, Africa               |
+| 1656 | Liège, Belgium, Europe                 |
+| 4617 | Bucaramanga, Colombia, S. America      |
+| 4881 | Salt Lake City, Utah, USA, N. America  |
+| 8989 | Wuhan, China, Far East / Asia          |
+
 
 Each FUA directory contains (or will contain) the following items housing bespoke data:
 * `manual/`
 * `no_degree_2/`
+* `original/`
 * `parenex/`
 * `polygons/`
-* `roads_osm.parquet`
 
 ### `./envs/`
 

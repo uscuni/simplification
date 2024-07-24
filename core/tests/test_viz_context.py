@@ -48,7 +48,7 @@ tol = 12.2 if pytest.ENV_TYPE == "dev" else 1
 def test_viz_context_param_plot_video():
     # declare AOI
     city = "Liège"
-    roads_bare = core.utils.read_parquet_roads(core.utils.city_fua[city])
+    roads_bare = core.utils.read_original(core.utils.city_fua[city])
     orig_crs = roads_bare.crs
 
     # declare singular param set

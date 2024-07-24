@@ -18,7 +18,7 @@ def test_generate_case(protocol_type, remove_false_nodes, known_lines, known_ver
 
     city = _case["city"]
 
-    in_data = core.utils.read_parquet_roads(city)
+    in_data = core.utils.read_original(city)
     if protocol_type != "original":
         in_data = core.utils.read_manual(city, in_data.crs)
 

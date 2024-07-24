@@ -11,7 +11,7 @@ __all__ = [
     "city_fua",
     "fua_city",
     "read_sample_data",
-    "read_parquet_roads",
+    "read_original",
     "read_no_degree_2_roads",
     "read_manual",
     "read_parenx",
@@ -52,9 +52,7 @@ def read_sample_data() -> geopandas.GeoDataFrame:
     return geopandas.read_parquet(data_dir / f"sample.{parq}")
 
 
-def read_parquet_roads(
-    fua: int | str, geom_only: bool = True
-) -> geopandas.GeoDataFrame:
+def read_original(fua: int | str, geom_only: bool = True) -> geopandas.GeoDataFrame:
     """Read OSM roads from parquet format; return bare columns."""
     if isinstance(fua, str):
         fua = city_fua[fua]
@@ -141,7 +139,7 @@ def make_grid(
     geom = meta.loc[meta.eFUA_ID == fua, "geometry"].copy()
 
     # read in OSM data
-    orig = read_parquet_roads(fua).to_crs(base_crs)
+    orig = read_original(fua).to_crs(base_crs)
     assert meta.crs == orig.crs, "CRS of 'meta' and 'orig' are not equal."
 
     grid = tobler.util.h3fy(
@@ -169,4 +167,4 @@ def make_grid(
 
 def remove_degree_2_nodes(fua: int | str) -> geopandas.GeoDataFrame:
     """Remove [interstitial / non-articulation / degree 2] nodes from road network."""
-    return momepy.remove_false_nodes(read_parquet_roads(fua))
+    return momepy.remove_false_nodes(read_original(fua))

@@ -3,19 +3,13 @@ import momepy
 from libpysal import graph
 
 
-def continuity(
-    roads: geopandas.GeoDataFrame, dedup: bool = True
-) -> geopandas.GeoDataFrame:
+def continuity(roads: geopandas.GeoDataFrame) -> geopandas.GeoDataFrame:
     """Assign COINS-based information to roads.
 
     Parameters
     ----------
     roads :  geopandas.GeoDataFrame
         Road network.
-    dedup : bool, default=True
-        Deduplicate identical or overlapping geometries in ``roads``.
-        If set to ``False``, function may fail at ``momepy.COINS()`` instantiation.
-        This will also reset the original index of ``roads``.
 
     Returns
     -------
@@ -26,8 +20,6 @@ def continuity(
     roads = roads.copy()
 
     # Measure continuity of street network
-    if dedup:
-        roads = roads.drop_duplicates(subset="geometry", ignore_index=True)
     coins = momepy.COINS(roads)
 
     # Assing continuity group

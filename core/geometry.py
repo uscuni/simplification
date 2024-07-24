@@ -12,7 +12,7 @@ __all__ = ["is_within", "voronoi_skeleton"]
 
 
 def is_within(
-    line: np.ndarray[shapely.Geometry], poly: shapely.Polygon, rtol: float = -1e4
+    line: np.ndarray[shapely.Geometry], poly: shapely.Polygon, rtol: float = 1e-4
 ) -> bool:
     """Check if the line is within a polygon with a set relative tolerance.
 

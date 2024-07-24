@@ -683,6 +683,17 @@ def nx_gx(
     elif artifact.C == 1 and (artifact.E + artifact.S) == 1:
         logging.debug("CONDITION is_loop True")
 
+        sl = shapely.shortest_line(
+            relevant_nodes.geometry.iloc[0], relevant_nodes.geometry.iloc[1]
+        )
+        if (
+            is_within(sl, artifact.geometry)
+            and sl.length < highest_hierarchy.length.sum()
+        ):
+            logging.debug("DEVIATION replacing with shortest")
+            to_add.append(sl)
+            to_drop.append(highest_hierarchy.index[0])
+
         dangles = loop(
             edges,
             es_mask,
@@ -694,6 +705,20 @@ def nx_gx(
         )
         if len(dangles) > 0:
             to_add.extend(dangles)
+
+    elif artifact.node_count == 2 and artifact.stroke_count == 2:
+        logging.debug("CONDITION is_sausage True")
+
+        sl = shapely.shortest_line(
+            relevant_nodes.geometry.iloc[0], relevant_nodes.geometry.iloc[1]
+        )
+        if (
+            is_within(sl, artifact.geometry)
+            and sl.length < highest_hierarchy.length.sum()
+        ):
+            logging.debug("DEVIATION replacing with shortest")
+            to_add.append(sl)
+            to_drop.append(highest_hierarchy.index[0])
 
 
 def angle_between_two_lines(line1, line2):

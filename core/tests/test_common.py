@@ -15,13 +15,13 @@ class TestContinuity:
         assert isinstance(roads, geopandas.GeoDataFrame)
         assert roads.geom_type.unique()[0] == "LineString"
 
-        # assert roads.columns.tolist() == [
-        #    "geometry",
-        #    "coins_group",
-        #    "coins_len",
-        #    "coins_count",
-        #    "coins_end",
-        # ]
+        assert roads.columns.tolist() == [
+            "geometry",
+            "coins_group",
+            "coins_len",
+            "coins_count",
+            "coins_end",
+        ]
 
         known_counts_coins_end = pandas.DataFrame(
             {"coins_end": [True, False], "count": [15205, 13392]}

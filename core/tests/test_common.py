@@ -8,7 +8,7 @@ import core
 class TestContinuity:
     def setup_method(self):
         self.city = "Liège"
-        self.roads = core.utils.read_no_degree_2_roads(self.city)
+        self.roads = core.utils.read_no_degree_2(self.city)
 
     def test_basic(self):
         roads = core.algorithms.common.continuity(self.roads)

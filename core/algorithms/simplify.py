@@ -85,14 +85,18 @@ def filter_connections(primes, conts_groups, new_connections):
 
     unwanted = []
     keeping = []
+    conn_c = []
+    conn_p = []
     for c in conts_groups.geometry:
         int_mask = shapely.intersects(new_connections, c)
         connections_intersecting_c = new_connections[int_mask]
+        conn_c.append(connections_intersecting_c)
         if len(connections_intersecting_c) > 1:
             prime_mask = shapely.intersects(
                 connections_intersecting_c, primes.union_all()
             )
             connections_intersecting_primes = connections_intersecting_c[prime_mask]
+            conn_p.append(connections_intersecting_primes)
             # if there are multiple connections to a single C, drop them and keep only
             # the shortest one leading to prime
             if (
@@ -123,7 +127,11 @@ def filter_connections(primes, conts_groups, new_connections):
             new_connections = new_connections[
                 ~np.isin(new_connections, np.concatenate(unwanted))
             ]
-    return new_connections, connections_intersecting_c, connections_intersecting_primes
+    return (
+        new_connections,
+        np.concatenate(conn_c) if len(conn_c) > 0 else np.array([]),
+        np.concatenate(conn_p) if len(conn_p) > 0 else np.array([]),
+    )
 
 
 def avoid_forks(
@@ -221,7 +229,7 @@ def one_remaining(
         )
         split_points.extend(splitters)
 
-    return new_connections
+    return remove_dangles(new_connections, artifact)
 
 
 def multiple_remaining(

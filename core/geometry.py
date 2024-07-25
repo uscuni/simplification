@@ -113,36 +113,35 @@ def voronoi_skeleton(
             (mapped[:, 1] == a) | (mapped[:, 1] == b)
         )
 
-        if mask.any():
-            verts = rigde_vertices[mask]
+        verts = rigde_vertices[mask]
 
-            # generate the line in between the lines
-            edgeline = shapely.line_merge(
-                shapely.multilinestrings(voronoi_diagram.vertices[verts])
+        # generate the line in between the lines
+        edgeline = shapely.line_merge(
+            shapely.multilinestrings(voronoi_diagram.vertices[verts])
+        )
+
+        # check if the edgeline is within polygon
+        if not edgeline.within(poly):
+            # if not, clip it by the polygon with a small negative buffer to keep
+            # the gap between edgeline and poly boundary to avoid possible
+            # overlapping lines
+            edgeline = shapely.intersection(edgeline, limit)
+
+        # check if a, b lines share a node
+        intersection = shapely_lines[b].intersection(shapely_lines[a])
+        # if they do, add shortest line from the edgeline to the shared node and
+        # combine it with the edgeline
+        if not intersection.is_empty:
+            # we need union of edgeline and shortest because snap is buggy in GEOS
+            # and line_merge as well. This results in a MultiLineString but we can
+            # deal with those later. For now, we just need this extended edgeline to
+            # be a single geometry to ensure the component discovery below works as
+            # intended
+            edgeline = shapely.union(
+                edgeline, shapely.shortest_line(edgeline.boundary, intersection)
             )
-
-            # check if the edgeline is within polygon
-            if not edgeline.within(poly):
-                # if not, clip it by the polygon with a small negative buffer to keep
-                # the gap between edgeline and poly boundary to avoid possible
-                # overlapping lines
-                edgeline = shapely.intersection(edgeline, limit)
-
-            # check if a, b lines share a node
-            intersection = shapely_lines[b].intersection(shapely_lines[a])
-            # if they do, add shortest line from the edgeline to the shared node and
-            # combine it with the edgeline
-            if not intersection.is_empty:
-                # we need union of edgeline and shortest because snap is buggy in GEOS
-                # and line_merge as well. This results in a MultiLineString but we can
-                # deal with those later. For now, we just need this extended edgeline to
-                # be a single geometry to ensure the component discovery below works as
-                # intended
-                edgeline = shapely.union(
-                    edgeline, shapely.shortest_line(edgeline.boundary, intersection)
-                )
-            # add final edgeline to the list
-            edgelines.append(edgeline)
+        # add final edgeline to the list
+        edgelines.append(edgeline)
 
     edgelines = np.array(edgelines)[~(shapely.is_empty(edgelines))]
 

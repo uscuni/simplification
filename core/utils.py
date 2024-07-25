@@ -172,4 +172,6 @@ def make_grid(
 
 def remove_degree_2_nodes(fua: int | str) -> geopandas.GeoDataFrame:
     """Remove [interstitial / non-articulation / degree 2] nodes from road network."""
-    return momepy.remove_false_nodes(read_original(fua))
+    df = momepy.remove_false_nodes(read_original(fua))
+    df = df[~df.geometry.duplicated()].reset_index(drop=True)
+    return momepy.remove_false_nodes(df)

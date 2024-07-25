@@ -1,21 +1,24 @@
+import geopandas
 import momepy
 from libpysal import graph
 
 
-def continuity(roads):
-    """Assign COINS-based information to roads
+def continuity(roads: geopandas.GeoDataFrame) -> geopandas.GeoDataFrame:
+    """Assign COINS-based information to roads.
 
     Parameters
     ----------
-    roads : GeoDataFrame
-        Road network
+    roads :  geopandas.GeoDataFrame
+        Road network.
 
     Returns
     -------
-    GeoDataFrame
-        original roads with additional columns
+    geopandas.GeoDataFrame
+        The input ``roads`` with additional columns where the original
+        index may be reset (see ``dedup`` keyword argument).
     """
     roads = roads.copy()
+
     # Measure continuity of street network
     coins = momepy.COINS(roads)
 

@@ -703,17 +703,18 @@ def nx_gx(
             to_add.append(sl)
             to_drop.append(highest_hierarchy.index[0])
 
-        dangles = loop(
-            edges,
-            es_mask,
-            highest_hierarchy,
-            artifact,
-            distance,
-            split_points,
-            min_dangle_length,
-        )
-        if len(dangles) > 0:
-            to_add.extend(dangles)
+        else:
+            dangles = loop(
+                edges,
+                es_mask,
+                highest_hierarchy,
+                artifact,
+                distance,
+                split_points,
+                min_dangle_length,
+            )
+            if len(dangles) > 0:
+                to_add.extend(dangles)
 
     elif artifact.node_count == 2 and artifact.stroke_count == 2:
         logging.debug("CONDITION is_sausage True")

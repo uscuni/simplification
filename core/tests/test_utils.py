@@ -20,11 +20,11 @@ man_records = [41_481, 35_650, 20_347, 30_647, 25_133, 43_955, numpy.nan]
 
 
 @pytest.mark.parametrize("city, n_records", zip(cities, osm_records, strict=True))
-def test_read_parquet_roads(city, n_records):
+def test_read_original(city, n_records):
     fua = core.utils.city_fua[city]
 
-    gdf_1 = core.utils.read_parquet_roads(fua)
-    gdf_2 = core.utils.read_parquet_roads(core.utils.fua_city[fua])
+    gdf_1 = core.utils.read_original(fua)
+    gdf_2 = core.utils.read_original(core.utils.fua_city[fua])
 
     geopandas.testing.assert_geodataframe_equal(gdf_1, gdf_2)
 
@@ -32,11 +32,11 @@ def test_read_parquet_roads(city, n_records):
 
 
 @pytest.mark.parametrize("city, n_records", zip(cities, xnd2_records, strict=True))
-def test_read_no_degree_2_roads(city, n_records):
+def test_read_no_degree_2(city, n_records):
     fua = core.utils.city_fua[city]
 
-    gdf_1 = core.utils.read_no_degree_2_roads(fua)
-    gdf_2 = core.utils.read_no_degree_2_roads(core.utils.fua_city[fua])
+    gdf_1 = core.utils.read_no_degree_2(fua)
+    gdf_2 = core.utils.read_no_degree_2(core.utils.fua_city[fua])
 
     geopandas.testing.assert_geodataframe_equal(gdf_1, gdf_2)
 
@@ -117,7 +117,7 @@ def test_make_grid():
 def test_remove_degree_2_nodes():
     fua = core.utils.city_fua["Aleppo"]
 
-    known = core.utils.read_no_degree_2_roads(fua)
+    known = core.utils.read_no_degree_2(fua)
     observed = core.utils.remove_degree_2_nodes(fua)
 
     geopandas.testing.assert_geodataframe_equal(known, observed)

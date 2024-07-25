@@ -11,8 +11,8 @@ __all__ = [
     "city_fua",
     "fua_city",
     "read_sample_data",
-    "read_parquet_roads",
-    "read_no_degree_2_roads",
+    "read_original",
+    "read_no_degree_2",
     "read_manual",
     "read_parenx",
     "graph_size",
@@ -52,32 +52,37 @@ def read_sample_data() -> geopandas.GeoDataFrame:
     return geopandas.read_parquet(data_dir / f"sample.{parq}")
 
 
-def read_parquet_roads(
-    fua: int | str, geom_only: bool = True
-) -> geopandas.GeoDataFrame:
-    """Read OSM roads from parquet format; return bare columns."""
+def _fua_code(fua: int | str) -> int:
+    """Helper for converting a city name into a FUA code."""
     if isinstance(fua, str):
         fua = city_fua[fua]
-    _fua_path = data_dir / f"{fua}" / f"roads_osm.{parq}"
-    cols = ["highway", "geometry"] if not geom_only else ["geometry"]
-    return geopandas.read_parquet(_fua_path, columns=cols).reset_index(drop=True)
+    return fua
 
 
-def read_no_degree_2_roads(fua: int | str) -> geopandas.GeoDataFrame:
+def _fua_path(fua: int, dataset: str, option: None | str = None) -> pathlib.Path:
+    """Helper for parsing input dataset paths."""
+    fua = _fua_code(fua)
+    dset = data_dir / pathlib.Path(f"{fua}", dataset)
+    return dset / f"{option}.{parq}" if option else dset / f"{fua}.{parq}"
+
+
+def read_original(fua: int | str, geom_only: bool = True) -> geopandas.GeoDataFrame:
     """Read OSM roads from parquet format; return bare columns."""
-    if isinstance(fua, str):
-        fua = city_fua[fua]
-    _fua_path = data_dir / pathlib.Path(f"{fua}", "no_degree_2", f"{fua}.{parq}")
-    return geopandas.read_parquet(_fua_path)
+    return geopandas.read_parquet(
+        _fua_path(fua, "original"),
+        columns=["highway", "geometry"] if not geom_only else ["geometry"],
+    ).reset_index(drop=True)
+
+
+def read_no_degree_2(fua: int | str) -> geopandas.GeoDataFrame:
+    """Read OSM roads from parquet format; return bare columns."""
+    return geopandas.read_parquet(_fua_path(fua, "no_degree_2"))
 
 
 def read_manual(fua: int, proj_crs: str | int | pyproj.CRS) -> geopandas.GeoDataFrame:
     """Read in manually prepared simplified road data."""
-    if isinstance(fua, str):
-        fua = city_fua[fua]
-    _fua_path = data_dir / pathlib.Path(f"{fua}", "manual", f"{fua}.{parq}")
     return (
-        geopandas.read_parquet(_fua_path)[["geometry"]]
+        geopandas.read_parquet(_fua_path(fua, "manual"))[["geometry"]]
         .explode(ignore_index=True, index_parts=False)
         .to_crs(proj_crs)
     )
@@ -87,11 +92,9 @@ def read_parenx(
     fua: int, option: str, proj_crs: str | int | pyproj.CRS
 ) -> geopandas.GeoDataFrame:
     """Read in prepared parenx data."""
-    if isinstance(fua, str):
-        fua = city_fua[fua]
-    _fua_path = data_dir / pathlib.Path(f"{fua}", "parenx", f"{option}.{parq}")
+
     return (
-        geopandas.read_parquet(_fua_path)
+        geopandas.read_parquet(_fua_path(fua, "parenx", option=option))
         .explode(ingore_index=True, index_parts=False)
         .to_crs(proj_crs)
     )
@@ -141,7 +144,7 @@ def make_grid(
     geom = meta.loc[meta.eFUA_ID == fua, "geometry"].copy()
 
     # read in OSM data
-    orig = read_parquet_roads(fua).to_crs(base_crs)
+    orig = read_original(fua).to_crs(base_crs)
     assert meta.crs == orig.crs, "CRS of 'meta' and 'orig' are not equal."
 
     grid = tobler.util.h3fy(
@@ -169,4 +172,4 @@ def make_grid(
 
 def remove_degree_2_nodes(fua: int | str) -> geopandas.GeoDataFrame:
     """Remove [interstitial / non-articulation / degree 2] nodes from road network."""
-    return momepy.remove_false_nodes(read_parquet_roads(fua))
+    return momepy.remove_false_nodes(read_original(fua))

@@ -1,7 +1,5 @@
 """Geometry-related helpers"""
 
-from itertools import combinations
-
 import geopandas as gpd
 import numpy as np
 import shapely
@@ -12,7 +10,7 @@ __all__ = ["is_within", "voronoi_skeleton"]
 
 
 def is_within(
-    line: np.ndarray[shapely.Geometry], poly: shapely.Polygon, rtol: float = -1e4
+    line: np.ndarray[shapely.Geometry], poly: shapely.Polygon, rtol: float = 1e-4
 ) -> bool:
     """Check if the line is within a polygon with a set relative tolerance.
 
@@ -103,39 +101,48 @@ def voronoi_skeleton(
     # this can still result in some missing links, but only in rare cases
     dist = min([distance, shapely.ops.polylabel(poly).distance(poly.boundary) * 0.4])
     limit = poly.buffer(-dist)
-    for a, b in combinations(range(len(lines)), 2):
-        mask = (
-            np.isin(mapped[:, 0], [a, b])
-            & np.isin(mapped[:, 1], [a, b])
-            & (mapped[:, 0] != mapped[:, 1])
+
+    # drop ridges that are between points coming from the same line
+    selfs = mapped[:, 0] == mapped[:, 1]
+    mapped = mapped[~selfs]
+    rigde_vertices = rigde_vertices[~selfs]
+    unique = np.unique(np.sort(mapped, axis=1), axis=0)
+
+    for a, b in unique:
+        mask = ((mapped[:, 0] == a) | (mapped[:, 0] == b)) & (
+            (mapped[:, 1] == a) | (mapped[:, 1] == b)
         )
-        verts = rigde_vertices[mask]
 
-        # generate the line in between the lines
-        edgeline = shapely.line_merge(
-            shapely.multilinestrings(voronoi_diagram.vertices[verts])
-        )
+        if mask.any():
+            verts = rigde_vertices[mask]
 
-        # check if the edgeline is within polygon
-        if not edgeline.within(poly):
-            # if not, clip it by the polygon with a small negative buffer to keep the
-            # gap between edgeline and poly boundary to avoid possible overlapping lines
-            edgeline = shapely.intersection(edgeline, limit)
-
-        # check if a, b lines share a node
-        intersection = shapely_lines[b].intersection(shapely_lines[a])
-        # if they do, add shortest line from the edgeline to the shared node and combine
-        # it with the edgeline
-        if not intersection.is_empty:
-            # we need union of edgeline and shortest because snap is buggy in GEOS and
-            # line_merge as well. This results in a MultiLineString but we can deal
-            # with those later. For now, we just need this extended edgeline to be a
-            # single geometry to ensure the component discovery below works as intended
-            edgeline = shapely.union(
-                edgeline, shapely.shortest_line(edgeline.boundary, intersection)
+            # generate the line in between the lines
+            edgeline = shapely.line_merge(
+                shapely.multilinestrings(voronoi_diagram.vertices[verts])
             )
-        # add final edgeline to the list
-        edgelines.append(edgeline)
+
+            # check if the edgeline is within polygon
+            if not edgeline.within(poly):
+                # if not, clip it by the polygon with a small negative buffer to keep
+                # the gap between edgeline and poly boundary to avoid possible
+                # overlapping lines
+                edgeline = shapely.intersection(edgeline, limit)
+
+            # check if a, b lines share a node
+            intersection = shapely_lines[b].intersection(shapely_lines[a])
+            # if they do, add shortest line from the edgeline to the shared node and
+            # combine it with the edgeline
+            if not intersection.is_empty:
+                # we need union of edgeline and shortest because snap is buggy in GEOS
+                # and line_merge as well. This results in a MultiLineString but we can
+                # deal with those later. For now, we just need this extended edgeline to
+                # be a single geometry to ensure the component discovery below works as
+                # intended
+                edgeline = shapely.union(
+                    edgeline, shapely.shortest_line(edgeline.boundary, intersection)
+                )
+            # add final edgeline to the list
+            edgelines.append(edgeline)
 
     edgelines = np.array(edgelines)[~(shapely.is_empty(edgelines))]
 
@@ -143,24 +150,25 @@ def voronoi_skeleton(
         # if there is no explicit snapping target, snap to the boundary of the polygon
         # via the shortest line. That is by definition always within the polygon
         # (I think)
-        if snap_to is None:
-            sl = shapely.shortest_line(
-                shapely.union_all(edgelines).boundary, poly.boundary
-            )
-            to_add.append(sl)
-            splitters.append(shapely.get_point(sl, -1))
+        if snap_to is not False:
+            if snap_to is None:
+                sl = shapely.shortest_line(
+                    shapely.union_all(edgelines).boundary, poly.boundary
+                )
+                to_add.append(sl)
+                splitters.append(shapely.get_point(sl, -1))
 
-        # if we have some snapping targets, we need to figure out
-        # what shall be snapped to what
-        else:
-            additions, splits = snap_to_targets(
-                edgelines, poly, snap_to, secondary_snap_to
-            )
-            to_add.extend(additions)
-            splitters.extend(splits)
+            # if we have some snapping targets, we need to figure out
+            # what shall be snapped to what
+            else:
+                additions, splits = snap_to_targets(
+                    edgelines, poly, snap_to, secondary_snap_to
+                )
+                to_add.extend(additions)
+                splitters.extend(splits)
 
-        # concatenate edgelines and their additions snapping to edge
-        edgelines = np.concatenate([edgelines, to_add])
+            # concatenate edgelines and their additions snapping to edge
+            edgelines = np.concatenate([edgelines, to_add])
         # simplify to avoid unnecessary point density and some wobbliness
         edgelines = shapely.simplify(edgelines, distance / 2)
     # drop empty

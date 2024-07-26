@@ -315,10 +315,5 @@ def remove_false_nodes(gdf, aggfunc="first", **kwargs):
             fixed_loops.append(shapely.LineString(new_sequence))
             fixed_index.append(ix)
 
-    aggregated.loc[aggregated.index[fixed_index], aggregated.geometry.name] = (
-        fixed_loops
-    )
-    aggregated.loc[aggregated.index[fixed_index], aggregated.geometry.name] = (
-        fixed_loops
-    )
+    aggregated.loc[loops.index[fixed_index], aggregated.geometry.name] = fixed_loops
     return aggregated

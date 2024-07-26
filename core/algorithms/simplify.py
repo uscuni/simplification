@@ -10,8 +10,10 @@ import shapely
 from libpysal import graph
 from scipy import sparse
 
-from ..geometry import is_within, snap_to_targets, voronoi_skeleton
+from ..geometry import is_within, remove_false_nodes, snap_to_targets, voronoi_skeleton
 from .common import continuity, get_stroke_info
+
+logger = logging.getLogger(__name__)
 
 __all__ = [
     "ccss_special_case",
@@ -218,7 +220,7 @@ def one_remaining(
     connections_within = is_within(new_connections, artifact.geometry, 0.1)
     # if it is not within, discard it and use the skeleton instead
     if not connections_within.all():
-        logging.debug("CONDITION is_within False")
+        logger.debug("CONDITION is_within False")
 
         new_connections, splitters = voronoi_skeleton(
             edges[es_mask].geometry,  # use edges that are being dropped
@@ -268,7 +270,7 @@ def one_remaining_c(
     connections_within = is_within(new_connections, artifact.geometry, 0.1)
     # if it is not within, discard it and use the skeleton instead
     if not connections_within.all():
-        logging.debug("CONDITION is_within False")
+        logger.debug("CONDITION is_within False")
 
         new_connections, splitters = voronoi_skeleton(
             edges[es_mask].geometry,  # use edges that are being dropped
@@ -303,14 +305,15 @@ def loop(
 
     # figure out if there's a snapping node
     # Get nodes on Cs
-    # bd_points = highest_hierarchy.boundary.explode()
+    bd_points = highest_hierarchy.boundary.explode()
     # Identify nodes on primes
-    # TODO: what about this if/else?
-    # primes = bd_points[bd_points.duplicated()]
-    # # if primes.empty:
-    snap_to = highest_hierarchy.dissolve("coins_group").geometry
-    # else:
-    #     snap_to = [primes.union_all()]
+    primes = bd_points[bd_points.duplicated()]
+    if primes.empty:
+        logger.debug("SNAP TO highest_hierarchy")
+        snap_to = highest_hierarchy.dissolve("coins_group").geometry
+    else:
+        logger.debug("SNAP TO primes")
+        snap_to = primes
 
     possible_dangle, splitters = voronoi_skeleton(
         segments,  # use edges that are being dropped
@@ -408,7 +411,7 @@ def n1_g1_identical(edges, *, to_drop, to_add, geom, distance=2, min_dangle_leng
         to_add.append(entry)
 
 
-def nx_gx_identical(edges, *, geom, to_drop, to_add, nodes, angle):
+def nx_gx_identical(edges, *, geom, to_drop, to_add, nodes, angle, distance):
     """If there are  1+ identical continuity groups, and more than 1 node (n>=2)
 
     - drop all of them and link the entry points to the centroid
@@ -434,9 +437,17 @@ def nx_gx_identical(edges, *, geom, to_drop, to_add, nodes, angle):
     to_drop.extend(edges.index.to_list())
     lines = shapely.shortest_line(relevant_nodes, centroid)
 
+    if not is_within(lines, geom).all():
+        lines, _ = voronoi_skeleton(
+            edges.geometry,  # use edges that are being dropped
+            poly=geom,
+            distance=distance,
+            snap_to=relevant_nodes,
+        )
+        to_add.extend(lines.tolist())
     # if the angle between two lines is too sharp, replace with a direct connection
     # between the nodes
-    if len(lines) == 2:
+    elif len(lines) == 2:
         if angle_between_two_lines(lines.iloc[0], lines.iloc[1]) < angle:
             to_add.append(
                 shapely.LineString([relevant_nodes.iloc[0], relevant_nodes.iloc[1]])
@@ -525,7 +536,7 @@ def nx_gx(
     # more than one component in the remaining geometries
     # (either highest_hierarchy or remaining nodes)
     if n_comps > 1:
-        logging.debug("CONDITION n_comps > 1 True")
+        logger.debug("CONDITION n_comps > 1 True")
 
         # get nodes that are relevant snapping targets (degree 4+)
         relevant_targets = relevant_nodes.loc[nodes_on_cont].query("degree > 3")
@@ -537,7 +548,7 @@ def nx_gx(
 
         # BRANCH 1 - multiple Cs
         if len(highest_hierarchy) > 1:
-            logging.debug("CONDITION len(highest_hierarchy) > 1 True")
+            logger.debug("CONDITION len(highest_hierarchy) > 1 True")
 
             # Get nodes on Cs
             bd_points = highest_hierarchy.boundary.explode()
@@ -550,9 +561,10 @@ def nx_gx(
             if (
                 highest_hierarchy.coins_group.nunique() == 2
                 and artifact.S == 2
+                and artifact.E == 0
                 and (highest_hierarchy.length.sum() > all_ends.length.sum())
             ):
-                logging.debug("CONDITION for CCSS special case True")
+                logger.debug("CONDITION for CCSS special case True")
 
                 # this also appends to split_points
                 new_connections = ccss_special_case(
@@ -564,7 +576,7 @@ def nx_gx(
                 )
 
             else:
-                logging.debug("CONDITION for CCSS special case False")
+                logger.debug("CONDITION for CCSS special case False")
 
                 # Get new connections via skeleton
                 new_connections, splitters = voronoi_skeleton(
@@ -612,11 +624,11 @@ def nx_gx(
 
         # BRANCH 2 - relevant node targets exist
         elif relevant_targets.shape[0] > 0:
-            logging.debug("CONDITION relevant_targets.shape[0] > 0 True")
+            logger.debug("CONDITION relevant_targets.shape[0] > 0 True")
 
             # SUB BRANCH - only one remaining node
             if remaining_nodes.shape[0] < 2:
-                logging.debug("CONDITION remaining_nodes.shape[0] < 2 True")
+                logger.debug("CONDITION remaining_nodes.shape[0] < 2 True")
 
                 # this also appends to split_points
                 new_connections = one_remaining(
@@ -631,7 +643,7 @@ def nx_gx(
 
             # SUB BRANCH - more than one remaining node
             else:
-                logging.debug("CONDITION remaining_nodes.shape[0] < 2 False")
+                logger.debug("CONDITION remaining_nodes.shape[0] < 2 False")
 
                 # this also appends to split_points
                 new_connections = multiple_remaining(
@@ -646,13 +658,11 @@ def nx_gx(
 
         # BRANCH 3 - no target nodes - snapping to C
         else:
-            logging.debug(
-                "CONDITION relevant_targets.shape[0] > 0 False, snapping to C"
-            )
+            logger.debug("CONDITION relevant_targets.shape[0] > 0 False, snapping to C")
 
             # SUB BRANCH - only one remaining node
             if remaining_nodes.shape[0] < 2:
-                logging.debug("CONDITION remaining_nodes.shape[0] < 2 True")
+                logger.debug("CONDITION remaining_nodes.shape[0] < 2 True")
 
                 # this also appends to split_points
                 new_connections = one_remaining_c(
@@ -667,7 +677,7 @@ def nx_gx(
 
             # SUB BRANCH - more than one remaining node
             else:
-                logging.debug("CONDITION remaining_nodes.shape[0] < 2 False")
+                logger.debug("CONDITION remaining_nodes.shape[0] < 2 False")
 
                 # this also appends to split_points
                 new_connections = multiple_remaining(
@@ -690,16 +700,18 @@ def nx_gx(
     # there may be loops or half-loops we are dropping. If they are protruding enough
     # we want to replace them by a deadend representing their space
     elif artifact.C == 1 and (artifact.E + artifact.S) == 1:
-        logging.debug("CONDITION is_loop True")
+        logger.debug("CONDITION is_loop True")
 
         sl = shapely.shortest_line(
             relevant_nodes.geometry.iloc[0], relevant_nodes.geometry.iloc[1]
         )
+
         if (
-            is_within(sl, artifact.geometry)
-            and sl.length < highest_hierarchy.length.sum()
+            (artifact.interstitial_nodes == 0)
+            and is_within(sl, artifact.geometry)
+            and (sl.length * 1.1) < highest_hierarchy.length.sum()
         ):
-            logging.debug("DEVIATION replacing with shortest")
+            logger.debug("DEVIATION replacing with shortest")
             to_add.append(sl)
             to_drop.append(highest_hierarchy.index[0])
 
@@ -717,16 +729,16 @@ def nx_gx(
                 to_add.extend(dangles)
 
     elif artifact.node_count == 2 and artifact.stroke_count == 2:
-        logging.debug("CONDITION is_sausage True")
+        logger.debug("CONDITION is_sausage True")
 
         sl = shapely.shortest_line(
             relevant_nodes.geometry.iloc[0], relevant_nodes.geometry.iloc[1]
         )
         if (
             is_within(sl, artifact.geometry)
-            and sl.length < highest_hierarchy.length.sum()
+            and (sl.length * 1.1) < highest_hierarchy.length.sum()
         ):
-            logging.debug("DEVIATION replacing with shortest")
+            logger.debug("DEVIATION replacing with shortest")
             to_add.append(sl)
             to_drop.append(highest_hierarchy.index[0])
 
@@ -809,19 +821,21 @@ def simplify_singletons(artifacts, roads, distance=2):
     split_points = []
 
     planar = artifacts[~artifacts.non_planar]
+    if artifacts.non_planar.any():
+        logger.debug(f"IGNORING {artifacts.non_planar.sum()} non planar artifacts")
 
     for artifact in planar.itertuples():
         # get edges relevant for an artifact
         edges = roads.iloc[roads.sindex.query(artifact.geometry, predicate="covers")]
 
         if (artifact.node_count == 1) and (artifact.stroke_count == 1):
-            logging.debug("FUNCTION n1_g1_identical")
+            logger.debug("FUNCTION n1_g1_identical")
             n1_g1_identical(
                 edges, to_drop=to_drop, to_add=to_add, geom=artifact.geometry
             )
 
         elif (artifact.node_count > 1) and (len(set(artifact.ces_type[1:])) == 1):
-            logging.debug("FUNCTION nx_gx_identical")
+            logger.debug("FUNCTION nx_gx_identical")
             nx_gx_identical(
                 edges,
                 geom=artifact.geometry,
@@ -829,10 +843,11 @@ def simplify_singletons(artifacts, roads, distance=2):
                 to_drop=to_drop,
                 nodes=nodes,
                 angle=75,
+                distance=distance,
             )
 
         elif (artifact.node_count > 1) and (len(artifact.ces_type) > 2):
-            logging.debug("FUNCTION nx_gx")
+            logger.debug("FUNCTION nx_gx")
             nx_gx(
                 edges,
                 artifact=artifact,
@@ -843,7 +858,7 @@ def simplify_singletons(artifacts, roads, distance=2):
                 distance=distance,
             )
         else:
-            logging.debug("NON PLANAR")
+            logger.debug("NON PLANAR")
 
     cleaned_roads = roads.geometry.drop(to_drop)
     # split lines on new nodes
@@ -858,6 +873,6 @@ def simplify_singletons(artifacts, roads, distance=2):
         ],
         ignore_index=True,
     )
-    new_roads = momepy.remove_false_nodes(new_roads[~new_roads.is_empty])
+    new_roads = remove_false_nodes(new_roads[~new_roads.is_empty].to_frame("geometry"))
 
     return new_roads

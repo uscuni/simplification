@@ -496,11 +496,13 @@ def nx_gx(
     # determine if we have C present or not. Based on that, ensure that we correctly
     # pick-up the highest hierarchy and drop all lower
     if artifact.C > 0:
+        logger.debug("HIGHEST C")
         # define mask for E and S strokes
         es_mask = edges.coins_group.isin(all_ends.coins_group)
         # filter Cs
         highest_hierarchy = edges[~es_mask]
     else:
+        logger.debug("HIGHEST E")
         singles = set()
         visited = []
         for coins_count, group in zip(
@@ -750,6 +752,8 @@ def nx_gx(
             logger.debug("DEVIATION replacing with shortest")
             to_add.append(sl)
             to_drop.append(highest_hierarchy.index[0])
+    else:
+        logger.debug("DROP ONLY")
 
 
 def angle_between_two_lines(line1, line2):

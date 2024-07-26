@@ -239,6 +239,8 @@ def remove_false_nodes(gdf, aggfunc="first", **kwargs):
     _type_
         _description_
     """
+    if isinstance(gdf, gpd.GeoSeries):
+        gdf = gdf.to_series("geometry")
     # extract array of coordinates and number per geometry
     start_points = shapely.get_point(gdf.geometry, 0)
     end_points = shapely.get_point(gdf.geometry, -1)

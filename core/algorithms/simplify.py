@@ -781,7 +781,7 @@ def angle_between_two_lines(line1, line2):
     return angle
 
 
-def simplify_singletons(artifacts, roads, distance=2):
+def simplify_singletons(artifacts, roads, distance=2, compute_coins=True):
     # Get nodes from the network.
     nodes = momepy.nx_to_gdf(momepy.node_degree(momepy.gdf_to_nx(roads)), lines=False)
 
@@ -799,7 +799,8 @@ def simplify_singletons(artifacts, roads, distance=2):
     artifacts["node_count"] = intersects.sum(axis=0)
 
     # Compute number of stroke groups per artifact
-    roads, _ = continuity(roads)
+    if compute_coins:
+        roads, _ = continuity(roads)
     strokes, c_, e_, s_ = get_stroke_info(artifacts, roads)
 
     artifacts["stroke_count"] = strokes

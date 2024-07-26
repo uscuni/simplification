@@ -339,6 +339,15 @@ def loop(
         if candidate.intersects(snap_to.union_all().buffer(1e-6)) and (
             candidate.length > min_dangle_length
         ):
+            if not primes.empty:
+                points = [
+                    shapely.get_point(candidate, 0),
+                    shapely.get_point(candidate, -1),
+                ]
+                distances = shapely.distance(points, highest_hierarchy.union_all())
+                if distances.max() > min_dangle_length:
+                    to_add.append(candidate)
+        else:
             to_add.append(candidate)
 
     return to_add

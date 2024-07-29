@@ -107,8 +107,9 @@ def voronoi_skeleton(
 
     # drop ridges that are between points coming from the same line
     selfs = mapped[:, 0] == mapped[:, 1]
-    mapped = mapped[~selfs]
-    rigde_vertices = rigde_vertices[~selfs]
+    buff = (mapped == mapped.max()).any(axis=1)
+    mapped = mapped[~(selfs | buff)]
+    rigde_vertices = rigde_vertices[~(selfs | buff)]
     unique = np.unique(np.sort(mapped, axis=1), axis=0)
 
     for a, b in unique:
@@ -140,8 +141,15 @@ def voronoi_skeleton(
             # deal with those later. For now, we just need this extended edgeline to
             # be a single geometry to ensure the component discovery below works as
             # intended
+            # get_parts is needed as in case of voronoi based on two lines, these
+            # intersect on both ends, hence both need to be extended
             edgeline = shapely.union(
-                edgeline, shapely.shortest_line(edgeline.boundary, intersection)
+                edgeline,
+                shapely.union_all(
+                    shapely.shortest_line(
+                        shapely.get_parts(intersection), edgeline.boundary
+                    )
+                ),
             )
         # add final edgeline to the list
         edgelines.append(edgeline)

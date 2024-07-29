@@ -184,13 +184,13 @@ def reconnect(conts_groups, new_connections, artifact, split_points):
     return new_connections
 
 
-def remove_dangles(new_connections, artifact):
+def remove_dangles(new_connections, artifact, eps=1e-6):
     # the drop above could've introduced a dangling edges. Remove those.
 
     new_connections = shapely.line_merge(new_connections)
     pts0 = shapely.get_point(new_connections, 0)
     pts1 = shapely.get_point(new_connections, -1)
-    pts = shapely.buffer(np.concatenate([pts0, pts1]), 1e-6)
+    pts = shapely.buffer(np.concatenate([pts0, pts1]), eps)
     all_idx, pts_idx = shapely.STRtree(pts).query(
         np.concatenate([pts, [artifact.geometry.boundary]]),
         predicate="intersects",
@@ -292,6 +292,7 @@ def loop(
     distance,
     split_points,
     min_dangle_length,
+    eps=1e-6,
 ):
     # check if we need to add a deadend to represent the space
     to_add = []
@@ -336,7 +337,7 @@ def loop(
             flow_mode=True,
         ).stroke_gdf()
         candidate = dangle_coins.loc[dangle_coins.length.idxmax()].geometry
-        if candidate.intersects(snap_to.union_all().buffer(1e-6)) and (
+        if candidate.intersects(snap_to.union_all().buffer(eps)) and (
             candidate.length > min_dangle_length
         ):
             if not primes.empty:
@@ -353,14 +354,14 @@ def loop(
     return to_add
 
 
-def split(split_points, cleaned_roads, roads):
+def split(split_points, cleaned_roads, roads, eps=1e-6):
     # split lines on new nodes
     split_points = gpd.GeoSeries(split_points)
     for split in split_points.drop_duplicates():
-        _, ix = cleaned_roads.sindex.nearest(split, max_distance=1e-6)
+        _, ix = cleaned_roads.sindex.nearest(split, max_distance=eps)
         edge = cleaned_roads.geometry.iloc[ix]
         if edge.shape[0] == 1:
-            snapped = shapely.snap(edge.item(), split, tolerance=1e-6)
+            snapped = shapely.snap(edge.item(), split, tolerance=eps)
             lines_split = shapely.get_parts(shapely.ops.split(snapped, split))
             cleaned_roads = pd.concat(
                 [
@@ -420,7 +421,7 @@ def n1_g1_identical(edges, *, to_drop, to_add, geom, distance=2, min_dangle_leng
         to_add.append(entry)
 
 
-def nx_gx_identical(edges, *, geom, to_drop, to_add, nodes, angle, distance):
+def nx_gx_identical(edges, *, geom, to_drop, to_add, nodes, angle, distance, eps=1e-6):
     """If there are  1+ identical continuity groups, and more than 1 node (n>=2)
 
     - drop all of them and link the entry points to the centroid
@@ -440,7 +441,7 @@ def nx_gx_identical(edges, *, geom, to_drop, to_add, nodes, angle, distance):
     """
     centroid = geom.centroid
     relevant_nodes = nodes.geometry.iloc[
-        nodes.sindex.query(geom, predicate="dwithin", distance=1e-6)
+        nodes.sindex.query(geom, predicate="dwithin", distance=eps)
     ]
 
     to_drop.extend(edges.index.to_list())
@@ -481,6 +482,7 @@ def nx_gx(
     nodes,
     distance=2,
     min_dangle_length=10,
+    eps=1e-6,
 ):
     """
     Drop all but highest hierarchy. If there are unconnected nodes after drop, connect
@@ -526,12 +528,12 @@ def nx_gx(
 
     # get nodes forming the artifact
     relevant_nodes = nodes.iloc[
-        nodes.sindex.query(artifact.geometry, predicate="dwithin", distance=1e-6)
+        nodes.sindex.query(artifact.geometry, predicate="dwithin", distance=eps)
     ]
     # filter nodes that lie on Cs (possibly primes)
     nodes_on_cont = relevant_nodes.index[
         relevant_nodes.sindex.query(
-            highest_hierarchy.geometry.union_all(), predicate="dwithin", distance=1e-6
+            highest_hierarchy.geometry.union_all(), predicate="dwithin", distance=eps
         )
     ]
     # get nodes that are not on Cs
@@ -760,6 +762,106 @@ def nx_gx(
         logger.debug("DROP ONLY")
 
 
+def nx_gx_cluster(edges, *, cluster_geom, nodes, to_drop, to_add, distance=2, eps=1e-6):
+    """treat an n-artifact cluster: merge all artifact polygons; drop
+    all lines fully within the merged polygon; skeletonize and keep only
+    skeletonized edges and connecting nodes"""
+
+    # get edges on boundary
+    edges_on_boundary = edges.intersection(cluster_geom.boundary.buffer(eps)).explode(
+        ignore_index=True
+    )
+    edges_on_boundary = edges_on_boundary[
+        (~edges_on_boundary.is_empty)
+        & (edges_on_boundary.geom_type.str.contains("Line"))
+        & (edges_on_boundary.length > 10 * eps)
+    ]  # keeping only (multi)linestrings of length>>eps
+    edges_on_boundary = edges_on_boundary.to_frame("geometry")
+
+    # find nodes ON the cluster polygon boundary (to be partially kept)
+    nodes_on_boundary = nodes.iloc[
+        nodes.sindex.query(cluster_geom.boundary.buffer(eps), predicate="intersects")
+    ].copy()
+
+    # find edges that cross but do not lie within
+    edges_crossing = edges.iloc[
+        edges.sindex.query(cluster_geom.buffer(eps), predicate="crosses")
+    ]
+
+    # the nodes to keep are those that intersect with these crossing edges
+    nodes_to_keep = nodes_on_boundary.iloc[
+        nodes_on_boundary.sindex.query(
+            edges_crossing.union_all(), predicate="intersects"
+        )
+    ].copy()
+
+    # merging lines between nodes to keep:
+    buffered_nodes_to_keep = nodes_to_keep.buffer(eps).union_all()
+
+    # make queen contiguity graph on MINUSBUFFERED outline road segments,
+    # and copy component labels into edges_on_boundary gdf
+    edges_on_boundary = edges_on_boundary.explode(ignore_index=True)
+    queen = graph.Graph.build_fuzzy_contiguity(
+        edges_on_boundary.difference(buffered_nodes_to_keep)
+    )
+    edges_on_boundary["comp"] = queen.component_labels
+
+    # skeletonize
+    skel, _ = voronoi_skeleton(
+        edges_on_boundary.dissolve(by="comp").geometry,
+        cluster_geom,
+        snap_to=False,
+        distance=distance,
+    )
+
+    lines_to_drop = edges.iloc[
+        edges.sindex.query(cluster_geom.buffer(eps), predicate="contains")
+    ].index.to_list()
+    lines_to_add = list(skel)
+
+    to_add.extend(lines_to_add)
+    to_drop.extend(lines_to_drop)
+
+    ### RECONNECTING NON-PLANAR INTRUDING EDGES TO SKELETON
+
+    # considering only edges that are kept
+    edges_kept = edges.copy().drop(lines_to_drop, axis=0)
+
+    to_reconnect = []
+
+    skel_merged = shapely.line_merge(skel)
+    skel_merged = gpd.GeoSeries(skel_merged, crs=edges.crs)
+
+    skel_nodes = list(shapely.get_point(skel_merged, 0))
+    skel_nodes.extend(list(shapely.get_point(skel_merged, -1)))
+    skel_nodes = gpd.GeoSeries(skel_nodes, crs=edges.crs).union_all()
+
+    # loop through endpoints of kept edges...
+    for i in [0, -1]:
+        # do the same for "end" points
+        endpoints = gpd.GeoSeries(
+            shapely.get_point(edges_kept.geometry, i), crs=edges.crs
+        )
+
+        # which are contained by artifact...
+        endpoints = endpoints.iloc[
+            endpoints.sindex.query(cluster_geom, predicate="contains")
+        ]
+
+        # ...but NOT on skeleton
+        endpoints = endpoints.difference(skel_merged.union_all())
+
+        to_reconnect.extend(endpoints.geometry)
+
+    # to_reconnect now contains a list of points which need to be connected to the
+    # nearest skel node: from those nodes, we need to add shapely shortest lines between
+    # those edges_kept.endpoints and
+    non_planar_connections = shapely.shortest_line(skel_nodes, to_reconnect)
+
+    ### extend our list "to_add" with this artifact clusters' contribution:
+    to_add.extend(non_planar_connections)
+
+
 def angle_between_two_lines(line1, line2):
     # based on momepy.coins but adapted to shapely lines
     # extract points
@@ -789,13 +891,13 @@ def angle_between_two_lines(line1, line2):
     return angle
 
 
-def simplify_singletons(artifacts, roads, distance=2, compute_coins=True):
+def simplify_singletons(artifacts, roads, distance=2, compute_coins=True, eps=1e-6):
     # Get nodes from the network.
     nodes = momepy.nx_to_gdf(momepy.node_degree(momepy.gdf_to_nx(roads)), lines=False)
 
     # Link nodes to artifacts
     node_idx, artifact_idx = artifacts.sindex.query(
-        nodes.geometry, predicate="dwithin", distance=1e-6
+        nodes.geometry, predicate="dwithin", distance=eps
     )
     intersects = sparse.coo_array(
         ([True] * len(node_idx), (node_idx, artifact_idx)),
@@ -839,7 +941,7 @@ def simplify_singletons(artifacts, roads, distance=2, compute_coins=True):
     split_points = []
 
     planar = artifacts[~artifacts.non_planar]
-    planar["buffered"] = planar.buffer(1e-6)
+    planar["buffered"] = planar.buffer(eps)
     if artifacts.non_planar.any():
         logger.debug(f"IGNORING {artifacts.non_planar.sum()} non planar artifacts")
 
@@ -895,3 +997,115 @@ def simplify_singletons(artifacts, roads, distance=2, compute_coins=True):
     new_roads = remove_false_nodes(new_roads[~new_roads.is_empty].to_frame("geometry"))
 
     return new_roads
+
+
+def simplify_clusters(artifacts, roads, distance=2, eps=1e-6):
+    # Get nodes from the network.
+    nodes = momepy.nx_to_gdf(momepy.node_degree(momepy.gdf_to_nx(roads)), lines=False)
+
+    # collect changes
+    to_drop = []
+    to_add = []
+
+    for _, artifact in artifacts.groupby("comp"):
+        # get artifact cluster polygon
+        cluster_geom = artifact.union_all(method="coverage")
+        # get edges relevant for an artifact
+        edges = roads.iloc[
+            roads.sindex.query(cluster_geom, predicate="intersects")
+        ].copy()
+
+        nx_gx_cluster(
+            edges=edges,
+            cluster_geom=cluster_geom,
+            nodes=nodes,
+            to_drop=to_drop,
+            to_add=to_add,
+            eps=eps,
+        )
+
+    cleaned_roads = roads.geometry.drop(to_drop)
+
+    # create new roads with fixed geometry. Note that to_add and to_drop lists shall be
+    # global and this step should happen only once, not for every artifact
+    new_roads = pd.concat(
+        [
+            cleaned_roads,
+            gpd.GeoSeries(to_add, crs=roads.crs).line_merge().simplify(distance),
+        ],
+        ignore_index=True,
+    ).explode()
+    new_roads = remove_false_nodes(new_roads[~new_roads.is_empty].to_frame("geometry"))
+
+    return new_roads
+
+
+def consolidate_nodes(gdf, tolerance=2):
+    """Return geoemtry with consolidated nodes.
+
+    Replace clusters of nodes with a single node (weighted centroid
+    of a cluster) and snap linestring geometry to it. Cluster is
+    defined using DBSCAN on coordinates with ``tolerance``==``eps`.
+
+    Does not preserve any attributes, function is purely geometric.
+
+    Parameters
+    ----------
+    gdf : GeoDataFrame
+        GeoDataFrame with LineStrings (usually representing street network)
+    tolerance : float
+        The maximum distance between two nodes for one to be considered
+        as in the neighborhood of the other. Nodes within tolerance are
+        considered a part of a single cluster and will be consolidated.
+
+    Returns
+    -------
+    GeoSeries
+    """
+    # TODO: this should not dumbly merge all nodes within the cluster to a single
+    # TODO: centroid but iteratively - do the two nearest and add other only if the
+    # TODO: distance is still below the tolerance
+
+    # TODO: make it work on GeoDataFrames preserving attributes
+    from sklearn.cluster import DBSCAN
+
+    nodes = momepy.nx_to_gdf((momepy.gdf_to_nx(gdf)), lines=False)
+
+    # get clusters of nodes which should be consolidated
+    db = DBSCAN(eps=tolerance, min_samples=2).fit(nodes.get_coordinates())
+    nodes["lab"] = db.labels_
+    change = nodes[nodes.lab > -1].set_index("lab")
+
+    # get pygeos geometry
+    geom = gdf.geometry.copy()
+
+    # loop over clusters, cut out geometry within tolerance / 2 and replace it
+    # with spider-like geometry to the weighted centroid of a cluster
+    spiders = []
+    midpoints = []
+    for cl in change.index.unique():
+        cluster = change.loc[cl]
+        cookie = cluster.buffer(tolerance / 2).union_all()
+        inds = geom.sindex.query(cookie, predicate="intersects")
+        pts = geom.iloc[inds].intersection(cookie.boundary).get_coordinates()
+        pts = shapely.get_coordinates(geom.iloc[inds].intersection(cookie.boundary))
+        geom.iloc[inds] = geom.iloc[inds].difference(cookie)
+        if pts.shape[0] > 0:
+            midpoint = np.mean(cluster.get_coordinates(), axis=0)
+            midpoints.append(midpoint)
+            mids = np.array(
+                [
+                    midpoint,
+                ]
+                * len(pts)
+            )
+            spider = shapely.linestrings(
+                np.array([pts[:, 0], mids[:, 0]]).T,
+                y=np.array([pts[:, 1], mids[:, 1]]).T,
+            )
+            spiders.append(spider)
+
+    # combine geometries
+    geometry = pd.concat([geom, gpd.GeoSeries(np.hstack(spiders), crs=geom.crs)])
+
+    return remove_false_nodes(geometry[~geometry.is_empty].to_frame("geometry"))

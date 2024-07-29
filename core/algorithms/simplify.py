@@ -440,13 +440,14 @@ def nx_gx_identical(edges, *, geom, to_drop, to_add, nodes, angle, distance):
     """
     centroid = geom.centroid
     relevant_nodes = nodes.geometry.iloc[
-        nodes.sindex.query(geom, predicate="intersects")
+        nodes.sindex.query(geom, predicate="dwithin", distance=1e-6)
     ]
 
     to_drop.extend(edges.index.to_list())
     lines = shapely.shortest_line(relevant_nodes, centroid)
 
     if not is_within(lines, geom).all():
+        logger.debug("NOT WITHIN replacing with skeleton")
         lines, _ = voronoi_skeleton(
             edges.geometry,  # use edges that are being dropped
             poly=geom,
@@ -458,6 +459,9 @@ def nx_gx_identical(edges, *, geom, to_drop, to_add, nodes, angle, distance):
     # between the nodes
     elif len(lines) == 2:
         if angle_between_two_lines(lines.iloc[0], lines.iloc[1]) < angle:
+            logger.debug(
+                "TWO LINES WITH SHARP ANGLE replacing with straight connection"
+            )
             to_add.append(
                 shapely.LineString([relevant_nodes.iloc[0], relevant_nodes.iloc[1]])
             )
@@ -791,7 +795,7 @@ def simplify_singletons(artifacts, roads, distance=2, compute_coins=True):
 
     # Link nodes to artifacts
     node_idx, artifact_idx = artifacts.sindex.query(
-        nodes.buffer(0.1), predicate="intersects"
+        nodes.geometry, predicate="dwithin", distance=1e-6
     )
     intersects = sparse.coo_array(
         ([True] * len(node_idx), (node_idx, artifact_idx)),
@@ -835,12 +839,13 @@ def simplify_singletons(artifacts, roads, distance=2, compute_coins=True):
     split_points = []
 
     planar = artifacts[~artifacts.non_planar]
+    planar["buffered"] = planar.buffer(1e-6)
     if artifacts.non_planar.any():
         logger.debug(f"IGNORING {artifacts.non_planar.sum()} non planar artifacts")
 
     for artifact in planar.itertuples():
         # get edges relevant for an artifact
-        edges = roads.iloc[roads.sindex.query(artifact.geometry, predicate="covers")]
+        edges = roads.iloc[roads.sindex.query(artifact.buffered, predicate="covers")]
 
         if (artifact.node_count == 1) and (artifact.stroke_count == 1):
             logger.debug("FUNCTION n1_g1_identical")

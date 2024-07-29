@@ -1,20 +1,25 @@
+import geopandas
 import momepy
 
 
-def continuity(roads, angle_threshold=120):
-    """Assign COINS-based information to roads
+def continuity(
+    roads: geopandas.GeoDataFrame, angle_threshold: float = 120
+) -> geopandas.GeoDataFrame:
+    """Assign COINS-based information to roads.
 
     Parameters
     ----------
-    roads : GeoDataFrame
-        Road network
+    roads :  geopandas.GeoDataFrame
+        Road network.
 
     Returns
     -------
-    GeoDataFrame
-        original roads with additional columns
+    geopandas.GeoDataFrame
+        The input ``roads`` with additional columns where the original
+        index may be reset (see ``dedup`` keyword argument).
     """
     roads = roads.copy()
+
     # Measure continuity of street network
     coins = momepy.COINS(roads, angle_threshold=angle_threshold, flow_mode=True)
 

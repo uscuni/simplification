@@ -326,12 +326,11 @@ def loop(
     split_points.extend(splitters)
 
     possible_dangle = possible_dangle[shapely.disjoint(possible_dangle, dropped)]
-    if (
-        graph.Graph.build_contiguity(
-            gpd.GeoSeries(possible_dangle), rook=False
-        ).n_components
-        == 1
-    ):
+    n_comps = graph.Graph.build_contiguity(
+        gpd.GeoSeries(possible_dangle), rook=False
+    ).n_components
+    if n_comps == 1:
+        logger.debug("LOOP components 1")
         dangle_coins = momepy.COINS(
             gpd.GeoSeries(shapely.line_merge(possible_dangle)).explode(),
             flow_mode=True,
@@ -340,6 +339,7 @@ def loop(
         if candidate.intersects(snap_to.union_all().buffer(eps)) and (
             candidate.length > min_dangle_length
         ):
+            logger.debug("LOOP intersects and length > min_dangle_length")
             if not primes.empty:
                 points = [
                     shapely.get_point(candidate, 0),
@@ -347,9 +347,35 @@ def loop(
                 ]
                 distances = shapely.distance(points, highest_hierarchy.union_all())
                 if distances.max() > min_dangle_length:
+                    logger.debug("LOOP prime check passed")
                     to_add.append(candidate)
-        else:
-            to_add.append(candidate)
+            else:
+                to_add.append(candidate)
+    elif n_comps > 1:
+        # NOTE: it is unclear to me what exactly should happen here. I believe that
+        # there will be cases when we may want to keep multiple dangles. Now keeping
+        # only one.
+        logger.debug("LOOP components many")
+        dangle_coins = momepy.COINS(
+            gpd.GeoSeries(shapely.line_merge(possible_dangle)).explode(),
+            flow_mode=True,
+        ).stroke_gdf()
+        candidate = dangle_coins.loc[dangle_coins.length.idxmax()].geometry
+        if candidate.intersects(snap_to.union_all().buffer(eps)) and (
+            candidate.length > min_dangle_length
+        ):
+            logger.debug("LOOP intersects and length > min_dangle_length")
+            if not primes.empty:
+                points = [
+                    shapely.get_point(candidate, 0),
+                    shapely.get_point(candidate, -1),
+                ]
+                distances = shapely.distance(points, highest_hierarchy.union_all())
+                if distances.max() > min_dangle_length:
+                    logger.debug("LOOP prime check passed")
+                    to_add.append(candidate)
+            else:
+                to_add.append(candidate)
 
     return to_add
 
@@ -891,7 +917,9 @@ def angle_between_two_lines(line1, line2):
     return angle
 
 
-def simplify_singletons(artifacts, roads, distance=2, compute_coins=True, eps=1e-6):
+def simplify_singletons(
+    artifacts, roads, distance=2, compute_coins=True, min_dangle_length=10, eps=1e-6
+):
     # Get nodes from the network.
     nodes = momepy.nx_to_gdf(momepy.node_degree(momepy.gdf_to_nx(roads)), lines=False)
 
@@ -948,7 +976,6 @@ def simplify_singletons(artifacts, roads, distance=2, compute_coins=True, eps=1e
     for artifact in planar.itertuples():
         # get edges relevant for an artifact
         edges = roads.iloc[roads.sindex.query(artifact.buffered, predicate="covers")]
-        # print(artifact)
 
         if (artifact.node_count == 1) and (artifact.stroke_count == 1):
             logger.debug("FUNCTION n1_g1_identical")
@@ -978,6 +1005,7 @@ def simplify_singletons(artifacts, roads, distance=2, compute_coins=True, eps=1e
                 split_points=split_points,
                 nodes=nodes,
                 distance=distance,
+                min_dangle_length=min_dangle_length,
             )
         else:
             logger.debug("NON PLANAR")

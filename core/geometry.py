@@ -125,7 +125,7 @@ def voronoi_skeleton(
         )
 
         # check if the edgeline is within polygon
-        if not edgeline.within(poly):
+        if not edgeline.within(limit):
             # if not, clip it by the polygon with a small negative buffer to keep
             # the gap between edgeline and poly boundary to avoid possible
             # overlapping lines

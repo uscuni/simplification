@@ -1138,3 +1138,207 @@ def consolidate_nodes(gdf, tolerance=2):
     geometry = pd.concat([geom, gpd.GeoSeries(np.hstack(spiders), crs=geom.crs)])
 
     return remove_false_nodes(geometry[~geometry.is_empty].to_frame("geometry"))
+
+
+def get_type(edges, shared_edge):
+    if (  # roundabout special case
+        edges.coins_group.nunique() == 1 and edges.shape[0] == edges.coins_count.iloc[0]
+    ):
+        return "S"
+
+    all_ends = edges[edges.coins_end]
+    mains = edges[~edges.coins_group.isin(all_ends.coins_group)]
+    shared = edges.loc[shared_edge]
+    if shared_edge in mains.index:
+        return "C"
+    if shared.coins_count == (edges.coins_group == shared.coins_group).sum():
+        return "S"
+    return "E"
+
+
+def get_solution(group, roads):
+    cluster_geom = group.union_all(method="coverage")
+
+    roads_a = roads.iloc[
+        roads.sindex.query(group.geometry.iloc[0], predicate="intersects")
+    ]
+    roads_b = roads.iloc[
+        roads.sindex.query(group.geometry.iloc[1], predicate="intersects")
+    ]
+    covers_a = roads_a.iloc[
+        roads_a.sindex.query(group.geometry.iloc[0], predicate="covers")
+    ]
+    covers_b = roads_b.iloc[
+        roads_b.sindex.query(group.geometry.iloc[1], predicate="covers")
+    ]
+    # find the road segment that is contained within the cluster geometry
+    shared = roads.index[roads.sindex.query(cluster_geom, predicate="contains")].item()
+
+    if (np.invert(roads_b.index.isin(covers_a.index)).sum() == 1) or (
+        np.invert(roads_a.index.isin(covers_b.index)).sum() == 1
+    ):
+        return pd.Series({"solution": "drop_interline", "drop_id": shared})
+
+    seen_by_a = get_type(
+        covers_a,
+        shared,
+    )
+    seen_by_b = get_type(
+        covers_b,
+        shared,
+    )
+
+    if seen_by_a == "C" and seen_by_b == "C":
+        return pd.Series({"solution": "iterate", "drop_id": shared})
+    if seen_by_a == seen_by_b:
+        return pd.Series({"solution": "drop_interline", "drop_id": shared})
+    return pd.Series({"solution": "skeleton", "drop_id": shared})
+
+
+def simplify_pairs(artifacts, roads, distance=2, min_dangle_length=20):
+    # Get nodes from the network.
+    nodes = momepy.nx_to_gdf(momepy.node_degree(momepy.gdf_to_nx(roads)), lines=False)
+
+    # Link nodes to artifacts
+    node_idx, artifact_idx = artifacts.sindex.query(
+        nodes.buffer(0.1), predicate="intersects"
+    )
+    intersects = sparse.coo_array(
+        ([True] * len(node_idx), (node_idx, artifact_idx)),
+        shape=(len(nodes), len(artifacts)),
+        dtype=np.bool_,
+    )
+
+    # Compute number of nodes per artifact
+    artifacts["node_count"] = intersects.sum(axis=0)
+
+    # Compute number of stroke groups per artifact
+    roads, _ = continuity(roads)
+    strokes, c_, e_, s_ = get_stroke_info(artifacts, roads)
+
+    artifacts["stroke_count"] = strokes
+    artifacts["C"] = c_
+    artifacts["E"] = e_
+    artifacts["S"] = s_
+
+    # Filer artifacts caused by non-planar intersections.
+    artifacts["non_planar"] = artifacts["stroke_count"] > artifacts["node_count"]
+    a_idx, _ = roads.sindex.query(artifacts.geometry.boundary, predicate="overlaps")
+    artifacts.loc[artifacts.index[np.unique(a_idx)], "non_planar"] = True
+
+    artifacts["non_planar_cluster"] = artifacts.apply(
+        lambda x: sum(artifacts.loc[artifacts["comp"] == x.comp]["non_planar"]), axis=1
+    )
+    np_clusters = artifacts[artifacts.non_planar_cluster > 0]
+    artifacts_planar = artifacts[artifacts.non_planar_cluster == 0]
+
+    artifacts_w_info = artifacts.merge(
+        artifacts_planar.groupby("comp").apply(get_solution, roads=roads),
+        left_on="comp",
+        right_index=True,
+    )
+    to_drop = (
+        artifacts_w_info.drop_duplicates("comp")
+        .query("solution == 'drop_interline'")
+        .drop_id
+    )
+    merged_pairs = artifacts_w_info.query("solution == 'drop_interline'").dissolve(
+        "comp", as_index=False
+    )
+
+    sorted_by_node_count = artifacts_w_info.sort_values("node_count", ascending=False)
+    first = sorted_by_node_count.query("solution == 'iterate'").drop_duplicates(
+        "comp", keep="first"
+    )
+    second = sorted_by_node_count.query("solution == 'iterate'").drop_duplicates(
+        "comp", keep="last"
+    )
+
+    first = pd.concat([first, np_clusters[~np_clusters.non_planar]], ignore_index=True)
+
+    roads_cleaned = remove_false_nodes(
+        roads.drop(to_drop.dropna().values),
+        aggfunc={
+            "coins_group": "first",
+            "coins_end": lambda x: x.any(),
+        },
+    )
+    coins_count = (
+        roads_cleaned.groupby("coins_group", as_index=False)
+        .geometry.count()
+        .rename(columns={"geometry": "coins_count"})
+    )
+    roads_cleaned = roads_cleaned.merge(coins_count, on="coins_group", how="left")
+    for_skeleton = artifacts_w_info.query("solution == 'skeleton'")
+
+    if not merged_pairs.empty or not first.empty:
+        roads_cleaned = simplify_singletons(
+            pd.concat([merged_pairs, first]),
+            roads_cleaned,
+            distance=distance,
+            compute_coins=False,
+            min_dangle_length=min_dangle_length,
+        )
+        if not second.empty:
+            roads_cleaned = simplify_singletons(
+                second,
+                roads_cleaned,
+                distance=distance,
+                compute_coins=True,
+                min_dangle_length=min_dangle_length,
+            )
+    if not for_skeleton.empty:
+        roads_cleaned = simplify_clusters(
+            for_skeleton, roads_cleaned, distance=distance
+        )
+    return roads_cleaned
+
+
+def get_artifacts(roads, deviation=1.01):
+    fas = momepy.FaceArtifacts(roads)
+    polygons = fas.polygons.set_crs(roads.crs)
+
+    # rook neighbors
+    rook = graph.Graph.build_contiguity(polygons, rook=True)
+    polygons["neighbors"] = rook.neighbors
+
+    # polygons are not artifacts,
+    polygons["is_artifact"] = False
+    # unless the fai is below the threshold,
+    polygons.loc[polygons.face_artifact_index < fas.threshold, "is_artifact"] = True
+
+    # OR (iteratively)
+
+    while True:
+        artifact_count_before = sum(polygons.is_artifact)
+
+        # polygons that are enclosed by artifacts
+        polygons["enclosed"] = polygons.apply(
+            lambda x: len(x.neighbors) > 0
+            and all(polygons.loc[list(x.neighbors), "is_artifact"]),
+            axis=1,
+        )
+        # setting is_artifact to True
+        polygons.loc[polygons.enclosed, "is_artifact"] = True
+
+        # polygons that are touching artifacts and within x% of fai
+        polygons["touching"] = polygons.apply(
+            lambda x: len(x.neighbors) > 0
+            and any(polygons.loc[list(x.neighbors), "is_artifact"]),
+            axis=1,
+        )
+
+        # setting is_artifact to True
+        polygons.loc[
+            (polygons.touching is True)
+            & (polygons.face_artifact_index < fas.threshold * deviation),
+            "is_artifact",
+        ] = True
+
+        artifact_count_after = sum(polygons.is_artifact)
+        if artifact_count_after == artifact_count_before:
+            break
+
+    artifacts = polygons[polygons.is_artifact][["geometry"]].copy()
+    artifacts["id"] = artifacts.index
+    return artifacts

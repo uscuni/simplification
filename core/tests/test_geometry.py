@@ -16,7 +16,7 @@ class TestIsWithin:
         assert known == observed
 
     def test_within_tol(self):
-        line = shapely.LineString(((2, 2), (2, 10.0000000000000001)))
+        line = shapely.LineString(((2, 2), (2, 10.0001)))
 
         known = True
         observed = core.geometry.is_within(line, self.polygon)
@@ -24,7 +24,7 @@ class TestIsWithin:
         assert known == observed
 
     def test_not_within_tol(self):
-        line = shapely.LineString(((2, 2), (2, 10.000000000000001)))
+        line = shapely.LineString(((2, 2), (2, 10.001)))
 
         known = False
         observed = core.geometry.is_within(line, self.polygon)
@@ -32,18 +32,18 @@ class TestIsWithin:
         assert known == observed
 
     def test_within_tol_strict(self):
-        line = shapely.LineString(((2, 2), (2, 10.000000000000000000001)))
+        line = shapely.LineString(((2, 2), (2, 10.0000001)))
 
         known = True
-        observed = core.geometry.is_within(line, self.polygon, rtol=-1e7)
+        observed = core.geometry.is_within(line, self.polygon, rtol=1e-7)
 
         assert known == observed
 
     def test_not_within_tol_strict(self):
-        line = shapely.LineString(((2, 2), (2, 10.000000000000001)))
+        line = shapely.LineString(((2, 2), (2, 10.000001)))
 
         known = False
-        observed = core.geometry.is_within(line, self.polygon, rtol=-1e7)
+        observed = core.geometry.is_within(line, self.polygon, rtol=1e-7)
 
         assert known == observed
 

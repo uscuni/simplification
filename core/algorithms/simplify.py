@@ -225,7 +225,7 @@ def one_remaining(
         new_connections, splitters = voronoi_skeleton(
             edges[es_mask].geometry,  # use edges that are being dropped
             poly=artifact.geometry,
-            snap_to=relevant_targets.geometry,  # snap to relevant node targets
+            snap_to=relevant_targets.geometry.iloc[target_nearest],  # snap to nearest
             distance=distance,
             buffer=distance,  # TODO: figure out if we need this
         )
@@ -948,6 +948,7 @@ def simplify_singletons(artifacts, roads, distance=2, compute_coins=True, eps=1e
     for artifact in planar.itertuples():
         # get edges relevant for an artifact
         edges = roads.iloc[roads.sindex.query(artifact.buffered, predicate="covers")]
+        # print(artifact)
 
         if (artifact.node_count == 1) and (artifact.stroke_count == 1):
             logger.debug("FUNCTION n1_g1_identical")

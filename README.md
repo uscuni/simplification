@@ -23,6 +23,7 @@ The curated & tested code base for the project & publication, including:
     |-- algorithms
     |   |-- __init__.py
     |   |-- common.py
+    |   |-- simplify.py
     |   |-- triangles.py
     |-- viz
     |   |-- __init__.py

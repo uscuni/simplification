@@ -164,7 +164,7 @@ def voronoi_skeleton(
     if edgelines.shape[0] > 0:
         # if there is no explicit snapping target, snap to the boundary of the polygon
         # via the shortest line. That is by definition always within the polygon
-        # (I think)
+        # (Martin thinks)
         if snap_to is not False:
             if snap_to is None:
                 sl = shapely.shortest_line(
@@ -220,7 +220,7 @@ def snap_to_targets(edgelines, poly, snap_to, secondary_snap_to=None):
                 or comp_counts[comp_label] == 1
                 or (
                     not comp.intersects(shapely.union_all(snap_to))
-                )  # ! this fixes one thing but may fuck up other  # noqa: E501
+                )  # >>> this fixes one thing but may break others <<<  # noqa: E501
             ):
                 # add segment composed of the shortest line to the nearest snapping
                 # target. We use boundary to snap to endpoints of edgelines only

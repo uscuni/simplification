@@ -302,7 +302,7 @@ def loop(
             shapely.LineString,
             zip(dropped.coords[:-1], dropped.coords[1:], strict=True),
         )
-    )  # TODO: vectorize this shit
+    )  # TODO: vectorize this
 
     # figure out if there's a snapping node
     # Get nodes on Cs
@@ -1076,7 +1076,7 @@ def simplify_clusters(artifacts, roads, distance=2, eps=1e-6):
 
 
 def consolidate_nodes(gdf, tolerance=2):
-    """Return geoemtry with consolidated nodes.
+    """Return geometry with consolidated nodes.
 
     Replace clusters of nodes with a single node (weighted centroid
     of a cluster) and snap linestring geometry to it. Cluster is

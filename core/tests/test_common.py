@@ -10,7 +10,7 @@ class TestContinuity:
         self.roads = core.utils.read_no_degree_2(self.city)
 
     def test_basic(self):
-        roads = core.algorithms.common.continuity(self.roads)
+        roads, _ = core.algorithms.common.continuity(self.roads)
 
         assert isinstance(roads, geopandas.GeoDataFrame)
         assert roads.geom_type.unique()[0] == "LineString"
@@ -18,13 +18,13 @@ class TestContinuity:
         assert roads.columns.tolist() == [
             "geometry",
             "coins_group",
+            "coins_end",
             "coins_len",
             "coins_count",
-            "coins_end",
         ]
 
         known_counts_coins_end = pandas.DataFrame(
-            {"coins_end": [True, False], "count": [15205, 13392]}
+            {"coins_end": [True, False], "count": [15306, 13291]}
         )
         observed_counts_coins_end = (
             roads["coins_end"].value_counts().to_frame().reset_index()

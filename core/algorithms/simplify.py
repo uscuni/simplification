@@ -84,9 +84,6 @@ def filter_connections(primes, relevant_targets, conts_groups, new_connections):
     # The skeleton returns connections to all the nodes. We need to keep only
     # some, if there are multiple connections to a single C. We don't touch
     # the other.
-
-    # TODO: ensure that we prefer connection to a relevant node over the shortest one
-
     unwanted = []
     keeping = []
     conn_c = []

@@ -131,6 +131,11 @@ def voronoi_skeleton(
             # overlapping lines
             edgeline = shapely.intersection(edgeline, limit)
 
+            # in edge cases, this can result in a MultiLineString with one sliver part
+            if edgeline.geom_type == "MultiLineString":
+                parts = shapely.get_parts(edgeline)
+                edgeline = parts[np.argmax(shapely.length(parts))]
+
         # check if a, b lines share a node
         intersection = shapely_lines[b].intersection(shapely_lines[a])
         # if they do, add shortest line from the edgeline to the shared node and
@@ -292,7 +297,7 @@ def remove_false_nodes(gdf, aggfunc="first", **kwargs):
 
     # Process spatial component
     def merge_geometries(block):
-        merged_geom = shapely.line_merge(block.union_all())
+        merged_geom = shapely.line_merge(shapely.GeometryCollection(block.values))
         return merged_geom
 
     g = gdf.groupby(group_keys=False, by=labels.values)[gdf.geometry.name].agg(

@@ -59,8 +59,8 @@ def ccss_special_case(
 
     # multiple primes, connect two nearest on distinct Cs
     else:
-        primes_on_c0 = primes[primes.interesects(conts_groups.geometry.iloc[0])]
-        primes_on_c1 = primes[primes.interesects(conts_groups.geometry.iloc[1])]
+        primes_on_c0 = primes[primes.intersects(conts_groups.geometry.iloc[0])]
+        primes_on_c1 = primes[primes.intersects(conts_groups.geometry.iloc[1])]
         new_connections = [
             shapely.shortest_line(primes_on_c0.union_all(), primes_on_c1.union_all())
         ]
@@ -80,22 +80,25 @@ def ccss_special_case(
     return new_connections
 
 
-def filter_connections(primes, conts_groups, new_connections):
+def filter_connections(primes, relevant_targets, conts_groups, new_connections):
     # The skeleton returns connections to all the nodes. We need to keep only
     # some, if there are multiple connections to a single C. We don't touch
     # the other.
+
+    # TODO: ensure that we prefer connection to a relevant node over the shortest one
 
     unwanted = []
     keeping = []
     conn_c = []
     conn_p = []
+    targets = pd.concat([primes.geometry, relevant_targets.geometry])
     for c in conts_groups.geometry:
         int_mask = shapely.intersects(new_connections, c)
         connections_intersecting_c = new_connections[int_mask]
         conn_c.append(connections_intersecting_c)
         if len(connections_intersecting_c) > 1:
             prime_mask = shapely.intersects(
-                connections_intersecting_c, primes.union_all()
+                connections_intersecting_c, targets.union_all()
             )
             connections_intersecting_primes = connections_intersecting_c[prime_mask]
             conn_p.append(connections_intersecting_primes)
@@ -161,7 +164,7 @@ def avoid_forks(
     return new_connections
 
 
-def reconnect(conts_groups, new_connections, artifact, split_points):
+def reconnect(conts_groups, new_connections, artifact, split_points, eps):
     # check for disconnected Cs and reconnect
     new_connections_comps = graph.Graph.build_contiguity(
         gpd.GeoSeries(new_connections), rook=False
@@ -170,7 +173,7 @@ def reconnect(conts_groups, new_connections, artifact, split_points):
         new_connections_comps
     )
     additions = []
-    for c in conts_groups.geometry:
+    for c in conts_groups.geometry.buffer(eps):
         mask = new_components.intersects(c)
         if not mask.all():
             adds, splitters = snap_to_targets(
@@ -639,7 +642,9 @@ def nx_gx(
                     new_connections,
                     connections_intersecting_c,
                     connections_intersecting_primes,
-                ) = filter_connections(primes, conts_groups, new_connections)
+                ) = filter_connections(
+                    primes, relevant_targets, conts_groups, new_connections
+                )
 
                 # mutliple Cs that are not intersecting. Avoid forks on the ends of
                 # Voronoi. If one goes to relevant node, keep it. If not, remove both
@@ -659,7 +664,7 @@ def nx_gx(
 
                 # check for disconnected Cs and reconnect
                 new_connections = reconnect(
-                    conts_groups, new_connections, artifact, split_points
+                    conts_groups, new_connections, artifact, split_points, eps
                 )
 
                 # the drop above could've introduced a dangling edges. Remove those.
@@ -734,7 +739,7 @@ def nx_gx(
                 )
 
             new_connections = reconnect(
-                conts_groups, new_connections, artifact, split_points
+                conts_groups, new_connections, artifact, split_points, eps
             )
 
         # add new connections to a list of features to be added to the network
@@ -1023,7 +1028,11 @@ def simplify_singletons(
         ],
         ignore_index=True,
     )
-    new_roads = remove_false_nodes(new_roads[~new_roads.is_empty].to_frame("geometry"))
+    new_roads = remove_false_nodes(
+        new_roads[~(new_roads.is_empty | new_roads.geometry.isna())].to_frame(
+            "geometry"
+        )
+    )
 
     return new_roads
 
@@ -1114,7 +1123,9 @@ def consolidate_nodes(gdf, tolerance=2):
     midpoints = []
     for cl in change.index.unique():
         cluster = change.loc[cl]
-        cookie = cluster.buffer(tolerance / 2).union_all()
+        cookie = (
+            cluster.buffer(tolerance / 2).union_all().convex_hull
+        )  # TODO: not optimal but avoids some multilinestrings
         inds = geom.sindex.query(cookie, predicate="intersects")
         pts = geom.iloc[inds].intersection(cookie.boundary).get_coordinates()
         pts = shapely.get_coordinates(geom.iloc[inds].intersection(cookie.boundary))
@@ -1172,7 +1183,11 @@ def get_solution(group, roads):
         roads_b.sindex.query(group.geometry.iloc[1], predicate="covers")
     ]
     # find the road segment that is contained within the cluster geometry
-    shared = roads.index[roads.sindex.query(cluster_geom, predicate="contains")].item()
+    shared = roads.index[roads.sindex.query(cluster_geom, predicate="contains")]
+    if shared.empty:
+        return pd.Series({"solution": "non_planar", "drop_id": None})
+
+    shared = shared.item()
 
     if (np.invert(roads_b.index.isin(covers_a.index)).sum() == 1) or (
         np.invert(roads_a.index.isin(covers_b.index)).sum() == 1

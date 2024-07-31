@@ -220,7 +220,7 @@ def snap_to_targets(edgelines, poly, snap_to, secondary_snap_to=None):
                 or comp_counts[comp_label] == 1
                 or (
                     not comp.intersects(shapely.union_all(snap_to))
-                )  # >>> this fixes one thing but may break others <<<  # noqa: E501
+                )  # ! this fixes one thing but may break others  # noqa: E501
             ):
                 # add segment composed of the shortest line to the nearest snapping
                 # target. We use boundary to snap to endpoints of edgelines only

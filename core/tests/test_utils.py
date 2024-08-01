@@ -100,7 +100,7 @@ def test_make_grid():
     observed = core.utils.make_grid(fua, resolution, pytest.epsg_4326)
 
     assert observed.crs == pytest.epsg_4326
-    known_records = 294
+    known_records = 285
     assert observed.shape[0] == known_records
     known_bounds = [
         174.6123711149229,

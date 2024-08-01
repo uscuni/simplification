@@ -970,7 +970,7 @@ def simplify_singletons(
     to_add = []
     split_points = []
 
-    planar = artifacts[~artifacts.non_planar]
+    planar = artifacts[~artifacts.non_planar].copy()
     planar["buffered"] = planar.buffer(eps)
     if artifacts.non_planar.any():
         logger.debug(f"IGNORING {artifacts.non_planar.sum()} non planar artifacts")

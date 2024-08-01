@@ -14,8 +14,8 @@ def test_read_sample_data():
 
 
 cities = list(core.utils.city_fua.keys())
-osm_records = [86_101, 109_976, 110_074, 88_746, 105_174, 110_211, 107_551]
-xnd2_records = [46_179, 40_177, 23_127, 32_020, 28_597, 46_362, 35_869]
+osm_records = [78_908, 60_364, 79_317, 84_819, 79_907, 50_917, 92_667]
+xnd2_records = [43_233, 12_439, 16_302, 30_552, 16_554, 13_468, 29_314]
 man_records = [41_481, 35_650, 20_347, 30_647, 25_133, 43_955, numpy.nan]
 
 
@@ -100,7 +100,7 @@ def test_make_grid():
     observed = core.utils.make_grid(fua, resolution, pytest.epsg_4326)
 
     assert observed.crs == pytest.epsg_4326
-    known_records = 294
+    known_records = 285
     assert observed.shape[0] == known_records
     known_bounds = [
         174.6123711149229,

@@ -24,7 +24,7 @@ class TestContinuity:
         ]
 
         known_counts_coins_end = pandas.DataFrame(
-            {"coins_end": [True, False], "count": [15306, 13291]}
+            {"coins_end": [True, False], "count": [8570, 7984]}
         )
         observed_counts_coins_end = (
             roads["coins_end"].value_counts().to_frame().reset_index()

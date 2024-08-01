@@ -1044,7 +1044,7 @@ def simplify_clusters(artifacts, roads, distance=2, eps=1e-6):
 
     for _, artifact in artifacts.groupby("comp"):
         # get artifact cluster polygon
-        cluster_geom = artifact.union_all(method="coverage")
+        cluster_geom = artifact.union_all()
         # get edges relevant for an artifact
         edges = roads.iloc[
             roads.sindex.query(cluster_geom, predicate="intersects")
@@ -1165,7 +1165,7 @@ def get_type(edges, shared_edge):
 
 
 def get_solution(group, roads):
-    cluster_geom = group.union_all(method="coverage")
+    cluster_geom = group.union_all()
 
     roads_a = roads.iloc[
         roads.sindex.query(group.geometry.iloc[0], predicate="intersects")

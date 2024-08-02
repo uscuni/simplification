@@ -62,7 +62,7 @@ def _connect_voronoi(
     dist = min([distance, shapely.ops.polylabel(poly).distance(poly.boundary) * 0.4])
     limit = poly.buffer(-dist)
 
-    # iterate over segment-pairs and keep rigdes between input geometries
+    # iterate over segment-pairs and keep ridges between input geometries
     edgelines = []
     to_add = []
     splitters = []

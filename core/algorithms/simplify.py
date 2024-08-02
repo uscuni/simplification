@@ -7,6 +7,7 @@ import momepy
 import numpy as np
 import pandas as pd
 import shapely
+from esda.shape import isoareal_quotient
 from libpysal import graph
 from scipy import sparse
 
@@ -970,7 +971,7 @@ def simplify_singletons(
     to_add = []
     split_points = []
 
-    planar = artifacts[~artifacts.non_planar]
+    planar = artifacts[~artifacts.non_planar].copy()
     planar["buffered"] = planar.buffer(eps)
     if artifacts.non_planar.any():
         logger.debug(f"IGNORING {artifacts.non_planar.sum()} non planar artifacts")
@@ -1306,7 +1307,13 @@ def simplify_pairs(artifacts, roads, distance=2, min_dangle_length=20):
     return roads_cleaned
 
 
-def get_artifacts(roads, deviation=1.01):
+def get_artifacts(
+    roads,
+    area_threshold_blocks=1e5,
+    isoareal_threshold_blocks=0.5,
+    area_threshold_circles=5e4,
+    isoareal_threshold_circles=0.75,
+):
     fas = momepy.FaceArtifacts(roads)
     polygons = fas.polygons.set_crs(roads.crs)
 
@@ -1319,31 +1326,46 @@ def get_artifacts(roads, deviation=1.01):
     # unless the fai is below the threshold,
     polygons.loc[polygons.face_artifact_index < fas.threshold, "is_artifact"] = True
 
-    # OR (iteratively)
+    # compute area and isoareal quotient:
+    polygons["area_sqm"] = polygons.area
+    polygons["isoareal_index"] = isoareal_quotient(polygons.geometry)
 
+    # iterate (to account for artifacts that become enclosed or touching
+    # by new designation)
     while True:
+        # count number of artifacts to break while loop
+        # when no new artifacts are added
         artifact_count_before = sum(polygons.is_artifact)
 
-        # polygons that are enclosed by artifacts
+        # polygons that are enclosed by artifacts (at this moment)
         polygons["enclosed"] = polygons.apply(
             lambda x: len(x.neighbors) > 0
             and all(polygons.loc[list(x.neighbors), "is_artifact"]),
             axis=1,
         )
-        # setting is_artifact to True
-        polygons.loc[polygons.enclosed, "is_artifact"] = True
 
-        # polygons that are touching artifacts and within x% of fai
+        # polygons that are touching artifacts (at this moment)
         polygons["touching"] = polygons.apply(
             lambda x: len(x.neighbors) > 0
             and any(polygons.loc[list(x.neighbors), "is_artifact"]),
             axis=1,
         )
 
-        # setting is_artifact to True
+        # "block" like artifacts (that are not too big or too rectangular)
+        # TODO: there are still some dual carriageway - type blocks
+        # TODO: that slip through this one
         polygons.loc[
-            (polygons.touching is True)
-            & (polygons.face_artifact_index < fas.threshold * deviation),
+            ((polygons.enclosed) | (polygons.touching))
+            & (polygons.area_sqm < area_threshold_blocks)
+            & (polygons.isoareal_index < isoareal_threshold_blocks),
+            "is_artifact",
+        ] = True
+
+        # "circle" like artifacts (that are small and quite circular)
+        polygons.loc[
+            (polygons.enclosed)
+            & (polygons.area_sqm < area_threshold_circles)
+            & (polygons.isoareal_index > isoareal_threshold_circles),
             "is_artifact",
         ] = True
 

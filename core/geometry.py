@@ -154,7 +154,6 @@ def voronoi_skeleton(
     """
     Returns average geometry.
 
-
     Parameters
     ----------
     lines : array_like

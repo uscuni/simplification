@@ -47,7 +47,13 @@ def is_within(
 
 
 def voronoi_skeleton(
-    lines, poly=None, snap_to=None, distance=2, buffer=None, secondary_snap_to=None
+    lines,
+    poly=None,
+    snap_to=None,
+    max_segment_length=1,
+    buffer=None,
+    secondary_snap_to=None,
+    limit_distance=2,
 ):
     """
     Returns average geometry.
@@ -69,7 +75,7 @@ def voronoi_skeleton(
     Returns array of averaged geometries
     """
     if buffer is None:
-        buffer = distance * 20
+        buffer = max_segment_length * 20
     if not poly:
         poly = shapely.box(*lines.total_bounds)
     # get an additional line around the lines to avoid infinity issues with Voronoi
@@ -78,7 +84,7 @@ def voronoi_skeleton(
     # interpolate lines to represent them as points for Voronoi
     shapely_lines = extended_lines
     points, ids = shapely.get_coordinates(
-        shapely.segmentize(shapely_lines, distance / 2), return_index=True
+        shapely.segmentize(shapely_lines, max_segment_length), return_index=True
     )
 
     # remove duplicated coordinates
@@ -102,7 +108,9 @@ def voronoi_skeleton(
 
     # determine the negative buffer distance to avoid overclipping of narrow polygons
     # this can still result in some missing links, but only in rare cases
-    dist = min([distance, shapely.ops.polylabel(poly).distance(poly.boundary) * 0.4])
+    dist = min(
+        [limit_distance, shapely.ops.polylabel(poly).distance(poly.boundary) * 0.4]
+    )
     limit = poly.buffer(-dist)
 
     # drop ridges that are between points coming from the same line
@@ -185,7 +193,7 @@ def voronoi_skeleton(
             # concatenate edgelines and their additions snapping to edge
             edgelines = np.concatenate([edgelines, to_add])
         # simplify to avoid unnecessary point density and some wobbliness
-        edgelines = shapely.simplify(edgelines, distance / 2)
+        edgelines = shapely.simplify(edgelines, max_segment_length)
     # drop empty
     edgelines = edgelines[edgelines != None]  # noqa: E711
     # TODO: shall we try calling line_merge before returning? It was working weirdly in

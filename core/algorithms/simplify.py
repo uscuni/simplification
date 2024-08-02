@@ -206,7 +206,14 @@ def remove_dangles(new_connections, artifact, eps=1e-6):
 
 
 def one_remaining(
-    relevant_targets, remaining_nodes, artifact, edges, es_mask, distance, split_points
+    relevant_targets,
+    remaining_nodes,
+    artifact,
+    edges,
+    es_mask,
+    max_segment_length,
+    split_points,
+    limit_distance,
 ):
     # find the nearest relevant target
     remaining_nearest, target_nearest = relevant_targets.sindex.nearest(
@@ -227,8 +234,9 @@ def one_remaining(
             edges[es_mask].geometry,  # use edges that are being dropped
             poly=artifact.geometry,
             snap_to=relevant_targets.geometry.iloc[target_nearest],  # snap to nearest
-            distance=distance,
-            buffer=distance,  # TODO: figure out if we need this
+            max_segment_length=max_segment_length,
+            buffer=limit_distance,  # TODO: figure out if we need this
+            limit_distance=limit_distance,
         )
         split_points.extend(splitters)
 
@@ -239,18 +247,20 @@ def multiple_remaining(
     edges,
     es_mask,
     artifact,
-    distance,
+    max_segment_length,
     highest_hierarchy,
     split_points,
     snap_to,
+    limit_distance,
 ):
     # use skeleton to ensure all nodes are naturally connected
     new_connections, splitters = voronoi_skeleton(
         edges[es_mask].geometry,  # use edges that are being dropped
         poly=artifact.geometry,
         snap_to=snap_to,  # snap to relevant node targets
-        distance=distance,
+        max_segment_length=max_segment_length,
         secondary_snap_to=highest_hierarchy.geometry,
+        limit_distance=limit_distance,
         # buffer = highest_hierarchy.length.sum() * 1.2
     )
     split_points.extend(splitters)
@@ -259,7 +269,14 @@ def multiple_remaining(
 
 
 def one_remaining_c(
-    remaining_nodes, highest_hierarchy, artifact, edges, es_mask, distance, split_points
+    remaining_nodes,
+    highest_hierarchy,
+    artifact,
+    edges,
+    es_mask,
+    max_segment_length,
+    split_points,
+    limit_distance,
 ):
     # create a new connection as the shortest straight line to any C
     new_connections = shapely.shortest_line(
@@ -277,7 +294,8 @@ def one_remaining_c(
             edges[es_mask].geometry,  # use edges that are being dropped
             poly=artifact.geometry,
             snap_to=highest_hierarchy.dissolve("coins_group").geometry,  # snap to Cs
-            distance=distance,
+            max_segment_length=max_segment_length,
+            limit_distance=limit_distance,
             # buffer = highest_hierarchy.length.sum() * 1.2
         )
     split_points.extend(splitters)
@@ -290,7 +308,8 @@ def loop(
     es_mask,
     highest_hierarchy,
     artifact,
-    distance,
+    max_segment_length,
+    limit_distance,
     split_points,
     min_dangle_length,
     eps=1e-6,
@@ -321,7 +340,8 @@ def loop(
         segments,  # use edges that are being dropped
         poly=artifact.geometry,
         snap_to=snap_to,
-        distance=distance,
+        max_segment_length=max_segment_length,
+        limit_distance=limit_distance,
         # buffer = highest_hierarchy.length.sum() * 1.2
     )
     split_points.extend(splitters)
@@ -401,7 +421,16 @@ def split(split_points, cleaned_roads, roads, eps=1e-6):
     return cleaned_roads
 
 
-def n1_g1_identical(edges, *, to_drop, to_add, geom, distance=2, min_dangle_length=10):
+def n1_g1_identical(
+    edges,
+    *,
+    to_drop,
+    to_add,
+    geom,
+    max_segment_length=1,
+    min_dangle_length=10,
+    limit_distance=2,
+):
     """If there is only 1 continuity group {C, E, S} and only 1 node
 
     - drop the edge
@@ -429,7 +458,8 @@ def n1_g1_identical(edges, *, to_drop, to_add, geom, distance=2, min_dangle_leng
         segments,  # use edges that are being dropped
         poly=geom,
         snap_to=[snap_to],
-        distance=distance,
+        max_segment_length=max_segment_length,
+        limit_distance=limit_distance,
         # buffer = highest_hierarchy.length.sum() * 1.2
     )
     disjoint = shapely.disjoint(possible_dangle, dropped)
@@ -448,7 +478,18 @@ def n1_g1_identical(edges, *, to_drop, to_add, geom, distance=2, min_dangle_leng
         to_add.append(entry)
 
 
-def nx_gx_identical(edges, *, geom, to_drop, to_add, nodes, angle, distance, eps=1e-6):
+def nx_gx_identical(
+    edges,
+    *,
+    geom,
+    to_drop,
+    to_add,
+    nodes,
+    angle,
+    max_segment_length=1,
+    limit_distance=2,
+    eps=1e-6,
+):
     """If there are  1+ identical continuity groups, and more than 1 node (n>=2)
 
     - drop all of them and link the entry points to the centroid
@@ -479,7 +520,8 @@ def nx_gx_identical(edges, *, geom, to_drop, to_add, nodes, angle, distance, eps
         lines, _ = voronoi_skeleton(
             edges.geometry,  # use edges that are being dropped
             poly=geom,
-            distance=distance,
+            max_segment_length=max_segment_length,
+            limit_distance=limit_distance,
             snap_to=relevant_nodes,
         )
         to_add.extend(lines.tolist())
@@ -507,7 +549,8 @@ def nx_gx(
     to_add,
     split_points,
     nodes,
-    distance=2,
+    max_segment_length=1,
+    limit_distance=2,
     min_dangle_length=10,
     eps=1e-6,
 ):
@@ -627,7 +670,8 @@ def nx_gx(
                     edges.geometry,  # use all edges as an input
                     poly=artifact.geometry,
                     snap_to=relevant_targets.geometry,  # snap to nodes
-                    distance=distance,
+                    max_segment_length=max_segment_length,
+                    limit_distance=limit_distance,
                     # buffer = highest_hierarchy.length.sum() * 1.2
                 )
                 split_points.extend(splitters)
@@ -683,8 +727,9 @@ def nx_gx(
                     artifact,
                     edges,
                     es_mask,
-                    distance,
+                    max_segment_length,
                     split_points,
+                    limit_distance,
                 )
 
             # SUB BRANCH - more than one remaining node
@@ -696,10 +741,11 @@ def nx_gx(
                     edges,
                     es_mask,
                     artifact,
-                    distance,
+                    max_segment_length,
                     highest_hierarchy,
                     split_points,
                     relevant_targets.geometry,
+                    limit_distance,
                 )
 
         # BRANCH 3 - no target nodes - snapping to C
@@ -717,8 +763,9 @@ def nx_gx(
                     artifact,
                     edges,
                     es_mask,
-                    distance,
+                    max_segment_length,
                     split_points,
+                    limit_distance,
                 )
 
             # SUB BRANCH - more than one remaining node
@@ -730,10 +777,11 @@ def nx_gx(
                     edges,
                     es_mask,
                     artifact,
-                    distance,
+                    max_segment_length,
                     highest_hierarchy,
                     split_points,
                     highest_hierarchy.dissolve("coins_group").geometry,
+                    limit_distance,
                 )
 
             new_connections = reconnect(
@@ -767,7 +815,8 @@ def nx_gx(
                 es_mask,
                 highest_hierarchy,
                 artifact,
-                distance,
+                max_segment_length,
+                limit_distance,
                 split_points,
                 min_dangle_length,
             )
@@ -791,7 +840,16 @@ def nx_gx(
         logger.debug("DROP ONLY")
 
 
-def nx_gx_cluster(edges, *, cluster_geom, nodes, to_drop, to_add, distance=2, eps=1e-6):
+def nx_gx_cluster(
+    edges,
+    *,
+    cluster_geom,
+    nodes,
+    to_drop,
+    to_add,
+    max_segment_length=1,
+    eps=1e-6,
+):
     """treat an n-artifact cluster: merge all artifact polygons; drop
     all lines fully within the merged polygon; skeletonize and keep only
     skeletonized edges and connecting nodes"""
@@ -840,7 +898,8 @@ def nx_gx_cluster(edges, *, cluster_geom, nodes, to_drop, to_add, distance=2, ep
         edges_on_boundary.dissolve(by="comp").geometry,
         cluster_geom,
         snap_to=False,
-        distance=distance,
+        max_segment_length=max_segment_length,
+        limit_distance=1e-6,
     )
 
     lines_to_drop = edges.iloc[
@@ -921,7 +980,13 @@ def angle_between_two_lines(line1, line2):
 
 
 def simplify_singletons(
-    artifacts, roads, distance=2, compute_coins=True, min_dangle_length=10, eps=1e-6
+    artifacts,
+    roads,
+    max_segment_length=1,
+    compute_coins=True,
+    min_dangle_length=10,
+    eps=1e-6,
+    limit_distance=2,
 ):
     # Get nodes from the network.
     nodes = momepy.nx_to_gdf(momepy.node_degree(momepy.gdf_to_nx(roads)), lines=False)
@@ -983,7 +1048,12 @@ def simplify_singletons(
         if (artifact.node_count == 1) and (artifact.stroke_count == 1):
             logger.debug("FUNCTION n1_g1_identical")
             n1_g1_identical(
-                edges, to_drop=to_drop, to_add=to_add, geom=artifact.geometry
+                edges,
+                to_drop=to_drop,
+                to_add=to_add,
+                geom=artifact.geometry,
+                max_segment_length=max_segment_length,
+                limit_distance=limit_distance,
             )
 
         elif (artifact.node_count > 1) and (len(set(artifact.ces_type[1:])) == 1):
@@ -995,7 +1065,8 @@ def simplify_singletons(
                 to_drop=to_drop,
                 nodes=nodes,
                 angle=75,
-                distance=distance,
+                max_segment_length=max_segment_length,
+                limit_distance=limit_distance,
             )
 
         elif (artifact.node_count > 1) and (len(artifact.ces_type) > 2):
@@ -1007,7 +1078,8 @@ def simplify_singletons(
                 to_add=to_add,
                 split_points=split_points,
                 nodes=nodes,
-                distance=distance,
+                max_segment_length=max_segment_length,
+                limit_distance=limit_distance,
                 min_dangle_length=min_dangle_length,
             )
         else:
@@ -1022,7 +1094,9 @@ def simplify_singletons(
     new_roads = pd.concat(
         [
             cleaned_roads,
-            gpd.GeoSeries(to_add, crs=roads.crs).line_merge().simplify(distance),
+            gpd.GeoSeries(to_add, crs=roads.crs)
+            .line_merge()
+            .simplify(max_segment_length),
         ],
         ignore_index=True,
     )
@@ -1035,7 +1109,7 @@ def simplify_singletons(
     return new_roads
 
 
-def simplify_clusters(artifacts, roads, distance=2, eps=1e-6):
+def simplify_clusters(artifacts, roads, max_segment_length=1, eps=1e-6):
     # Get nodes from the network.
     nodes = momepy.nx_to_gdf(momepy.node_degree(momepy.gdf_to_nx(roads)), lines=False)
 
@@ -1058,6 +1132,7 @@ def simplify_clusters(artifacts, roads, distance=2, eps=1e-6):
             to_drop=to_drop,
             to_add=to_add,
             eps=eps,
+            max_segment_length=max_segment_length,
         )
 
     cleaned_roads = roads.geometry.drop(to_drop)
@@ -1067,7 +1142,9 @@ def simplify_clusters(artifacts, roads, distance=2, eps=1e-6):
     new_roads = pd.concat(
         [
             cleaned_roads,
-            gpd.GeoSeries(to_add, crs=roads.crs).line_merge().simplify(distance),
+            gpd.GeoSeries(to_add, crs=roads.crs)
+            .line_merge()
+            .simplify(max_segment_length),
         ],
         ignore_index=True,
     ).explode()
@@ -1208,7 +1285,9 @@ def get_solution(group, roads):
     return pd.Series({"solution": "skeleton", "drop_id": shared})
 
 
-def simplify_pairs(artifacts, roads, distance=2, min_dangle_length=20):
+def simplify_pairs(
+    artifacts, roads, max_segment_length=1, min_dangle_length=20, limit_distance=2
+):
     # Get nodes from the network.
     nodes = momepy.nx_to_gdf(momepy.node_degree(momepy.gdf_to_nx(roads)), lines=False)
 
@@ -1288,7 +1367,8 @@ def simplify_pairs(artifacts, roads, distance=2, min_dangle_length=20):
         roads_cleaned = simplify_singletons(
             pd.concat([merged_pairs, first]),
             roads_cleaned,
-            distance=distance,
+            max_segment_length=max_segment_length,
+            limit_distance=limit_distance,
             compute_coins=False,
             min_dangle_length=min_dangle_length,
         )
@@ -1296,13 +1376,14 @@ def simplify_pairs(artifacts, roads, distance=2, min_dangle_length=20):
             roads_cleaned = simplify_singletons(
                 second,
                 roads_cleaned,
-                distance=distance,
+                max_segment_length=max_segment_length,
+                limit_distance=limit_distance,
                 compute_coins=True,
                 min_dangle_length=min_dangle_length,
             )
     if not for_skeleton.empty:
         roads_cleaned = simplify_clusters(
-            for_skeleton, roads_cleaned, distance=distance
+            for_skeleton, roads_cleaned, max_segment_length=max_segment_length
         )
     return roads_cleaned
 

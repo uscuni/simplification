@@ -46,71 +46,26 @@ def is_within(
     return np.abs(shapely.length(intersection) - shapely.length(line)) <= rtol
 
 
-def voronoi_skeleton(
-    lines, poly=None, snap_to=None, distance=2, buffer=None, secondary_snap_to=None
+def _connect_voronoi(
+    poly,
+    unique,
+    mapped,
+    rigde_vertices,
+    voronoi_diagram,
+    shapely_lines,
+    snap_to,
+    secondary_snap_to,
+    distance=0,
 ):
-    """
-    Returns average geometry.
-
-
-    Parameters
-    ----------
-    lines : array_like
-        LineStrings connected at endpoints
-    poly : shapely.geometry.Polygon
-        polygon enclosed by `lines`
-    snap_to : gpd.GeoSeries
-        series of geometries that shall be connected to the skeleton
-    distance : float
-        distance for interpolation
-    buffer : float
-        optional custom buffer distance for dealing with Voronoi infinity issues
-
-    Returns array of averaged geometries
-    """
-    if buffer is None:
-        buffer = distance * 20
-    if not poly:
-        poly = shapely.box(*lines.total_bounds)
-    # get an additional line around the lines to avoid infinity issues with Voronoi
-    extended_lines = list(lines) + [poly.buffer(buffer).exterior]
-
-    # interpolate lines to represent them as points for Voronoi
-    shapely_lines = extended_lines
-    points, ids = shapely.get_coordinates(
-        shapely.segmentize(shapely_lines, distance / 2), return_index=True
-    )
-
-    # remove duplicated coordinates
-    unq, count = np.unique(points, axis=0, return_counts=True)
-    mask = np.isin(points, unq[count > 1]).all(axis=1)
-    points = points[~mask]
-    ids = ids[~mask]
-
-    # generate Voronoi diagram
-    voronoi_diagram = spatial.Voronoi(points)
-
-    # get all rigdes and filter only those between the two lines
-    pts = voronoi_diagram.ridge_points
-    mapped = np.take(ids, pts)
-    rigde_vertices = np.array(voronoi_diagram.ridge_vertices)
-
-    # iterate over segment-pairs and keep rigdes between input geometries
-    edgelines = []
-    to_add = []
-    splitters = []
-
     # determine the negative buffer distance to avoid overclipping of narrow polygons
     # this can still result in some missing links, but only in rare cases
     dist = min([distance, shapely.ops.polylabel(poly).distance(poly.boundary) * 0.4])
     limit = poly.buffer(-dist)
 
-    # drop ridges that are between points coming from the same line
-    selfs = mapped[:, 0] == mapped[:, 1]
-    buff = (mapped == mapped.max()).any(axis=1)
-    mapped = mapped[~(selfs | buff)]
-    rigde_vertices = rigde_vertices[~(selfs | buff)]
-    unique = np.unique(np.sort(mapped, axis=1), axis=0)
+    # iterate over segment-pairs and keep rigdes between input geometries
+    edgelines = []
+    to_add = []
+    splitters = []
 
     for a, b in unique:
         mask = ((mapped[:, 0] == a) | (mapped[:, 0] == b)) & (
@@ -188,9 +143,106 @@ def voronoi_skeleton(
         edgelines = shapely.simplify(edgelines, distance / 2)
     # drop empty
     edgelines = edgelines[edgelines != None]  # noqa: E711
+    edgelines = edgelines[shapely.length(edgelines) > 0]
+
+    return edgelines, to_add, splitters
+
+
+def voronoi_skeleton(
+    lines, poly=None, snap_to=None, distance=2, buffer=None, secondary_snap_to=None
+):
+    """
+    Returns average geometry.
+
+
+    Parameters
+    ----------
+    lines : array_like
+        LineStrings connected at endpoints
+    poly : shapely.geometry.Polygon
+        polygon enclosed by `lines`
+    snap_to : gpd.GeoSeries
+        series of geometries that shall be connected to the skeleton
+    distance : float
+        distance for interpolation
+    buffer : float
+        optional custom buffer distance for dealing with Voronoi infinity issues
+
+    Returns array of averaged geometries
+    """
+    if buffer is None:
+        buffer = distance * 20
+    if not poly:
+        poly = shapely.box(*lines.total_bounds)
+    # get an additional line around the lines to avoid infinity issues with Voronoi
+    extended_lines = list(lines) + [poly.buffer(buffer).exterior]
+
+    # interpolate lines to represent them as points for Voronoi
+    shapely_lines = extended_lines
+    points, ids = shapely.get_coordinates(
+        shapely.segmentize(shapely_lines, distance / 2), return_index=True
+    )
+
+    # remove duplicated coordinates
+    unq, count = np.unique(points, axis=0, return_counts=True)
+    mask = np.isin(points, unq[count > 1]).all(axis=1)
+    points = points[~mask]
+    ids = ids[~mask]
+
+    # generate Voronoi diagram
+    voronoi_diagram = spatial.Voronoi(points)
+
+    # get all rigdes and filter only those between the two lines
+    pts = voronoi_diagram.ridge_points
+    mapped = np.take(ids, pts)
+    rigde_vertices = np.array(voronoi_diagram.ridge_vertices)
+
+    # drop ridges that are between points coming from the same line
+    selfs = mapped[:, 0] == mapped[:, 1]
+    buff = (mapped == mapped.max()).any(axis=1)
+    mapped = mapped[~(selfs | buff)]
+    rigde_vertices = rigde_vertices[~(selfs | buff)]
+    unique = np.unique(np.sort(mapped, axis=1), axis=0)
+
+    # count the number of components with distance==0
+    edgelines, _, _ = _connect_voronoi(
+        poly=poly,
+        unique=unique,
+        mapped=mapped,
+        rigde_vertices=rigde_vertices,
+        voronoi_diagram=voronoi_diagram,
+        shapely_lines=shapely_lines,
+        snap_to=snap_to,
+        secondary_snap_to=secondary_snap_to,
+        distance=0,
+    )
+    n_components_distance_zero = graph.Graph.build_contiguity(
+        gpd.GeoSeries(edgelines), rook=False
+    ).n_components
+    del edgelines
+
+    # iteratively decrease distance by a factor until clipping doesn't increase
+    # number of components anymore
+    for factor in np.arange(1, 0.1, -0.1):
+        edgelines, to_add, splitters = _connect_voronoi(
+            poly=poly,
+            unique=unique,
+            mapped=mapped,
+            rigde_vertices=rigde_vertices,
+            voronoi_diagram=voronoi_diagram,
+            shapely_lines=shapely_lines,
+            snap_to=snap_to,
+            secondary_snap_to=secondary_snap_to,
+            distance=distance * factor,  # factor is 1 at first iteration
+        )
+        n_components = graph.Graph.build_contiguity(
+            gpd.GeoSeries(edgelines), rook=False
+        ).n_components
+        if n_components <= n_components_distance_zero:
+            break  # stop for loop once we have the correct nr of components
     # TODO: shall we try calling line_merge before returning? It was working weirdly in
     # TODO: some occasions
-    return edgelines[shapely.length(edgelines) > 0], splitters
+    return edgelines, splitters
 
 
 def snap_to_targets(edgelines, poly, snap_to, secondary_snap_to=None):

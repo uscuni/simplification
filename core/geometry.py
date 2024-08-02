@@ -191,7 +191,7 @@ def voronoi_skeleton(
     # generate Voronoi diagram
     voronoi_diagram = spatial.Voronoi(points)
 
-    # get all rigdes and filter only those between the two lines
+    # get all ridges and filter only those between the two lines
     pts = voronoi_diagram.ridge_points
     mapped = np.take(ids, pts)
     rigde_vertices = np.array(voronoi_diagram.ridge_vertices)

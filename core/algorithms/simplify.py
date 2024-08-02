@@ -1309,9 +1309,9 @@ def simplify_pairs(artifacts, roads, distance=2, min_dangle_length=20):
 
 def get_artifacts(
     roads,
-    area_threshold_blocks=10**5,
+    area_threshold_blocks=1e5,
     isoareal_threshold_blocks=0.5,
-    area_threshold_circles=5 * 10**4,
+    area_threshold_circles=5e4,
     isoareal_threshold_circles=0.75,
 ):
     fas = momepy.FaceArtifacts(roads)

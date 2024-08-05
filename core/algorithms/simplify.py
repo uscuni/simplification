@@ -185,7 +185,7 @@ def reconnect(conts_groups, new_connections, artifact, split_points, eps):
     return new_connections
 
 
-def remove_dangles(new_connections, artifact, eps=1e-6):
+def remove_dangles(new_connections, artifact, eps=1e-4):
     # the drop above could've introduced a dangling edges. Remove those.
 
     new_connections = shapely.line_merge(new_connections)
@@ -312,7 +312,7 @@ def loop(
     limit_distance,
     split_points,
     min_dangle_length,
-    eps=1e-6,
+    eps=1e-4,
 ):
     # check if we need to add a deadend to represent the space
     to_add = []
@@ -401,7 +401,7 @@ def loop(
     return to_add
 
 
-def split(split_points, cleaned_roads, roads, eps=1e-6):
+def split(split_points, cleaned_roads, roads, eps=1e-4):
     # split lines on new nodes
     split_points = gpd.GeoSeries(split_points)
     for split in split_points.drop_duplicates():
@@ -488,7 +488,7 @@ def nx_gx_identical(
     angle,
     max_segment_length=1,
     limit_distance=2,
-    eps=1e-6,
+    eps=1e-4,
 ):
     """If there are  1+ identical continuity groups, and more than 1 node (n>=2)
 
@@ -552,7 +552,7 @@ def nx_gx(
     max_segment_length=1,
     limit_distance=2,
     min_dangle_length=10,
-    eps=1e-6,
+    eps=1e-4,
 ):
     """
     Drop all but highest hierarchy. If there are unconnected nodes after drop, connect
@@ -848,7 +848,7 @@ def nx_gx_cluster(
     to_drop,
     to_add,
     max_segment_length=1,
-    eps=1e-6,
+    eps=1e-4,
 ):
     """treat an n-artifact cluster: merge all artifact polygons; drop
     all lines fully within the merged polygon; skeletonize and keep only
@@ -899,7 +899,7 @@ def nx_gx_cluster(
         cluster_geom,
         snap_to=False,
         max_segment_length=max_segment_length,
-        limit_distance=1e-6,
+        limit_distance=1e-4,
     )
 
     lines_to_drop = edges.iloc[
@@ -985,7 +985,7 @@ def simplify_singletons(
     max_segment_length=1,
     compute_coins=True,
     min_dangle_length=10,
-    eps=1e-6,
+    eps=1e-4,
     limit_distance=2,
 ):
     # Get nodes from the network.
@@ -1109,7 +1109,7 @@ def simplify_singletons(
     return new_roads
 
 
-def simplify_clusters(artifacts, roads, max_segment_length=1, eps=1e-6):
+def simplify_clusters(artifacts, roads, max_segment_length=1, eps=1e-4):
     # Get nodes from the network.
     nodes = momepy.nx_to_gdf(momepy.node_degree(momepy.gdf_to_nx(roads)), lines=False)
 

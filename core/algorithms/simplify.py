@@ -349,40 +349,41 @@ def loop(
     possible_dangle = gpd.GeoDataFrame(
         geometry=possible_dangle[shapely.disjoint(possible_dangle, dropped)]
     )
-    comps = graph.Graph.build_contiguity(
-        possible_dangle.difference(snap_to.union_all().buffer(eps)), rook=False
-    )
-    if comps.n_components > 1:
-        # NOTE: it is unclear to me what exactly should happen here. I believe that
-        # there will be cases when we may want to keep multiple dangles. Now keeping
-        # only one.
-        logger.debug("LOOP components many")
-        comp_labels = comps.component_labels.values
-        longest_component = possible_dangle.dissolve(
-            comps.component_labels
-        ).length.idxmax()
-        possible_dangle = possible_dangle[comp_labels == longest_component]
+    if not possible_dangle.empty:
+        comps = graph.Graph.build_contiguity(
+            possible_dangle.difference(snap_to.union_all().buffer(eps)), rook=False
+        )
+        if comps.n_components > 1:
+            # NOTE: it is unclear to me what exactly should happen here. I believe that
+            # there will be cases when we may want to keep multiple dangles. Now keeping
+            # only one.
+            logger.debug("LOOP components many")
+            comp_labels = comps.component_labels.values
+            longest_component = possible_dangle.dissolve(
+                comps.component_labels
+            ).length.idxmax()
+            possible_dangle = possible_dangle[comp_labels == longest_component]
 
-    dangle_coins = momepy.COINS(
-        possible_dangle,
-        flow_mode=True,
-    ).stroke_gdf()
-    candidate = dangle_coins.loc[dangle_coins.length.idxmax()].geometry
-    if candidate.intersects(snap_to.union_all().buffer(eps)) and (
-        candidate.length > min_dangle_length
-    ):
-        logger.debug("LOOP intersects and length > min_dangle_length")
-        if not primes.empty:
-            points = [
-                shapely.get_point(candidate, 0),
-                shapely.get_point(candidate, -1),
-            ]
-            distances = shapely.distance(points, highest_hierarchy.union_all())
-            if distances.max() > min_dangle_length:
-                logger.debug("LOOP prime check passed")
+        dangle_coins = momepy.COINS(
+            possible_dangle,
+            flow_mode=True,
+        ).stroke_gdf()
+        candidate = dangle_coins.loc[dangle_coins.length.idxmax()].geometry
+        if candidate.intersects(snap_to.union_all().buffer(eps)) and (
+            candidate.length > min_dangle_length
+        ):
+            logger.debug("LOOP intersects and length > min_dangle_length")
+            if not primes.empty:
+                points = [
+                    shapely.get_point(candidate, 0),
+                    shapely.get_point(candidate, -1),
+                ]
+                distances = shapely.distance(points, highest_hierarchy.union_all())
+                if distances.max() > min_dangle_length:
+                    logger.debug("LOOP prime check passed")
+                    to_add.append(candidate)
+            else:
                 to_add.append(candidate)
-        else:
-            to_add.append(candidate)
 
     return to_add
 

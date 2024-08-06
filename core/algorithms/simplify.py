@@ -1316,6 +1316,10 @@ def simplify_pairs(
         left_on="comp",
         right_index=True,
     )
+
+    if artifacts_w_info.empty:
+        return roads
+
     to_drop = (
         artifacts_w_info.drop_duplicates("comp")
         .query("solution == 'drop_interline'")
@@ -1483,6 +1487,9 @@ def simplify_network(
         eps=eps,
     )
 
+    # cleanup - don't know yet why duplicate happens but we have one in Liege
+    new_roads = new_roads.drop_duplicates(subset="geometry")
+
     # Identify artifacts based on the first loop network
     artifacts, _ = get_artifacts(
         new_roads,
@@ -1533,19 +1540,21 @@ def simplify_loop(
     # Filter clusters
     clusters = artifacts.loc[artifacts["comp"].isin(counts[counts > 2].index)].copy()
 
-    # Loop 1
-    new_roads = simplify_singletons(
-        singles, roads, max_segment_length=max_segment_length
-    )
-    new_roads = simplify_pairs(
-        doubles,
-        new_roads,
-        max_segment_length=max_segment_length,
-        min_dangle_length=min_dangle_length,
-        limit_distance=limit_distance,
-    )
-    new_roads = simplify_clusters(
-        clusters, new_roads, max_segment_length=max_segment_length, eps=eps
-    )
+    if not singles.empty:
+        roads = simplify_singletons(
+            singles, roads, max_segment_length=max_segment_length
+        )
+    if not doubles.empty:
+        roads = simplify_pairs(
+            doubles,
+            roads,
+            max_segment_length=max_segment_length,
+            min_dangle_length=min_dangle_length,
+            limit_distance=limit_distance,
+        )
+    if not clusters.empty:
+        roads = simplify_clusters(
+            clusters, roads, max_segment_length=max_segment_length, eps=eps
+        )
 
-    return new_roads
+    return roads

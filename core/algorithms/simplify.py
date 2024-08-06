@@ -1376,6 +1376,7 @@ def simplify_pairs(
 
 def get_artifacts(
     roads,
+    threshold=None,
     area_threshold_blocks=1e5,
     isoareal_threshold_blocks=0.5,
     area_threshold_circles=5e4,
@@ -1391,7 +1392,9 @@ def get_artifacts(
     # polygons are not artifacts,
     polygons["is_artifact"] = False
     # unless the fai is below the threshold,
-    polygons.loc[polygons.face_artifact_index < fas.threshold, "is_artifact"] = True
+    if threshold is None:
+        threshold = fas.threshold
+    polygons.loc[polygons.face_artifact_index < threshold, "is_artifact"] = True
 
     # compute area and isoareal quotient:
     polygons["area_sqm"] = polygons.area
@@ -1442,4 +1445,106 @@ def get_artifacts(
 
     artifacts = polygons[polygons.is_artifact][["geometry"]].copy()
     artifacts["id"] = artifacts.index
-    return artifacts
+    return artifacts, threshold
+
+
+def simplify_network(
+    roads,
+    *,
+    max_segment_length=1,
+    min_dangle_length=20,
+    limit_distance=2,
+    area_threshold_blocks=1e5,
+    isoareal_threshold_blocks=0.5,
+    area_threshold_circles=5e4,
+    isoareal_threshold_circles=0.75,
+    eps=1e-4,
+):
+    # Merge nearby nodes (up to double of distance used in skeleton).
+    roads = consolidate_nodes(roads, tolerance=max_segment_length * 2.1)
+
+    # Identify artifacts
+    artifacts, threshold = get_artifacts(
+        roads,
+        area_threshold_blocks=area_threshold_blocks,
+        isoareal_threshold_blocks=isoareal_threshold_blocks,
+        area_threshold_circles=area_threshold_circles,
+        isoareal_threshold_circles=isoareal_threshold_circles,
+    )
+
+    # Loop 1
+    new_roads = simplify_loop(
+        roads,
+        artifacts,
+        max_segment_length=max_segment_length,
+        min_dangle_length=min_dangle_length,
+        limit_distance=limit_distance,
+        eps=eps,
+    )
+
+    # Identify artifacts based on the first loop network
+    artifacts, _ = get_artifacts(
+        new_roads,
+        threshold=threshold,
+        area_threshold_blocks=area_threshold_blocks,
+        isoareal_threshold_blocks=isoareal_threshold_blocks,
+        area_threshold_circles=area_threshold_circles,
+        isoareal_threshold_circles=isoareal_threshold_circles,
+    )
+
+    # Loop 2
+    final_roads = simplify_loop(
+        new_roads,
+        artifacts,
+        max_segment_length=max_segment_length,
+        min_dangle_length=min_dangle_length,
+        limit_distance=limit_distance,
+        eps=eps,
+    )
+
+    return final_roads
+
+
+def simplify_loop(
+    roads,
+    artifacts,
+    max_segment_length=1,
+    min_dangle_length=20,
+    limit_distance=2,
+    eps=1e-4,
+):
+    # Remove edges fully within the artifact (dangles).
+    _, r_idx = roads.sindex.query(artifacts.geometry, predicate="contains")
+    roads = roads.drop(roads.index[r_idx])
+
+    # Filter singleton artifacts
+    rook = graph.Graph.build_contiguity(artifacts, rook=True)
+
+    # keep only those artifacts which occur as isolates, i.e. are not part of a larger
+    # intersection
+    singles = artifacts.loc[artifacts.index.intersection(rook.isolates)].copy()
+
+    # Filter doubles
+    artifacts["comp"] = rook.component_labels
+    counts = artifacts["comp"].value_counts()
+    doubles = artifacts.loc[artifacts["comp"].isin(counts[counts == 2].index)].copy()
+
+    # Filter clusters
+    clusters = artifacts.loc[artifacts["comp"].isin(counts[counts > 2].index)].copy()
+
+    # Loop 1
+    new_roads = simplify_singletons(
+        singles, roads, max_segment_length=max_segment_length
+    )
+    new_roads = simplify_pairs(
+        doubles,
+        new_roads,
+        max_segment_length=max_segment_length,
+        min_dangle_length=min_dangle_length,
+        limit_distance=limit_distance,
+    )
+    new_roads = simplify_clusters(
+        clusters, new_roads, max_segment_length=max_segment_length, eps=eps
+    )
+
+    return new_roads

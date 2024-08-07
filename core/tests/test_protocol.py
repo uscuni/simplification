@@ -2,6 +2,7 @@ import re
 
 import pytest
 from matplotlib.testing.decorators import image_comparison
+from matplotlib.testing.exceptions import ImageComparisonFailure
 
 import core
 
@@ -12,6 +13,10 @@ protocol_types = ["original", "manual"]
     "protocol_type, remove_false_nodes, known_lines, known_verts",
     zip(protocol_types, [True, False], [25, 16], [14, 8], strict=True),
     ids=protocol_types,
+)
+@pytest.mark.xfail(
+    reason="Needs updated Manual & Parenex -- See GH#131.",
+    raises=AssertionError,
 )
 def test_generate_case(protocol_type, remove_false_nodes, known_lines, known_verts):
     _case = core.protocol.protocol_cases["04"]
@@ -56,6 +61,10 @@ def test_process_case_invalid_type():
         )
 
 
+@pytest.mark.xfail(
+    reason="Needs updated Manual & Parenex -- See GH#131.",
+    raises=ImageComparisonFailure,
+)
 @image_comparison(
     baseline_images=["test_process_case_original.png"],
     style="mpl20",

@@ -848,7 +848,7 @@ def nx_gx_cluster(
     edges_on_boundary = edges_on_boundary[
         (~edges_on_boundary.is_empty)
         & (edges_on_boundary.geom_type.str.contains("Line"))
-        & (edges_on_boundary.length > 10 * eps)
+        & (edges_on_boundary.length > 100 * eps)
     ]  # keeping only (multi)linestrings of length>>eps
     edges_on_boundary = edges_on_boundary.to_frame("geometry")
 
@@ -1486,9 +1486,6 @@ def simplify_network(
         limit_distance=limit_distance,
         eps=eps,
     )
-
-    # cleanup - don't know yet why duplicate happens but we have one in Liege
-    new_roads = new_roads.drop_duplicates(subset="geometry")
 
     # Identify artifacts based on the first loop network
     artifacts, _ = get_artifacts(

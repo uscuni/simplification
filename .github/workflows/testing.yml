@@ -2,10 +2,10 @@
  
  on:
    push:
-    branches: [main]
-  pull_request:
-    branches:
-      - "*"
+     branches: [main]
+   pull_request:
+     branches:
+       - "*"
    schedule:
      - cron: '59 23 * * *'
    workflow_dispatch:
@@ -30,7 +30,7 @@
          ]
          include:
            - environment-file: ci/py311_simplification-latest.yaml
-             os: macos-latest
+             os: macos-13 # Intel
            - environment-file: ci/py311_simplification-latest.yaml
              os: macos-14 # Apple Silicon
            - environment-file: ci/py311_simplification-latest.yaml

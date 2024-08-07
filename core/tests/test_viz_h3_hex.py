@@ -6,7 +6,7 @@ import core
 
 
 @pytest.mark.xfail(
-    reason="Needs updated Manual & Parenex -- See GH#131.",
+    reason="Needs updated Manual & Parenx -- See GH#131.",
     raises=ImageComparisonFailure,
 )
 @image_comparison(
@@ -61,7 +61,7 @@ class TestVizH3HexPlotCell:
         self._p = "parenx-voronoi"
 
     @pytest.mark.xfail(
-        reason="Needs updated Manual & Parenex -- See GH#131.",
+        reason="Needs updated Manual & Parenx -- See GH#131.",
         raises=ImageComparisonFailure,
     )
     @image_comparison(
@@ -80,7 +80,7 @@ class TestVizH3HexPlotCell:
         )
 
     @pytest.mark.xfail(
-        reason="Needs updated Manual & Parenex -- See GH#131.",
+        reason="Needs updated Manual & Parenx -- See GH#131.",
         raises=ImageComparisonFailure,
     )
     @image_comparison(

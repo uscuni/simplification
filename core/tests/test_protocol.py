@@ -15,7 +15,7 @@ protocol_types = ["original", "manual"]
     ids=protocol_types,
 )
 @pytest.mark.xfail(
-    reason="Needs updated Manual & Parenex -- See GH#131.",
+    reason="Needs updated Manual & Parenx -- See GH#131.",
     raises=AssertionError,
 )
 def test_generate_case(protocol_type, remove_false_nodes, known_lines, known_verts):
@@ -62,7 +62,7 @@ def test_process_case_invalid_type():
 
 
 @pytest.mark.xfail(
-    reason="Needs updated Manual & Parenex -- See GH#131.",
+    reason="Needs updated Manual & Parenx -- See GH#131.",
     raises=ImageComparisonFailure,
 )
 @image_comparison(

@@ -397,13 +397,17 @@ def split(split_points, cleaned_roads, roads, eps=1e-4):
         if edge.shape[0] == 1:
             snapped = shapely.snap(edge.item(), split, tolerance=eps)
             lines_split = shapely.get_parts(shapely.ops.split(snapped, split))
-            cleaned_roads = pd.concat(
-                [
-                    cleaned_roads.drop(edge.index[0]),
-                    gpd.GeoSeries(lines_split, crs=roads.crs),
-                ],
-                ignore_index=True,
-            )
+            lines_split = lines_split[~shapely.is_empty(lines_split)]
+            if lines_split.shape[0] > 1:
+                gdf_split = gpd.GeoDataFrame(geometry=lines_split, crs=roads.crs)
+                gdf_split["_status"] = "changed"
+                cleaned_roads = pd.concat(
+                    [
+                        cleaned_roads.drop(edge.index[0]),
+                        gdf_split,
+                    ],
+                    ignore_index=True,
+                )
 
     return cleaned_roads
 
@@ -1072,28 +1076,33 @@ def simplify_singletons(
         else:
             logger.debug("NON PLANAR")
 
-    cleaned_roads = roads.geometry.drop(to_drop)
+    cleaned_roads = roads.drop(to_drop)
     # split lines on new nodes
     cleaned_roads = split(split_points, cleaned_roads, roads)
 
     # create new roads with fixed geometry. Note that to_add and to_drop lists shall be
     # global and this step should happen only once, not for every artifact
+    new = gpd.GeoDataFrame(geometry=to_add, crs=roads.crs)
+    new["_status"] = "new"
+    new["geometry"] = new.line_merge().simplify(max_segment_length)
     new_roads = pd.concat(
-        [
-            cleaned_roads,
-            gpd.GeoSeries(to_add, crs=roads.crs)
-            .line_merge()
-            .simplify(max_segment_length),
-        ],
+        [cleaned_roads, new],
         ignore_index=True,
     )
     new_roads = remove_false_nodes(
-        new_roads[~(new_roads.is_empty | new_roads.geometry.isna())].to_frame(
-            "geometry"
-        )
+        new_roads[~(new_roads.is_empty | new_roads.geometry.isna())],
+        aggfunc={"_status": _status},
     )
 
     return new_roads
+
+
+def _status(x):
+    if len(x) == 1:
+        return x.iloc[0]
+    if "new" in x:
+        return "new"
+    return "changed"
 
 
 def simplify_clusters(artifacts, roads, max_segment_length=1, eps=1e-4):
@@ -1122,20 +1131,23 @@ def simplify_clusters(artifacts, roads, max_segment_length=1, eps=1e-4):
             max_segment_length=max_segment_length,
         )
 
-    cleaned_roads = roads.geometry.drop(to_drop)
+    cleaned_roads = roads.drop(to_drop)
 
     # create new roads with fixed geometry. Note that to_add and to_drop lists shall be
     # global and this step should happen only once, not for every artifact
+    new = gpd.GeoDataFrame(geometry=to_add, crs=roads.crs)
+    new["_status"] = "new"
+    new["geometry"] = new.line_merge().simplify(max_segment_length)
     new_roads = pd.concat(
         [
             cleaned_roads,
-            gpd.GeoSeries(to_add, crs=roads.crs)
-            .line_merge()
-            .simplify(max_segment_length),
+            new,
         ],
         ignore_index=True,
     ).explode()
-    new_roads = remove_false_nodes(new_roads[~new_roads.is_empty].to_frame("geometry"))
+    new_roads = remove_false_nodes(
+        new_roads[~new_roads.is_empty], aggfunc={"_status": _status}
+    )
 
     return new_roads
 
@@ -1223,7 +1235,7 @@ def consolidate_nodes(gdf, tolerance=2):
 
     return remove_false_nodes(
         gdf[~gdf.geometry.is_empty],
-        aggfunc={"_status": lambda x: "snapped" if "snapped" in x else x.iloc[0]},
+        aggfunc={"_status": _status},
     )
 
 
@@ -1358,6 +1370,7 @@ def simplify_pairs(
         aggfunc={
             "coins_group": "first",
             "coins_end": lambda x: x.any(),
+            "_status": _status,
         },
     )
     coins_count = (

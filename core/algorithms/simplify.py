@@ -1176,8 +1176,10 @@ def consolidate_nodes(gdf, tolerance=2):
     nodes["lab"] = db.labels_
     change = nodes[nodes.lab > -1].set_index("lab")
 
-    # get pygeos geometry
+    gdf = gdf.copy()
+    # get geometry
     geom = gdf.geometry.copy()
+    status = pd.Series("original", index=geom.index)
 
     # loop over clusters, cut out geometry within tolerance / 2 and replace it
     # with spider-like geometry to the weighted centroid of a cluster
@@ -1191,8 +1193,9 @@ def consolidate_nodes(gdf, tolerance=2):
         inds = geom.sindex.query(cookie, predicate="intersects")
         pts = geom.iloc[inds].intersection(cookie.boundary).get_coordinates()
         pts = shapely.get_coordinates(geom.iloc[inds].intersection(cookie.boundary))
-        geom.iloc[inds] = geom.iloc[inds].difference(cookie)
         if pts.shape[0] > 0:
+            geom.iloc[inds] = geom.iloc[inds].difference(cookie)
+            status.iloc[inds] = "snapped"
             midpoint = np.mean(cluster.get_coordinates(), axis=0)
             midpoints.append(midpoint)
             mids = np.array(
@@ -1206,11 +1209,22 @@ def consolidate_nodes(gdf, tolerance=2):
                 y=np.array([pts[:, 1], mids[:, 1]]).T,
             )
             spiders.append(spider)
+    gdf = gdf.set_geometry(geom, drop=True)
+    gdf["_status"] = status
 
-    # combine geometries
-    geometry = pd.concat([geom, gpd.GeoSeries(np.hstack(spiders), crs=geom.crs)])
+    if spiders:
+        # combine geometries
+        gdf = pd.concat(
+            [
+                gdf,
+                gpd.GeoDataFrame(geometry=np.hstack(spiders), crs=geom.crs),
+            ]
+        )
 
-    return remove_false_nodes(geometry[~geometry.is_empty].to_frame("geometry"))
+    return remove_false_nodes(
+        gdf[~gdf.geometry.is_empty],
+        aggfunc={"_status": lambda x: "snapped" if "snapped" in x else x.iloc[0]},
+    )
 
 
 def get_type(edges, shared_edge):
@@ -1487,7 +1501,7 @@ def simplify_network(
         eps=eps,
     )
 
-    # cleanup - don't know yet why duplicate happens but we have one in Liege
+    # cleanup - don't know yet why duplicate happen but we have one in Liege
     new_roads = new_roads.drop_duplicates(subset="geometry")
 
     # Identify artifacts based on the first loop network

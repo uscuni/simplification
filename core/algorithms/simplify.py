@@ -1421,7 +1421,7 @@ def simplify_pairs(
     roads_cleaned = roads_cleaned.merge(coins_count, on="coins_group", how="left")
 
     if not artifacts_under_np.empty:
-        merged_pairs = pd.concat([merged_pairs, artifacts_under_np])
+        for_skeleton = pd.concat([for_skeleton, artifacts_under_np])
 
     if not merged_pairs.empty or not first.empty:
         roads_cleaned = simplify_singletons(

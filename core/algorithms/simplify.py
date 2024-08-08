@@ -126,6 +126,12 @@ def filter_connections(primes, relevant_targets, conts_groups, new_connections):
                 unwanted.append(connections_intersecting_c)
                 keeping.append(connections_intersecting_primes[[np.argmin(lens)]])
 
+            # fork on two nodes on C
+            elif len(connections_intersecting_c) > 1:
+                lens = shapely.length(connections_intersecting_c)
+                unwanted.append(connections_intersecting_c)
+                keeping.append(connections_intersecting_c[[np.argmin(lens)]])
+
     if len(unwanted) > 0:
         if len(keeping) > 0:
             new_connections = np.concatenate(
@@ -181,8 +187,8 @@ def reconnect(conts_groups, new_connections, artifact, split_points, eps):
         new_connections_comps
     )
     additions = []
-    for c in conts_groups.geometry:
-        mask = new_components.intersects(c.buffer(eps))
+    for c in conts_groups.geometry.buffer(eps):
+        mask = new_components.intersects(c)
         if not mask.all():
             adds, splitters = snap_to_targets(
                 new_components[~mask].geometry, artifact.geometry, [c]
@@ -670,7 +676,7 @@ def nx_gx(
                 new_connections, splitters = voronoi_skeleton(
                     edges.geometry,  # use all edges as an input
                     poly=artifact.geometry,
-                    snap_to=relevant_targets.geometry,
+                    snap_to=relevant_targets.geometry,  # snap to nodes
                     max_segment_length=max_segment_length,
                     limit_distance=limit_distance,
                     # buffer = highest_hierarchy.length.sum() * 1.2
@@ -1019,7 +1025,7 @@ def simplify_singletons(
     # perfect and some 3CC artifacts were non-planar but not captured here).
     artifacts["non_planar"] = artifacts["stroke_count"] > artifacts["node_count"]
     a_idx, r_idx = roads.sindex.query(artifacts.geometry.boundary, predicate="overlaps")
-    artifacts.iloc[np.unique(a_idx), artifacts.columns.get_loc("non_planar")] = True
+    artifacts.iloc[np.unique(a_idx), -1] = True
 
     # Count intersititial nodes (primes).
     artifacts["interstitial_nodes"] = artifacts.node_count - artifacts[
@@ -1090,30 +1096,21 @@ def simplify_singletons(
     # split lines on new nodes
     cleaned_roads = split(split_points, cleaned_roads, roads)
 
-    # all may be non-planar and skipped
-    if to_add:
-        # create new roads with fixed geometry. Note that to_add and to_drop lists shall
-        # be global and this step should happen only once, not for every artifact
-        new = gpd.GeoDataFrame(geometry=to_add, crs=roads.crs)
-        new["_status"] = "new"
-        new["geometry"] = new.line_merge()
-        new = remove_false_nodes(
-            new[~(new.is_empty | new.geometry.isna())],
-            aggfunc={"_status": _status},
-        )
-        new.geometry = new.simplify(max_segment_length * 2)
-        new_roads = pd.concat(
-            [cleaned_roads, new],
-            ignore_index=True,
-        )
-        new_roads = remove_false_nodes(
-            new_roads[~(new_roads.is_empty | new_roads.geometry.isna())],
-            aggfunc={"_status": _status},
-        )
+    # create new roads with fixed geometry. Note that to_add and to_drop lists shall be
+    # global and this step should happen only once, not for every artifact
+    new = gpd.GeoDataFrame(geometry=to_add, crs=roads.crs)
+    new["_status"] = "new"
+    new["geometry"] = new.line_merge().simplify(max_segment_length)
+    new_roads = pd.concat(
+        [cleaned_roads, new],
+        ignore_index=True,
+    )
+    new_roads = remove_false_nodes(
+        new_roads[~(new_roads.is_empty | new_roads.geometry.isna())],
+        aggfunc={"_status": _status},
+    )
 
-        return new_roads
-    else:
-        return roads
+    return new_roads
 
 
 def _status(x):
@@ -1166,7 +1163,7 @@ def simplify_clusters(artifacts, roads, max_segment_length=1, eps=1e-4):
     ).explode()
     new_roads = remove_false_nodes(
         new_roads[~new_roads.is_empty], aggfunc={"_status": _status}
-    ).drop_duplicates("geometry")
+    )
 
     return new_roads
 
@@ -1361,62 +1358,44 @@ def simplify_pairs(
         left_on="comp",
         right_index=True,
     )
-    artifacts_under_np = np_clusters[np_clusters.non_planar_cluster == 2].dissolve(
+
+    if artifacts_w_info.empty:
+        return roads
+
+    to_drop = (
+        artifacts_w_info.drop_duplicates("comp")
+        .query("solution == 'drop_interline'")
+        .drop_id
+    )
+    merged_pairs = artifacts_w_info.query("solution == 'drop_interline'").dissolve(
         "comp", as_index=False
     )
 
-    if not artifacts_w_info.empty:
-        to_drop = (
-            artifacts_w_info.drop_duplicates("comp")
-            .query("solution == 'drop_interline'")
-            .drop_id
-        )
+    sorted_by_node_count = artifacts_w_info.sort_values("node_count", ascending=False)
+    first = sorted_by_node_count.query("solution == 'iterate'").drop_duplicates(
+        "comp", keep="first"
+    )
+    second = sorted_by_node_count.query("solution == 'iterate'").drop_duplicates(
+        "comp", keep="last"
+    )
 
-        roads_cleaned = remove_false_nodes(
-            roads.drop(to_drop.dropna().values),
-            aggfunc={
-                "coins_group": "first",
-                "coins_end": lambda x: x.any(),
-                "_status": _status,
-            },
-        )
-        merged_pairs = artifacts_w_info.query("solution == 'drop_interline'").dissolve(
-            "comp", as_index=False
-        )
+    first = pd.concat([first, np_clusters[~np_clusters.non_planar]], ignore_index=True)
 
-        sorted_by_node_count = artifacts_w_info.sort_values(
-            "node_count", ascending=False
-        )
-        first = sorted_by_node_count.query("solution == 'iterate'").drop_duplicates(
-            "comp", keep="first"
-        )
-        second = sorted_by_node_count.query("solution == 'iterate'").drop_duplicates(
-            "comp", keep="last"
-        )
-
-        first = pd.concat(
-            [first, np_clusters[~np_clusters.non_planar]], ignore_index=True
-        )
-
-        for_skeleton = artifacts_w_info.query("solution == 'skeleton'")
-    else:
-        merged_pairs = pd.DataFrame()
-        first = pd.DataFrame()
-        second = pd.DataFrame()
-        for_skeleton = pd.DataFrame()
-        roads_cleaned = roads[
-            ["coins_group", "coins_end", "_status", roads.geometry.name]
-        ]
-
+    roads_cleaned = remove_false_nodes(
+        roads.drop(to_drop.dropna().values),
+        aggfunc={
+            "coins_group": "first",
+            "coins_end": lambda x: x.any(),
+            "_status": _status,
+        },
+    )
     coins_count = (
         roads_cleaned.groupby("coins_group", as_index=False)
         .geometry.count()
         .rename(columns={"geometry": "coins_count"})
     )
     roads_cleaned = roads_cleaned.merge(coins_count, on="coins_group", how="left")
-
-    if not artifacts_under_np.empty:
-        merged_pairs = pd.concat([merged_pairs, artifacts_under_np])
+    for_skeleton = artifacts_w_info.query("solution == 'skeleton'")
 
     if not merged_pairs.empty or not first.empty:
         roads_cleaned = simplify_singletons(

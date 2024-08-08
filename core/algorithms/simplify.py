@@ -12,7 +12,13 @@ from esda.shape import isoareal_quotient
 from libpysal import graph
 from scipy import sparse
 
-from ..geometry import is_within, remove_false_nodes, snap_to_targets, voronoi_skeleton
+from ..geometry import (
+    is_within,
+    remove_false_nodes,
+    snap_to_targets,
+    voronoi_skeleton,
+    weld_edges,
+)
 from .common import continuity, get_stroke_info
 
 logger = logging.getLogger(__name__)
@@ -130,7 +136,6 @@ def filter_connections(primes, relevant_targets, conts_groups, new_connections):
             elif len(connections_intersecting_c) > 1:
                 lens = shapely.length(connections_intersecting_c)
                 unwanted.append(connections_intersecting_c)
-                keeping.append(connections_intersecting_c[[np.argmin(lens)]])
 
     if len(unwanted) > 0:
         if len(keeping) > 0:
@@ -187,8 +192,8 @@ def reconnect(conts_groups, new_connections, artifact, split_points, eps):
         new_connections_comps
     )
     additions = []
-    for c in conts_groups.geometry.buffer(eps):
-        mask = new_components.intersects(c)
+    for c in conts_groups.geometry:
+        mask = new_components.intersects(c.buffer(eps))
         if not mask.all():
             adds, splitters = snap_to_targets(
                 new_components[~mask].geometry, artifact.geometry, [c]
@@ -531,7 +536,7 @@ def nx_gx_identical(
             limit_distance=limit_distance,
             snap_to=relevant_nodes,
         )
-        to_add.extend(lines.tolist())
+        to_add.extend(weld_edges(lines))
     # if the angle between two lines is too sharp, replace with a direct connection
     # between the nodes
     elif len(lines) == 2:
@@ -796,7 +801,7 @@ def nx_gx(
             )
 
         # add new connections to a list of features to be added to the network
-        to_add.extend(list(new_connections))
+        to_add.extend(weld_edges(new_connections))
 
     # there may be loops or half-loops we are dropping. If they are protruding enough
     # we want to replace them by a deadend representing their space
@@ -828,7 +833,7 @@ def nx_gx(
                 min_dangle_length,
             )
             if len(dangles) > 0:
-                to_add.extend(dangles)
+                to_add.extend(weld_edges(dangles))
 
     elif artifact.node_count == 2 and artifact.stroke_count == 2:
         logger.debug("CONDITION is_sausage True")
@@ -914,7 +919,6 @@ def nx_gx_cluster(
     ].index.to_list()
     lines_to_add = list(skel)
 
-    to_add.extend(lines_to_add)
     to_drop.extend(lines_to_drop)
 
     ### RECONNECTING NON-PLANAR INTRUDING EDGES TO SKELETON
@@ -954,7 +958,8 @@ def nx_gx_cluster(
     non_planar_connections = shapely.shortest_line(skel_nodes, to_reconnect)
 
     ### extend our list "to_add" with this artifact clusters' contribution:
-    to_add.extend(non_planar_connections)
+    lines_to_add.extend(non_planar_connections)
+    to_add.extend(weld_edges(lines_to_add))
 
 
 def angle_between_two_lines(line1, line2):
@@ -1096,26 +1101,24 @@ def simplify_singletons(
     # split lines on new nodes
     cleaned_roads = split(split_points, cleaned_roads, roads)
 
-    # create new roads with fixed geometry. Note that to_add and to_drop lists shall be
-    # global and this step should happen only once, not for every artifact
-    new = gpd.GeoDataFrame(geometry=to_add, crs=roads.crs)
-    new["_status"] = "new"
-    new["geometry"] = new.line_merge()
-    new = remove_false_nodes(
-        new[~(new.is_empty | new.geometry.isna())],
-        aggfunc={"_status": _status},
-    )
-    new.geometry = new.simplify(max_segment_length * 2)
-    new_roads = pd.concat(
-        [cleaned_roads, new],
-        ignore_index=True,
-    )
-    new_roads = remove_false_nodes(
-        new_roads[~(new_roads.is_empty | new_roads.geometry.isna())],
-        aggfunc={"_status": _status},
-    )
+    if to_add:
+        # create new roads with fixed geometry. Note that to_add and to_drop lists shall
+        # be global and this step should happen only once, not for every artifact
+        new = gpd.GeoDataFrame(geometry=to_add, crs=roads.crs)
+        new["_status"] = "new"
+        new.geometry = new.simplify(max_segment_length * 2)
+        new_roads = pd.concat(
+            [cleaned_roads, new],
+            ignore_index=True,
+        )
+        new_roads = remove_false_nodes(
+            new_roads[~(new_roads.is_empty | new_roads.geometry.isna())],
+            aggfunc={"_status": _status},
+        )
 
-    return new_roads
+        return new_roads
+    else:
+        return cleaned_roads
 
 
 def _status(x):
@@ -1158,7 +1161,7 @@ def simplify_clusters(artifacts, roads, max_segment_length=1, eps=1e-4):
     # global and this step should happen only once, not for every artifact
     new = gpd.GeoDataFrame(geometry=to_add, crs=roads.crs)
     new["_status"] = "new"
-    new["geometry"] = new.line_merge().simplify(max_segment_length)
+    new["geometry"] = new.line_merge().simplify(max_segment_length * 2)
     new_roads = pd.concat(
         [
             cleaned_roads,

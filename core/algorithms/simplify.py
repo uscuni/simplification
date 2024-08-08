@@ -946,7 +946,7 @@ def nx_gx_cluster(
         # ...but NOT on skeleton
         endpoints = endpoints.difference(skel_merged.union_all())
 
-        to_reconnect.extend(endpoints.geometry)
+        to_reconnect.extend(endpoints.geometry.drop_duplicates())
 
     # to_reconnect now contains a list of points which need to be connected to the
     # nearest skel node: from those nodes, we need to add shapely shortest lines between

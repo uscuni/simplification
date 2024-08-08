@@ -1090,26 +1090,30 @@ def simplify_singletons(
     # split lines on new nodes
     cleaned_roads = split(split_points, cleaned_roads, roads)
 
-    # create new roads with fixed geometry. Note that to_add and to_drop lists shall be
-    # global and this step should happen only once, not for every artifact
-    new = gpd.GeoDataFrame(geometry=to_add, crs=roads.crs)
-    new["_status"] = "new"
-    new["geometry"] = new.line_merge()
-    new = remove_false_nodes(
-        new[~(new.is_empty | new.geometry.isna())],
-        aggfunc={"_status": _status},
-    )
-    new.geometry = new.simplify(max_segment_length * 2)
-    new_roads = pd.concat(
-        [cleaned_roads, new],
-        ignore_index=True,
-    )
-    new_roads = remove_false_nodes(
-        new_roads[~(new_roads.is_empty | new_roads.geometry.isna())],
-        aggfunc={"_status": _status},
-    )
+    # all may be non-planar and skipped
+    if to_add:
+        # create new roads with fixed geometry. Note that to_add and to_drop lists shall
+        # be global and this step should happen only once, not for every artifact
+        new = gpd.GeoDataFrame(geometry=to_add, crs=roads.crs)
+        new["_status"] = "new"
+        new["geometry"] = new.line_merge()
+        new = remove_false_nodes(
+            new[~(new.is_empty | new.geometry.isna())],
+            aggfunc={"_status": _status},
+        )
+        new.geometry = new.simplify(max_segment_length * 2)
+        new_roads = pd.concat(
+            [cleaned_roads, new],
+            ignore_index=True,
+        )
+        new_roads = remove_false_nodes(
+            new_roads[~(new_roads.is_empty | new_roads.geometry.isna())],
+            aggfunc={"_status": _status},
+        )
 
-    return new_roads
+        return new_roads
+    else:
+        return roads
 
 
 def _status(x):

@@ -1025,7 +1025,7 @@ def simplify_singletons(
     # perfect and some 3CC artifacts were non-planar but not captured here).
     artifacts["non_planar"] = artifacts["stroke_count"] > artifacts["node_count"]
     a_idx, r_idx = roads.sindex.query(artifacts.geometry.boundary, predicate="overlaps")
-    artifacts.iloc[np.unique(a_idx), -1] = True
+    artifacts.iloc[np.unique(a_idx), artifacts.columns.get_loc("non_planar")] = True
 
     # Count intersititial nodes (primes).
     artifacts["interstitial_nodes"] = artifacts.node_count - artifacts[

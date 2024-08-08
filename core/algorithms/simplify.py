@@ -686,6 +686,25 @@ def nx_gx(
                     limit_distance=limit_distance,
                     # buffer = highest_hierarchy.length.sum() * 1.2
                 )
+
+                # if there are multiple components, limit_distance was too drastic and
+                # clipped the skeleton in pieces. Re-do it with a tiny epsilon.
+                # This may cause tiny sharp angles but at least it will be connected.
+                if (
+                    graph.Graph.build_contiguity(
+                        gpd.GeoSeries(new_connections), rook=False
+                    ).n_components
+                    > 1
+                ):
+                    # Get new connections via skeleton
+                    new_connections, splitters = voronoi_skeleton(
+                        edges.geometry,  # use all edges as an input
+                        poly=artifact.geometry,
+                        snap_to=relevant_targets.geometry,  # snap to nodes
+                        max_segment_length=max_segment_length,
+                        limit_distance=eps,
+                        # buffer = highest_hierarchy.length.sum() * 1.2
+                    )
                 split_points.extend(splitters)
 
                 # The skeleton returns connections to all the nodes. We need to keep

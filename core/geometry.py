@@ -196,7 +196,7 @@ def voronoi_skeleton(
         edgelines = shapely.simplify(edgelines, max_segment_length)
     # drop empty
     edgelines = edgelines[edgelines != None]  # noqa: E711
-    return shapely.line_merge(edgelines[shapely.length(edgelines) > 0]), splitters
+    return edgelines[shapely.length(edgelines) > 0], splitters
 
 
 def snap_to_targets(edgelines, poly, snap_to, secondary_snap_to=None):
@@ -226,7 +226,7 @@ def snap_to_targets(edgelines, poly, snap_to, secondary_snap_to=None):
                 or comp_counts[comp_label] == 1
                 or (
                     not comp.intersects(shapely.union_all(snap_to))
-                )  # ! this fixes one thing but may break others  # noqa: E501
+                )  # ! this fixes one thing but may break others
             ):
                 # add segment composed of the shortest line to the nearest snapping
                 # target. We use boundary to snap to endpoints of edgelines only
@@ -270,7 +270,7 @@ def get_components(edgelines):
     mask = np.isin(merge_res, closed) | np.isin(merge_inp, closed)
     merge_res = merge_res[~mask]
     merge_inp = merge_inp[~mask]
-    g = nx.Graph(list(zip(merge_inp * -1, merge_res, strict=True)))
+    g = nx.Graph(list(zip((merge_inp * -1) - 1, merge_res, strict=True)))
     components = {
         i: {v for v in k if v > -1} for i, k in enumerate(nx.connected_components(g))
     }

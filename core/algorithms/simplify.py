@@ -1,6 +1,7 @@
 import collections
 import logging
 import math
+import warnings
 
 import geopandas as gpd
 import momepy
@@ -52,19 +53,29 @@ def ccss_special_case(
         new_connections = [sl]
         split_points.append(shapely.get_point(sl, -1))
 
-    # two primes, connect them
-    elif primes.shape[0] == 2:
-        new_connections = [
-            shapely.shortest_line(primes.geometry.iloc[0], primes.geometry.iloc[1])
-        ]
-
     # multiple primes, connect two nearest on distinct Cs
     else:
         primes_on_c0 = primes[primes.intersects(conts_groups.geometry.iloc[0])]
         primes_on_c1 = primes[primes.intersects(conts_groups.geometry.iloc[1])]
-        new_connections = [
-            shapely.shortest_line(primes_on_c0.union_all(), primes_on_c1.union_all())
-        ]
+
+        if primes_on_c0.empty:
+            sl = shapely.shortest_line(
+                conts_groups.geometry.iloc[0], primes_on_c1.union_all()
+            )
+            new_connections = [sl]
+            split_points.append(shapely.get_point(sl, 0))
+        elif primes_on_c1.empty:
+            sl = shapely.shortest_line(
+                primes_on_c0.union_all(), conts_groups.geometry.iloc[1]
+            )
+            new_connections = [sl]
+            split_points.append(shapely.get_point(sl, -1))
+        else:
+            new_connections = [
+                shapely.shortest_line(
+                    primes_on_c0.union_all(), primes_on_c1.union_all()
+                )
+            ]
 
     # some nodes may have ended unconnected. Find them and reconnect them.
     combined_linework = pd.concat(
@@ -89,7 +100,12 @@ def filter_connections(primes, relevant_targets, conts_groups, new_connections):
     keeping = []
     conn_c = []
     conn_p = []
-    targets = pd.concat([primes.geometry, relevant_targets.geometry])
+    if not primes.empty and not relevant_targets.empty:
+        targets = pd.concat([primes.geometry, relevant_targets.geometry])
+    elif primes.empty:
+        targets = relevant_targets.geometry
+    else:
+        targets = primes.geometry
     for c in conts_groups.geometry:
         int_mask = shapely.intersects(new_connections, c)
         connections_intersecting_c = new_connections[int_mask]
@@ -1221,7 +1237,7 @@ def consolidate_nodes(gdf, tolerance=2):
                 y=np.array([pts[:, 1], mids[:, 1]]).T,
             )
             spiders.append(spider)
-    gdf = gdf.set_geometry(geom, drop=True)
+    gdf = gdf.set_geometry(geom)
     gdf["_status"] = status
 
     if spiders:
@@ -1414,7 +1430,9 @@ def get_artifacts(
     area_threshold_circles=5e4,
     isoareal_threshold_circles=0.75,
 ):
-    fas = momepy.FaceArtifacts(roads)
+    with warnings.catch_warnings():  # the second loop likey won't find threshold
+        warnings.filterwarnings("ignore", message="No threshold found")
+        fas = momepy.FaceArtifacts(roads)
     polygons = fas.polygons.set_crs(roads.crs)
 
     # rook neighbors

@@ -1100,7 +1100,12 @@ def simplify_singletons(
     # global and this step should happen only once, not for every artifact
     new = gpd.GeoDataFrame(geometry=to_add, crs=roads.crs)
     new["_status"] = "new"
-    new["geometry"] = new.line_merge().simplify(max_segment_length)
+    new["geometry"] = new.line_merge()
+    new = remove_false_nodes(
+        new[~(new.is_empty | new.geometry.isna())],
+        aggfunc={"_status": _status},
+    )
+    new.geometry = new.simplify(max_segment_length * 2)
     new_roads = pd.concat(
         [cleaned_roads, new],
         ignore_index=True,

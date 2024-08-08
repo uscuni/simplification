@@ -52,19 +52,29 @@ def ccss_special_case(
         new_connections = [sl]
         split_points.append(shapely.get_point(sl, -1))
 
-    # two primes, connect them
-    elif primes.shape[0] == 2:
-        new_connections = [
-            shapely.shortest_line(primes.geometry.iloc[0], primes.geometry.iloc[1])
-        ]
-
     # multiple primes, connect two nearest on distinct Cs
     else:
         primes_on_c0 = primes[primes.intersects(conts_groups.geometry.iloc[0])]
         primes_on_c1 = primes[primes.intersects(conts_groups.geometry.iloc[1])]
-        new_connections = [
-            shapely.shortest_line(primes_on_c0.union_all(), primes_on_c1.union_all())
-        ]
+
+        if primes_on_c0.empty:
+            sl = shapely.shortest_line(
+                conts_groups.geometry.iloc[0], primes_on_c1.union_all()
+            )
+            new_connections = [sl]
+            split_points.append(shapely.get_point(sl, 0))
+        elif primes_on_c1.empty:
+            sl = shapely.shortest_line(
+                primes_on_c0.union_all(), conts_groups.geometry.iloc[1]
+            )
+            new_connections = [sl]
+            split_points.append(shapely.get_point(sl, -1))
+        else:
+            new_connections = [
+                shapely.shortest_line(
+                    primes_on_c0.union_all(), primes_on_c1.union_all()
+                )
+            ]
 
     # some nodes may have ended unconnected. Find them and reconnect them.
     combined_linework = pd.concat(

@@ -959,7 +959,7 @@ def nx_gx_cluster(
 
     ### extend our list "to_add" with this artifact clusters' contribution:
     lines_to_add.extend(non_planar_connections)
-    to_add.extend(weld_edges(lines_to_add))
+    to_add.extend(lines_to_add)
 
 
 def angle_between_two_lines(line1, line2):

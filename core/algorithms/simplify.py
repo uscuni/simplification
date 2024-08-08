@@ -821,7 +821,6 @@ def nx_gx(
 
         # add new connections to a list of features to be added to the network
         to_add.extend(weld_edges(new_connections, ignore=remaining_nodes.geometry))
-        # to_add.extend(new_connections)
 
     # there may be loops or half-loops we are dropping. If they are protruding enough
     # we want to replace them by a deadend representing their space

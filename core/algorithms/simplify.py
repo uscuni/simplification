@@ -126,12 +126,6 @@ def filter_connections(primes, relevant_targets, conts_groups, new_connections):
                 unwanted.append(connections_intersecting_c)
                 keeping.append(connections_intersecting_primes[[np.argmin(lens)]])
 
-            # fork on two nodes on C
-            elif len(connections_intersecting_c) > 1:
-                lens = shapely.length(connections_intersecting_c)
-                unwanted.append(connections_intersecting_c)
-                keeping.append(connections_intersecting_c[[np.argmin(lens)]])
-
     if len(unwanted) > 0:
         if len(keeping) > 0:
             new_connections = np.concatenate(
@@ -187,8 +181,8 @@ def reconnect(conts_groups, new_connections, artifact, split_points, eps):
         new_connections_comps
     )
     additions = []
-    for c in conts_groups.geometry.buffer(eps):
-        mask = new_components.intersects(c)
+    for c in conts_groups.geometry:
+        mask = new_components.intersects(c.buffer(eps))
         if not mask.all():
             adds, splitters = snap_to_targets(
                 new_components[~mask].geometry, artifact.geometry, [c]
@@ -676,7 +670,7 @@ def nx_gx(
                 new_connections, splitters = voronoi_skeleton(
                     edges.geometry,  # use all edges as an input
                     poly=artifact.geometry,
-                    snap_to=relevant_targets.geometry,  # snap to nodes
+                    snap_to=relevant_targets.geometry,
                     max_segment_length=max_segment_length,
                     limit_distance=limit_distance,
                     # buffer = highest_hierarchy.length.sum() * 1.2

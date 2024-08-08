@@ -1591,7 +1591,7 @@ def simplify_loop(
 ):
     # Remove edges fully within the artifact (dangles).
     _, r_idx = roads.sindex.query(artifacts.geometry, predicate="contains")
-    roads = roads.drop(roads.index[r_idx])
+    roads = remove_false_nodes(roads.drop(roads.index[r_idx]))  # drop could cause new
 
     # Filter singleton artifacts
     rook = graph.Graph.build_contiguity(artifacts, rook=True)

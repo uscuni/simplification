@@ -1,5 +1,7 @@
 """Geometry-related helpers"""
 
+import warnings
+
 import geopandas as gpd
 import momepy
 import networkx as nx
@@ -246,8 +248,16 @@ def snap_to_targets(edgelines, poly, snap_to, secondary_snap_to=None):
         # endpoint from each snapping target
         for target in snap_to:
             sl = shapely.shortest_line(components.boundary.item(), target)
-            to_split.append(shapely.get_point(sl, -1))
-            to_add.append(sl)
+            if is_within(sl, poly):
+                to_split.append(shapely.get_point(sl, -1))
+                to_add.append(sl)
+            else:
+                warnings.warn(
+                    "Could not create a connection as it would lead outside "
+                    "of the artifact.",
+                    UserWarning,
+                    stacklevel=2,
+                )
     return to_add, to_split
 
 

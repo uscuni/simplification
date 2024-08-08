@@ -261,7 +261,7 @@ def snap_to_targets(edgelines, poly, snap_to, secondary_snap_to=None):
     return to_add, to_split
 
 
-def get_components(edgelines):
+def get_components(edgelines, ignore=None):
     edgelines = np.array(edgelines)
     start_points = shapely.get_point(edgelines, 0)
     end_points = shapely.get_point(edgelines, -1)
@@ -270,6 +270,9 @@ def get_components(edgelines):
             shapely.get_coordinates(np.concatenate([start_points, end_points])), axis=0
         )
     )
+    if ignore is not None:
+        mask = np.isin(points, ignore)
+        points = points[~mask]
     # query LineString geometry to identify points intersecting 2 geometries
     inp, res = shapely.STRtree(shapely.boundary(edgelines)).query(
         points, predicate="intersects"
@@ -296,11 +299,14 @@ def get_components(edgelines):
     return labels
 
 
-def weld_edges(edgelines):
-    """lightweight version of remove_false_nodes"""
+def weld_edges(edgelines, ignore=None):
+    """lightweight version of remove_false_nodes
+
+    optionally ignore some nodes - do not weld lines
+    """
     if len(edgelines) < 2:
         return edgelines
-    labels = get_components(edgelines)
+    labels = get_components(edgelines, ignore=ignore)
     return (
         gpd.GeoSeries(edgelines)
         .groupby(labels)

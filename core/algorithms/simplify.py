@@ -536,7 +536,7 @@ def nx_gx_identical(
             limit_distance=limit_distance,
             snap_to=relevant_nodes,
         )
-        to_add.extend(weld_edges(lines))
+        to_add.extend(weld_edges(lines, ignore=relevant_nodes.geometry))
     # if the angle between two lines is too sharp, replace with a direct connection
     # between the nodes
     elif len(lines) == 2:
@@ -820,7 +820,7 @@ def nx_gx(
             )
 
         # add new connections to a list of features to be added to the network
-        to_add.extend(weld_edges(new_connections))
+        to_add.extend(weld_edges(new_connections, ignore=remaining_nodes.geometry))
         # to_add.extend(new_connections)
 
     # there may be loops or half-loops we are dropping. If they are protruding enough

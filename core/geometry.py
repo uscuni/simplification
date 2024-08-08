@@ -271,7 +271,9 @@ def get_components(edgelines):
         )
     )
     # query LineString geometry to identify points intersecting 2 geometries
-    inp, res = shapely.STRtree(edgelines).query(points, predicate="intersects")
+    inp, res = shapely.STRtree(shapely.boundary(edgelines)).query(
+        points, predicate="intersects"
+    )
     unique, counts = np.unique(inp, return_counts=True)
     mask = np.isin(inp, unique[counts == 2])
     merge_res = res[mask]

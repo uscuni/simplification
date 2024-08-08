@@ -1,6 +1,7 @@
 import collections
 import logging
 import math
+import warnings
 
 import geopandas as gpd
 import momepy
@@ -99,7 +100,12 @@ def filter_connections(primes, relevant_targets, conts_groups, new_connections):
     keeping = []
     conn_c = []
     conn_p = []
-    targets = pd.concat([primes.geometry, relevant_targets.geometry])
+    if not primes.empty and not relevant_targets.empty:
+        targets = pd.concat([primes.geometry, relevant_targets.geometry])
+    elif primes.empty:
+        targets = relevant_targets.geometry
+    else:
+        targets = primes.geometry
     for c in conts_groups.geometry:
         int_mask = shapely.intersects(new_connections, c)
         connections_intersecting_c = new_connections[int_mask]
@@ -1231,7 +1237,7 @@ def consolidate_nodes(gdf, tolerance=2):
                 y=np.array([pts[:, 1], mids[:, 1]]).T,
             )
             spiders.append(spider)
-    gdf = gdf.set_geometry(geom, drop=True)
+    gdf = gdf.set_geometry(geom)
     gdf["_status"] = status
 
     if spiders:
@@ -1424,7 +1430,9 @@ def get_artifacts(
     area_threshold_circles=5e4,
     isoareal_threshold_circles=0.75,
 ):
-    fas = momepy.FaceArtifacts(roads)
+    with warnings.catch_warnings():  # the second loop likey won't find threshold
+        warnings.filterwarnings("ignore", message="No threshold found")
+        fas = momepy.FaceArtifacts(roads)
     polygons = fas.polygons.set_crs(roads.crs)
 
     # rook neighbors

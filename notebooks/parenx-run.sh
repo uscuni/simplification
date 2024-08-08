@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # getting subfolders in temp-parenx
-FOLDERS=$(find ./temp-parenx -type d -mindepth 1) 
-
+FOLDERS=$(find ./data/*/parenx -type d -mindepth 1) 
+echo $FOLDERS
 # run skeletonization and voronoi for each subfolder
 for folder in $FOLDERS
 do

@@ -970,10 +970,12 @@ def nx_gx_cluster(
         edges.sindex.query(cluster_geom.buffer(eps), predicate="contains")
     ].index.to_list()
     connection = edges.drop(lines_to_drop).geometry
+    # non-planar lines are not connections
+    connection = connection[~connection.crosses(cluster_geom)]
 
     # if there's nothing to drop due to planarity, there's nothing to replace and
     # we can stop here
-    if not lines_to_drop:
+    if not lines_to_drop or connection.empty:
         return
 
     # get edges on boundary

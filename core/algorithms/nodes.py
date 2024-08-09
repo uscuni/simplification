@@ -167,6 +167,11 @@ def consolidate_nodes(gdf, tolerance=2, preserve_ends=False):
     # TODO: make it work on GeoDataFrames preserving attributes
     from sklearn.cluster import DBSCAN
 
+    if isinstance(gdf, gpd.GeoSeries):
+        gdf = gdf.to_frame("geometry")
+    elif isinstance(gdf, np.ndarray):
+        gdf = gpd.GeoDataFrame(geometry=gdf)
+
     nodes = momepy.nx_to_gdf(momepy.node_degree(momepy.gdf_to_nx(gdf)), lines=False)
 
     if preserve_ends:
@@ -175,10 +180,20 @@ def consolidate_nodes(gdf, tolerance=2, preserve_ends=False):
         )  # keep at least one meter of original geometry around each end
         nodes = nodes[nodes.degree > 1].copy()
 
+        # if all we have are ends, return the original
+        if nodes.empty:
+            gdf["_status"] = "original"
+            return gdf
+
     # get clusters of nodes which should be consolidated
     db = DBSCAN(eps=tolerance, min_samples=2).fit(nodes.get_coordinates())
     nodes["lab"] = db.labels_
     change = nodes[nodes.lab > -1]
+
+    # no change needed, return the original
+    if change.empty:
+        gdf["_status"] = "original"
+        return gdf
 
     gdf = gdf.copy()
     # get geometry

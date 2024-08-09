@@ -8,6 +8,8 @@ import shapely
 from libpysal import graph
 from scipy import spatial
 
+from .algorithms.nodes import consolidate_nodes
+
 __all__ = ["is_within", "voronoi_skeleton"]
 
 
@@ -53,6 +55,7 @@ def voronoi_skeleton(
     buffer=None,
     secondary_snap_to=None,
     limit_distance=2,
+    consolidation_tolerance=None,
 ):
     """
     Returns average geometry.
@@ -70,6 +73,9 @@ def voronoi_skeleton(
         distance for interpolation
     buffer : float
         optional custom buffer distance for dealing with Voronoi infinity issues
+    consolidation_tolerance : float
+        tolerance passed to node consolidation within the resulting skeleton. If None,
+        no consolidation happens
 
     Returns array of averaged geometries
     """
@@ -78,7 +84,7 @@ def voronoi_skeleton(
     if not poly:
         poly = shapely.box(*lines.total_bounds)
     # get an additional line around the lines to avoid infinity issues with Voronoi
-    extended_lines = list(lines) + [poly.buffer(buffer).exterior]
+    extended_lines = list(lines) + [poly.buffer(buffer).boundary]
 
     # interpolate lines to represent them as points for Voronoi
     shapely_lines = extended_lines
@@ -146,8 +152,12 @@ def voronoi_skeleton(
         # check if a, b lines share a node
         intersection = shapely_lines[b].intersection(shapely_lines[a])
         # if they do, add shortest line from the edgeline to the shared node and
-        # combine it with the edgeline
-        if not intersection.is_empty:
+        # combine it with the edgeline. Also, avoid an inner loop in more complex input
+        # that would create connection across
+        if not intersection.is_empty and not (
+            intersection.geom_type == "MultiPoint"
+            and (len(intersection.geoms) == 2 and len(lines) != 2)
+        ):
             # we need union of edgeline and shortest because snap is buggy in GEOS
             # and line_merge as well. This results in a MultiLineString but we can
             # deal with those later. For now, we just need this extended edgeline to
@@ -195,7 +205,17 @@ def voronoi_skeleton(
         edgelines = shapely.simplify(edgelines, max_segment_length)
     # drop empty
     edgelines = edgelines[edgelines != None]  # noqa: E711
-    return edgelines[shapely.length(edgelines) > 0], splitters
+
+    edgelines = shapely.line_merge(edgelines[shapely.length(edgelines) > 0])
+    if np.unique(shapely.get_type_id(edgelines)).shape[0] > 1:
+        edgelines = shapely.get_parts(edgelines)
+
+    if consolidation_tolerance and edgelines.shape[0] > 0:
+        edgelines = consolidate_nodes(
+            edgelines, tolerance=consolidation_tolerance, preserve_ends=True
+        ).geometry.to_numpy()
+
+    return edgelines, splitters
 
 
 def snap_to_targets(edgelines, poly, snap_to, secondary_snap_to=None):

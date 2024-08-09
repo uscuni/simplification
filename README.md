@@ -13,40 +13,7 @@ The curated & tested code base for the project & publication, including:
 * The novel algorithm(s) developed and demonstrated; and
 * Utility and plotting functionality to support the publication and algorithm(s)
 
-```
-- core
-    |-- __init__.py
-    |-- geometry.py
-    |-- protocol.py
-    |-- stats.py
-    |-- utils.py
-    |-- algorithms
-    |   |-- __init__.py
-    |   |-- common.py
-    |   |-- simplify.py
-    |   |-- triangles.py
-    |-- viz
-    |   |-- __init__.py
-    |   |-- context.py
-    |   |-- h3_hex.py
-    |   |-- protocol.py
-    |-- tests
-    |   |-- __init__.py
-    |   |-- conftest.py
-    |   |-- test_geometry.py
-    |   |-- test_protocol.py
-    |   |-- test_stats.py
-    |   |-- test_utils.py
-    |   |-- test_viz_context.py
-    |   |-- test_viz_h3_hex.py
-    |   |-- test_viz_protocol.py
-    |   |-- baseline_images
-    |   |   | -- *controls from image comparison*
-    |   |-- data
-    |   |   | -- test_data_liege.gpkg
-```
-
-### `./code/`
+### `./notebooks/`
 
 Parameterized notebooks.
 
@@ -85,15 +52,6 @@ Each FUA directory contains (or will contain) the following items housing bespok
 * `original/`
 * `parenex/`
 * `polygons/`
-
-### `./envs/`
-
-Install and activate the `conda` (or mamba) environment, which creates an environment name `simplification`:
-
-```
-conda env create -f environment.yml
-conda activate simplification
-```
 
 ### `./notes/`
 
@@ -136,3 +94,12 @@ Demonstration visualizations on specific types of urban form.
     * `parkinglot.mp4`
     * `roandabout.mp4`
   * `points.json` - use case locations
+
+### `environment.yml`
+
+Install and activate the `conda` (or mamba) environment, which creates an environment name `simplification`:
+
+```
+conda env create -f environment.yml
+conda activate simplification
+```

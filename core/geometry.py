@@ -1,5 +1,7 @@
 """Geometry-related helpers"""
 
+import warnings
+
 import geopandas as gpd
 import momepy
 import networkx as nx
@@ -196,8 +198,6 @@ def voronoi_skeleton(
         edgelines = shapely.simplify(edgelines, max_segment_length)
     # drop empty
     edgelines = edgelines[edgelines != None]  # noqa: E711
-    # TODO: shall we try calling line_merge before returning? It was working weirdly in
-    # TODO: some occasions
     return edgelines[shapely.length(edgelines) > 0], splitters
 
 
@@ -228,7 +228,7 @@ def snap_to_targets(edgelines, poly, snap_to, secondary_snap_to=None):
                 or comp_counts[comp_label] == 1
                 or (
                     not comp.intersects(shapely.union_all(snap_to))
-                )  # ! this fixes one thing but may break others  # noqa: E501
+                )  # ! this fixes one thing but may break others
             ):
                 # add segment composed of the shortest line to the nearest snapping
                 # target. We use boundary to snap to endpoints of edgelines only
@@ -248,9 +248,70 @@ def snap_to_targets(edgelines, poly, snap_to, secondary_snap_to=None):
         # endpoint from each snapping target
         for target in snap_to:
             sl = shapely.shortest_line(components.boundary.item(), target)
-            to_split.append(shapely.get_point(sl, -1))
-            to_add.append(sl)
+            if is_within(sl, poly):
+                to_split.append(shapely.get_point(sl, -1))
+                to_add.append(sl)
+            else:
+                warnings.warn(
+                    "Could not create a connection as it would lead outside "
+                    "of the artifact.",
+                    UserWarning,
+                    stacklevel=2,
+                )
     return to_add, to_split
+
+
+def get_components(edgelines, ignore=None):
+    edgelines = np.array(edgelines)
+    start_points = shapely.get_point(edgelines, 0)
+    end_points = shapely.get_point(edgelines, -1)
+    points = shapely.points(
+        np.unique(
+            shapely.get_coordinates(np.concatenate([start_points, end_points])), axis=0
+        )
+    )
+    if ignore is not None:
+        mask = np.isin(points, ignore)
+        points = points[~mask]
+    # query LineString geometry to identify points intersecting 2 geometries
+    inp, res = shapely.STRtree(shapely.boundary(edgelines)).query(
+        points, predicate="intersects"
+    )
+    unique, counts = np.unique(inp, return_counts=True)
+    mask = np.isin(inp, unique[counts == 2])
+    merge_res = res[mask]
+    merge_inp = inp[mask]
+    closed = np.arange(len(edgelines))[shapely.is_closed(edgelines)]
+    mask = np.isin(merge_res, closed) | np.isin(merge_inp, closed)
+    merge_res = merge_res[~mask]
+    merge_inp = merge_inp[~mask]
+    g = nx.Graph(list(zip((merge_inp * -1) - 1, merge_res, strict=True)))
+    components = {
+        i: {v for v in k if v > -1} for i, k in enumerate(nx.connected_components(g))
+    }
+    component_labels = {value: key for key in components for value in components[key]}
+    labels = pd.Series(component_labels, index=range(len(edgelines)))
+
+    max_label = len(edgelines) - 1 if pd.isna(labels.max()) else int(labels.max())
+    filling = pd.Series(range(max_label + 1, max_label + len(edgelines) + 1))
+    labels = labels.fillna(filling)
+
+    return labels.values
+
+
+def weld_edges(edgelines, ignore=None):
+    """lightweight version of remove_false_nodes
+
+    optionally ignore some nodes - do not weld lines
+    """
+    if len(edgelines) < 2:
+        return edgelines
+    labels = get_components(edgelines, ignore=ignore)
+    return (
+        gpd.GeoSeries(edgelines)
+        .groupby(labels)
+        .agg(lambda x: shapely.line_merge(shapely.GeometryCollection(x.values)))
+    ).tolist()
 
 
 def remove_false_nodes(gdf, aggfunc="first", **kwargs):
@@ -266,41 +327,17 @@ def remove_false_nodes(gdf, aggfunc="first", **kwargs):
     _type_
         _description_
     """
+    if len(gdf) < 2:
+        return gdf
+
     if isinstance(gdf, gpd.GeoSeries):
-        gdf = gdf.to_series("geometry")
-    # extract array of coordinates and number per geometry
-    start_points = shapely.get_point(gdf.geometry, 0)
-    end_points = shapely.get_point(gdf.geometry, -1)
+        gdf = gdf.to_frame("geometry")
 
-    points = shapely.points(
-        np.unique(
-            shapely.get_coordinates(np.concatenate([start_points, end_points])), axis=0
-        )
-    )
-    # query LineString geometry to identify points intersecting 2 geometries
-    inp, res = gdf.sindex.query(points, predicate="intersects")
-    unique, counts = np.unique(inp, return_counts=True)
-    mask = np.isin(inp, unique[counts == 2])
-    merge_res = res[mask]
-    merge_inp = inp[mask]
-    closed = np.arange(len(gdf))[gdf.is_closed]
-    mask = np.isin(merge_res, closed) | np.isin(merge_inp, closed)
-    merge_res = merge_res[~mask]
-    merge_inp = merge_inp[~mask]
-    g = nx.Graph(list(zip(merge_inp * -1, merge_res, strict=True)))
-    components = {
-        i: {v for v in k if v > -1} for i, k in enumerate(nx.connected_components(g))
-    }
-    component_labels = {value: key for key in components for value in components[key]}
-    labels = pd.Series(component_labels, index=range(len(gdf)))
-
-    max_label = int(labels.max())
-    filling = pd.Series(range(max_label + 1, max_label + len(gdf) + 1))
-    labels = labels.fillna(filling)
+    labels = get_components(gdf.geometry)
 
     # Process non-spatial component
     data = gdf.drop(labels=gdf.geometry.name, axis=1)
-    aggregated_data = data.groupby(by=labels.values).agg(aggfunc, **kwargs)
+    aggregated_data = data.groupby(by=labels).agg(aggfunc, **kwargs)
     aggregated_data.columns = aggregated_data.columns.to_flat_index()
 
     # Process spatial component
@@ -308,7 +345,7 @@ def remove_false_nodes(gdf, aggfunc="first", **kwargs):
         merged_geom = shapely.line_merge(shapely.GeometryCollection(block.values))
         return merged_geom
 
-    g = gdf.groupby(group_keys=False, by=labels.values)[gdf.geometry.name].agg(
+    g = gdf.groupby(group_keys=False, by=labels)[gdf.geometry.name].agg(
         merge_geometries
     )
     aggregated_geometry = gpd.GeoDataFrame(g, geometry=gdf.geometry.name, crs=gdf.crs)

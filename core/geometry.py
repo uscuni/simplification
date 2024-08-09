@@ -296,7 +296,7 @@ def get_components(edgelines, ignore=None):
     filling = pd.Series(range(max_label + 1, max_label + len(edgelines) + 1))
     labels = labels.fillna(filling)
 
-    return labels
+    return labels.values
 
 
 def weld_edges(edgelines, ignore=None):
@@ -337,7 +337,7 @@ def remove_false_nodes(gdf, aggfunc="first", **kwargs):
 
     # Process non-spatial component
     data = gdf.drop(labels=gdf.geometry.name, axis=1)
-    aggregated_data = data.groupby(by=labels.values).agg(aggfunc, **kwargs)
+    aggregated_data = data.groupby(by=labels).agg(aggfunc, **kwargs)
     aggregated_data.columns = aggregated_data.columns.to_flat_index()
 
     # Process spatial component
@@ -345,7 +345,7 @@ def remove_false_nodes(gdf, aggfunc="first", **kwargs):
         merged_geom = shapely.line_merge(shapely.GeometryCollection(block.values))
         return merged_geom
 
-    g = gdf.groupby(group_keys=False, by=labels.values)[gdf.geometry.name].agg(
+    g = gdf.groupby(group_keys=False, by=labels)[gdf.geometry.name].agg(
         merge_geometries
     )
     aggregated_geometry = gpd.GeoDataFrame(g, geometry=gdf.geometry.name, crs=gdf.crs)

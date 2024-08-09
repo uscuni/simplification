@@ -879,6 +879,7 @@ def nx_gx_cluster(
     to_drop,
     to_add,
     max_segment_length=1,
+    min_dangle_length=20,
     eps=1e-4,
 ):
     """treat an n-artifact cluster: merge all artifact polygons; drop
@@ -922,20 +923,47 @@ def nx_gx_cluster(
     queen = graph.Graph.build_fuzzy_contiguity(
         edges_on_boundary.difference(buffered_nodes_to_keep)
     )
-    edges_on_boundary["comp"] = queen.component_labels
+    if queen.n_components > 1:
+        skeletonization_input = edges_on_boundary.dissolve(
+            by=queen.component_labels
+        ).geometry
+    else:
+        # a loop that has only a single entry point - use individual segments
+        merged_edges = edges_on_boundary.dissolve().line_merge().item()
+        skeletonization_input = list(
+            map(
+                shapely.LineString,
+                zip(merged_edges.coords[:-1], merged_edges.coords[1:], strict=True),
+            )
+        )
 
     # skeletonize
     skel, _ = voronoi_skeleton(
-        edges_on_boundary.dissolve(by="comp").geometry,
+        skeletonization_input,
         cluster_geom,
         snap_to=False,
         max_segment_length=max_segment_length,
         limit_distance=1e-4,
     )
-
     lines_to_drop = edges.iloc[
         edges.sindex.query(cluster_geom.buffer(eps), predicate="contains")
     ].index.to_list()
+
+    # if we used only segments, we need to remove dangles
+    if queen.n_components == 1:
+        skel = gpd.GeoSeries(skel)
+        skel = skel[
+            skel.disjoint(edges_on_boundary.union_all())
+            | skel.intersects(edges.drop(lines_to_drop).geometry.item())
+        ]
+        welded = gpd.GeoSeries(weld_edges(skel))
+        skel = welded[
+            ~(
+                ((welded.length < min_dangle_length) & (is_dangle(welded)))
+                & welded.disjoint(edges.drop(lines_to_drop).geometry.item())
+            )
+        ]
+
     lines_to_add = list(skel)
 
     to_drop.extend(lines_to_drop)
@@ -979,6 +1007,26 @@ def nx_gx_cluster(
     ### extend our list "to_add" with this artifact clusters' contribution:
     lines_to_add.extend(non_planar_connections)
     to_add.extend(lines_to_add)
+
+
+def is_dangle(edgelines):
+    first = shapely.get_point(edgelines, 0)
+    last = shapely.get_point(edgelines, -1)
+    first_ix, edge_ix1 = edgelines.sindex.query(first, predicate="intersects")
+    first_sum = sparse.coo_array(
+        ([True] * len(first_ix), (first_ix, edge_ix1)),
+        shape=(len(edgelines), len(edgelines)),
+        dtype=np.bool_,
+    ).sum(axis=1)
+
+    last_ix, edge_ix1 = edgelines.sindex.query(last, predicate="intersects")
+    last_sum = sparse.coo_array(
+        ([True] * len(last_ix), (last_ix, edge_ix1)),
+        shape=(len(edgelines), len(edgelines)),
+        dtype=np.bool_,
+    ).sum(axis=1)
+
+    return (first_sum == 1) | (last_sum == 1)
 
 
 def angle_between_two_lines(line1, line2):
@@ -1150,7 +1198,12 @@ def _status(x):
 
 
 def simplify_clusters(
-    artifacts, roads, max_segment_length=1, eps=1e-4, simplification_factor=2
+    artifacts,
+    roads,
+    max_segment_length=1,
+    eps=1e-4,
+    simplification_factor=2,
+    min_dangle_length=20,
 ):
     # Get nodes from the network.
     nodes = momepy.nx_to_gdf(momepy.node_degree(momepy.gdf_to_nx(roads)), lines=False)
@@ -1175,6 +1228,7 @@ def simplify_clusters(
             to_add=to_add,
             eps=eps,
             max_segment_length=max_segment_length,
+            min_dangle_length=min_dangle_length,
         )
 
     cleaned_roads = roads.drop(to_drop)
@@ -1379,7 +1433,7 @@ def simplify_pairs(
     artifacts["E"] = e_
     artifacts["S"] = s_
 
-    # Filer artifacts caused by non-planar intersections.
+    # Filter artifacts caused by non-planar intersections.
     artifacts["non_planar"] = artifacts["stroke_count"] > artifacts["node_count"]
     a_idx, _ = roads.sindex.query(artifacts.geometry.boundary, predicate="overlaps")
     artifacts.loc[artifacts.index[np.unique(a_idx)], "non_planar"] = True
@@ -1478,6 +1532,7 @@ def simplify_pairs(
             roads_cleaned,
             max_segment_length=max_segment_length,
             simplification_factor=simplification_factor,
+            min_dangle_length=min_dangle_length,
         )
     return roads_cleaned
 
@@ -1669,6 +1724,7 @@ def simplify_loop(
             max_segment_length=max_segment_length,
             simplification_factor=simplification_factor,
             eps=eps,
+            min_dangle_length=min_dangle_length,
         )
 
     return roads

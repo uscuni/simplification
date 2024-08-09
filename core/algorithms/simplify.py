@@ -890,6 +890,7 @@ def nx_gx_cluster(
     lines_to_drop = edges.iloc[
         edges.sindex.query(cluster_geom.buffer(eps), predicate="contains")
     ].index.to_list()
+    connection = edges.drop(lines_to_drop).geometry
 
     # if there's nothing to drop due to planarity, there's nothing to replace and
     # we can stop here
@@ -933,7 +934,7 @@ def nx_gx_cluster(
     queen = graph.Graph.build_fuzzy_contiguity(
         edges_on_boundary.difference(buffered_nodes_to_keep)
     )
-    if queen.n_components > 1:
+    if len(connection) > 1:
         skeletonization_input = edges_on_boundary.dissolve(
             by=queen.component_labels
         ).geometry
@@ -957,8 +958,8 @@ def nx_gx_cluster(
     )
 
     # if we used only segments, we need to remove dangles
-    if queen.n_components == 1:
-        connection = edges.drop(lines_to_drop).geometry.item()
+    if len(connection) == 1:
+        connection = connection.item()
         skel = gpd.GeoSeries(skel)
         skel = skel[
             skel.disjoint(edges_on_boundary.union_all()) | skel.intersects(connection)

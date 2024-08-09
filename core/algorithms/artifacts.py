@@ -1022,6 +1022,10 @@ def nx_gx_cluster(
     else:
         # a loop that has only a single entry point - use individual segments
         merged_edges = edges_on_boundary.dissolve().line_merge().item()
+        if merged_edges.geom_type != "LineString":
+            # this is a fallback for corner cases. It should result in the nearly the
+            # same skeleton in the end but ensures we work with a single-part geometry
+            merged_edges = shapely.concave_hull(merged_edges).exterior
         skeletonization_input = list(
             map(
                 shapely.LineString,

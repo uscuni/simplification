@@ -887,6 +887,15 @@ def nx_gx_cluster(
     all lines fully within the merged polygon; skeletonize and keep only
     skeletonized edges and connecting nodes"""
 
+    lines_to_drop = edges.iloc[
+        edges.sindex.query(cluster_geom.buffer(eps), predicate="contains")
+    ].index.to_list()
+
+    # if there's nothing to drop due to planarity, there's nothing to replace and
+    # we can stop here
+    if not lines_to_drop:
+        return
+
     # get edges on boundary
     edges_on_boundary = edges.intersection(cluster_geom.boundary.buffer(eps)).explode(
         ignore_index=True
@@ -946,22 +955,19 @@ def nx_gx_cluster(
         max_segment_length=max_segment_length,
         limit_distance=1e-4,
     )
-    lines_to_drop = edges.iloc[
-        edges.sindex.query(cluster_geom.buffer(eps), predicate="contains")
-    ].index.to_list()
 
     # if we used only segments, we need to remove dangles
     if queen.n_components == 1:
+        connection = edges.drop(lines_to_drop).geometry.item()
         skel = gpd.GeoSeries(skel)
         skel = skel[
-            skel.disjoint(edges_on_boundary.union_all())
-            | skel.intersects(edges.drop(lines_to_drop).geometry.item())
+            skel.disjoint(edges_on_boundary.union_all()) | skel.intersects(connection)
         ]
         welded = gpd.GeoSeries(weld_edges(skel))
         skel = welded[
             ~(
                 ((welded.length < min_dangle_length) & (is_dangle(welded)))
-                & welded.disjoint(edges.drop(lines_to_drop).geometry.item())
+                & welded.disjoint(connection)
             )
         ]
 

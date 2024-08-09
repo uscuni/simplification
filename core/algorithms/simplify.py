@@ -390,6 +390,7 @@ def loop(
             flow_mode=True,
         ).stroke_gdf()
         candidate = dangle_coins.loc[dangle_coins.length.idxmax()].geometry
+
         if candidate.intersects(snap_to.union_all().buffer(eps)) and (
             candidate.length > min_dangle_length
         ):

@@ -421,6 +421,7 @@ def simplify_network(
     min_dangle_length=20,
     limit_distance=2,
     simplification_factor=2,
+    consolidation_tolerance=10,
     area_threshold_blocks=1e5,
     isoareal_threshold_blocks=0.5,
     area_threshold_circles=5e4,
@@ -447,6 +448,7 @@ def simplify_network(
         min_dangle_length=min_dangle_length,
         limit_distance=limit_distance,
         simplification_factor=simplification_factor,
+        consolidation_tolerance=consolidation_tolerance,
         eps=eps,
     )
 
@@ -468,6 +470,7 @@ def simplify_network(
         min_dangle_length=min_dangle_length,
         limit_distance=limit_distance,
         simplification_factor=simplification_factor,
+        consolidation_tolerance=consolidation_tolerance,
         eps=eps,
     )
 
@@ -481,6 +484,7 @@ def simplify_loop(
     min_dangle_length=20,
     limit_distance=2,
     simplification_factor=2,
+    consolidation_tolerance=10,
     eps=1e-4,
 ):
     # Remove edges fully within the artifact (dangles).
@@ -508,6 +512,7 @@ def simplify_loop(
             roads,
             max_segment_length=max_segment_length,
             simplification_factor=simplification_factor,
+            consolidation_tolerance=consolidation_tolerance,
         )
     if not doubles.empty:
         roads = simplify_pairs(
@@ -517,6 +522,7 @@ def simplify_loop(
             min_dangle_length=min_dangle_length,
             limit_distance=limit_distance,
             simplification_factor=simplification_factor,
+            consolidation_tolerance=consolidation_tolerance,
         )
     if not clusters.empty:
         roads = simplify_clusters(
@@ -526,6 +532,7 @@ def simplify_loop(
             simplification_factor=simplification_factor,
             eps=eps,
             min_dangle_length=min_dangle_length,
+            consolidation_tolerance=consolidation_tolerance,
         )
 
     return roads

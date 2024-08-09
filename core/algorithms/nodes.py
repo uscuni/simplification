@@ -136,7 +136,7 @@ def remove_false_nodes(gdf, aggfunc="first", **kwargs):
     return aggregated
 
 
-def consolidate_nodes(gdf, tolerance=2):
+def consolidate_nodes(gdf, tolerance=2, preserve_ends=False):
     """Return geometry with consolidated nodes.
 
     Replace clusters of nodes with a single node (weighted centroid
@@ -153,6 +153,8 @@ def consolidate_nodes(gdf, tolerance=2):
         The maximum distance between two nodes for one to be considered
         as in the neighborhood of the other. Nodes within tolerance are
         considered a part of a single cluster and will be consolidated.
+    preserve_ends : bool
+        If True, nodes of a degree 1 will be excluded from the consolidation
 
     Returns
     -------
@@ -165,12 +167,18 @@ def consolidate_nodes(gdf, tolerance=2):
     # TODO: make it work on GeoDataFrames preserving attributes
     from sklearn.cluster import DBSCAN
 
-    nodes = momepy.nx_to_gdf((momepy.gdf_to_nx(gdf)), lines=False)
+    nodes = momepy.nx_to_gdf(momepy.node_degree(momepy.gdf_to_nx(gdf)), lines=False)
+
+    if preserve_ends:
+        ends = nodes[nodes.degree == 1].buffer(
+            1
+        )  # keep at least one meter of original geometry around each end
+        nodes = nodes[nodes.degree > 1].copy()
 
     # get clusters of nodes which should be consolidated
     db = DBSCAN(eps=tolerance, min_samples=2).fit(nodes.get_coordinates())
     nodes["lab"] = db.labels_
-    change = nodes[nodes.lab > -1].set_index("lab")
+    change = nodes[nodes.lab > -1]
 
     gdf = gdf.copy()
     # get geometry
@@ -181,18 +189,24 @@ def consolidate_nodes(gdf, tolerance=2):
     # with spider-like geometry to the weighted centroid of a cluster
     spiders = []
     midpoints = []
-    for cl in change.index.unique():
-        cluster = change.loc[cl]
-        cookie = (
-            cluster.buffer(tolerance / 2).union_all().convex_hull
-        )  # TODO: not optimal but avoids some multilinestrings
+
+    clusters = change.dissolve(change.lab)
+    cookies = clusters.buffer(
+        tolerance / 2
+    ).convex_hull  # TODO: not optimal but avoids some MultiLineStrings but not all
+    if preserve_ends:
+        cookies = cookies.to_frame().overlay(ends.to_frame(), how="difference")
+
+    for cluster, cookie in zip(clusters.geometry, cookies.geometry, strict=True):
         inds = geom.sindex.query(cookie, predicate="intersects")
         pts = geom.iloc[inds].intersection(cookie.boundary).get_coordinates()
         pts = shapely.get_coordinates(geom.iloc[inds].intersection(cookie.boundary))
         if pts.shape[0] > 0:
-            geom.iloc[inds] = geom.iloc[inds].difference(cookie)
+            geom.iloc[inds] = geom.iloc[inds].difference(
+                cookie
+            )  # TODO: this may result in MultiLineString - we need to avoid that
             status.iloc[inds] = "snapped"
-            midpoint = np.mean(cluster.get_coordinates(), axis=0)
+            midpoint = np.mean(shapely.get_coordinates(cluster), axis=0)
             midpoints.append(midpoint)
             mids = np.array(
                 [
@@ -205,6 +219,7 @@ def consolidate_nodes(gdf, tolerance=2):
                 y=np.array([pts[:, 1], mids[:, 1]]).T,
             )
             spiders.append(spider)
+
     gdf = gdf.set_geometry(geom)
     gdf["_status"] = status
 

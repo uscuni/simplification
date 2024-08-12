@@ -297,6 +297,7 @@ def one_remaining(
     max_segment_length,
     split_points,
     limit_distance,
+    consolidation_tolerance,
 ):
     # find the nearest relevant target
     remaining_nearest, target_nearest = relevant_targets.sindex.nearest(
@@ -320,6 +321,7 @@ def one_remaining(
             max_segment_length=max_segment_length,
             buffer=limit_distance,  # TODO: figure out if we need this
             limit_distance=limit_distance,
+            consolidation_tolerance=consolidation_tolerance,
         )
         split_points.extend(splitters)
 
@@ -335,6 +337,7 @@ def multiple_remaining(
     split_points,
     snap_to,
     limit_distance,
+    consolidation_tolerance,
 ):
     # use skeleton to ensure all nodes are naturally connected
     new_connections, splitters = voronoi_skeleton(
@@ -345,6 +348,7 @@ def multiple_remaining(
         secondary_snap_to=highest_hierarchy.geometry,
         limit_distance=limit_distance,
         # buffer = highest_hierarchy.length.sum() * 1.2
+        consolidation_tolerance=consolidation_tolerance,
     )
     split_points.extend(splitters)
 
@@ -360,6 +364,7 @@ def one_remaining_c(
     max_segment_length,
     split_points,
     limit_distance,
+    consolidation_tolerance,
 ):
     # create a new connection as the shortest straight line to any C
     new_connections = shapely.shortest_line(
@@ -380,6 +385,7 @@ def one_remaining_c(
             max_segment_length=max_segment_length,
             limit_distance=limit_distance,
             # buffer = highest_hierarchy.length.sum() * 1.2
+            consolidation_tolerance=consolidation_tolerance,
         )
     split_points.extend(splitters)
 
@@ -426,6 +432,7 @@ def loop(
         max_segment_length=max_segment_length,
         limit_distance=limit_distance,
         # buffer = highest_hierarchy.length.sum() * 1.2
+        consolidation_tolerance=0,
     )
     split_points.extend(splitters)
 
@@ -563,6 +570,7 @@ def nx_gx_identical(
     angle,
     max_segment_length=1,
     limit_distance=2,
+    consolidation_tolerance=10,
     eps=1e-4,
 ):
     """If there are  1+ identical continuity groups, and more than 1 node (n>=2)
@@ -598,6 +606,7 @@ def nx_gx_identical(
             max_segment_length=max_segment_length,
             limit_distance=limit_distance,
             snap_to=relevant_nodes,
+            consolidation_tolerance=consolidation_tolerance,
         )
         to_add.extend(weld_edges(lines, ignore=relevant_nodes.geometry))
     # if the angle between two lines is too sharp, replace with a direct connection
@@ -627,6 +636,7 @@ def nx_gx(
     max_segment_length=1,
     limit_distance=2,
     min_dangle_length=10,
+    consolidation_tolerance=10,
     eps=1e-4,
 ):
     """
@@ -748,6 +758,7 @@ def nx_gx(
                     max_segment_length=max_segment_length,
                     limit_distance=limit_distance,
                     # buffer = highest_hierarchy.length.sum() * 1.2
+                    consolidation_tolerance=consolidation_tolerance,
                 )
 
                 # if there are multiple components, limit_distance was too drastic and
@@ -767,6 +778,7 @@ def nx_gx(
                         max_segment_length=max_segment_length,
                         limit_distance=eps,
                         # buffer = highest_hierarchy.length.sum() * 1.2
+                        consolidation_tolerance=consolidation_tolerance,
                     )
                 split_points.extend(splitters)
 
@@ -824,6 +836,7 @@ def nx_gx(
                     max_segment_length,
                     split_points,
                     limit_distance,
+                    consolidation_tolerance,
                 )
 
             # SUB BRANCH - more than one remaining node
@@ -840,6 +853,7 @@ def nx_gx(
                     split_points,
                     relevant_targets.geometry,
                     limit_distance,
+                    consolidation_tolerance,
                 )
 
         # BRANCH 3 - no target nodes - snapping to C
@@ -860,6 +874,7 @@ def nx_gx(
                     max_segment_length,
                     split_points,
                     limit_distance,
+                    consolidation_tolerance,
                 )
 
             # SUB BRANCH - more than one remaining node
@@ -876,6 +891,7 @@ def nx_gx(
                     split_points,
                     highest_hierarchy.dissolve("coins_group").geometry,
                     limit_distance,
+                    consolidation_tolerance,
                 )
 
             new_connections = reconnect(
@@ -943,6 +959,7 @@ def nx_gx_cluster(
     to_add,
     max_segment_length=1,
     min_dangle_length=20,
+    consolidation_tolerance=10,
     eps=1e-4,
 ):
     """treat an n-artifact cluster: merge all artifact polygons; drop
@@ -953,10 +970,12 @@ def nx_gx_cluster(
         edges.sindex.query(cluster_geom.buffer(eps), predicate="contains")
     ].index.to_list()
     connection = edges.drop(lines_to_drop).geometry
+    # non-planar lines are not connections
+    connection = connection[~connection.crosses(cluster_geom)]
 
     # if there's nothing to drop due to planarity, there's nothing to replace and
     # we can stop here
-    if not lines_to_drop:
+    if not lines_to_drop or connection.empty:
         return
 
     # get edges on boundary
@@ -1003,6 +1022,10 @@ def nx_gx_cluster(
     else:
         # a loop that has only a single entry point - use individual segments
         merged_edges = edges_on_boundary.dissolve().line_merge().item()
+        if merged_edges.geom_type != "LineString":
+            # this is a fallback for corner cases. It should result in the nearly the
+            # same skeleton in the end but ensures we work with a single-part geometry
+            merged_edges = shapely.concave_hull(merged_edges).exterior
         skeletonization_input = list(
             map(
                 shapely.LineString,
@@ -1017,6 +1040,7 @@ def nx_gx_cluster(
         snap_to=False,
         max_segment_length=max_segment_length,
         limit_distance=1e-4,
+        consolidation_tolerance=consolidation_tolerance,
     )
 
     # if we used only segments, we need to remove dangles

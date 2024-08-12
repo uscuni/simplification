@@ -30,6 +30,7 @@ def simplify_singletons(
     eps=1e-4,
     limit_distance=2,
     simplification_factor=2,
+    consolidation_tolerance=10,
 ):
     # Get nodes from the network.
     nodes = momepy.nx_to_gdf(momepy.node_degree(momepy.gdf_to_nx(roads)), lines=False)
@@ -110,6 +111,7 @@ def simplify_singletons(
                 angle=75,
                 max_segment_length=max_segment_length,
                 limit_distance=limit_distance,
+                consolidation_tolerance=consolidation_tolerance,
             )
 
         elif (artifact.node_count > 1) and (len(artifact.ces_type) > 2):
@@ -124,6 +126,7 @@ def simplify_singletons(
                 max_segment_length=max_segment_length,
                 limit_distance=limit_distance,
                 min_dangle_length=min_dangle_length,
+                consolidation_tolerance=consolidation_tolerance,
             )
         else:
             logger.debug("NON PLANAR")
@@ -159,6 +162,7 @@ def simplify_clusters(
     eps=1e-4,
     simplification_factor=2,
     min_dangle_length=20,
+    consolidation_tolerance=10,
 ):
     # Get nodes from the network.
     nodes = momepy.nx_to_gdf(momepy.node_degree(momepy.gdf_to_nx(roads)), lines=False)
@@ -184,6 +188,7 @@ def simplify_clusters(
             eps=eps,
             max_segment_length=max_segment_length,
             min_dangle_length=min_dangle_length,
+            consolidation_tolerance=consolidation_tolerance,
         )
 
     cleaned_roads = roads.drop(to_drop)
@@ -216,6 +221,7 @@ def simplify_pairs(
     min_dangle_length=20,
     limit_distance=2,
     simplification_factor=2,
+    consolidation_tolerance=10,
 ):
     # Get nodes from the network.
     nodes = momepy.nx_to_gdf(momepy.node_degree(momepy.gdf_to_nx(roads)), lines=False)
@@ -324,6 +330,7 @@ def simplify_pairs(
             compute_coins=False,
             min_dangle_length=min_dangle_length,
             simplification_factor=simplification_factor,
+            consolidation_tolerance=consolidation_tolerance,
         )
         if not second.empty:
             roads_cleaned = simplify_singletons(
@@ -334,6 +341,7 @@ def simplify_pairs(
                 compute_coins=True,
                 min_dangle_length=min_dangle_length,
                 simplification_factor=simplification_factor,
+                consolidation_tolerance=consolidation_tolerance,
             )
     if not for_skeleton.empty:
         roads_cleaned = simplify_clusters(
@@ -342,6 +350,7 @@ def simplify_pairs(
             max_segment_length=max_segment_length,
             simplification_factor=simplification_factor,
             min_dangle_length=min_dangle_length,
+            consolidation_tolerance=consolidation_tolerance,
         )
     return roads_cleaned
 
@@ -412,6 +421,7 @@ def simplify_network(
     min_dangle_length=20,
     limit_distance=2,
     simplification_factor=2,
+    consolidation_tolerance=10,
     area_threshold_blocks=1e5,
     isoareal_threshold_blocks=0.5,
     area_threshold_circles=5e4,
@@ -438,6 +448,7 @@ def simplify_network(
         min_dangle_length=min_dangle_length,
         limit_distance=limit_distance,
         simplification_factor=simplification_factor,
+        consolidation_tolerance=consolidation_tolerance,
         eps=eps,
     )
 
@@ -459,6 +470,7 @@ def simplify_network(
         min_dangle_length=min_dangle_length,
         limit_distance=limit_distance,
         simplification_factor=simplification_factor,
+        consolidation_tolerance=consolidation_tolerance,
         eps=eps,
     )
 
@@ -472,6 +484,7 @@ def simplify_loop(
     min_dangle_length=20,
     limit_distance=2,
     simplification_factor=2,
+    consolidation_tolerance=10,
     eps=1e-4,
 ):
     # Remove edges fully within the artifact (dangles).
@@ -499,6 +512,7 @@ def simplify_loop(
             roads,
             max_segment_length=max_segment_length,
             simplification_factor=simplification_factor,
+            consolidation_tolerance=consolidation_tolerance,
         )
     if not doubles.empty:
         roads = simplify_pairs(
@@ -508,6 +522,7 @@ def simplify_loop(
             min_dangle_length=min_dangle_length,
             limit_distance=limit_distance,
             simplification_factor=simplification_factor,
+            consolidation_tolerance=consolidation_tolerance,
         )
     if not clusters.empty:
         roads = simplify_clusters(
@@ -517,6 +532,7 @@ def simplify_loop(
             simplification_factor=simplification_factor,
             eps=eps,
             min_dangle_length=min_dangle_length,
+            consolidation_tolerance=consolidation_tolerance,
         )
 
     return roads

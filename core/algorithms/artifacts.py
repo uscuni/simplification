@@ -29,6 +29,8 @@ def get_artifacts(
     isoareal_threshold_blocks=0.5,
     area_threshold_circles=5e4,
     isoareal_threshold_circles=0.75,
+    exclusion_mask=None,
+    predicate="intersects",
 ):
     with warnings.catch_warnings():  # the second loop likey won't find threshold
         warnings.filterwarnings("ignore", message="No threshold found")
@@ -93,8 +95,13 @@ def get_artifacts(
         if artifact_count_after == artifact_count_before:
             break
 
-    artifacts = polygons[polygons.is_artifact][["geometry"]].copy()
+    artifacts = polygons[polygons.is_artifact][["geometry"]].reset_index(drop=True)
     artifacts["id"] = artifacts.index
+
+    if exclusion_mask is not None:
+        _, art_idx = artifacts.sindex.query(exclusion_mask, predicate=predicate)
+        artifacts = artifacts.drop(np.unique(art_idx)).copy()
+
     return artifacts, threshold
 
 

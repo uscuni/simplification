@@ -427,6 +427,8 @@ def simplify_network(
     area_threshold_circles=5e4,
     isoareal_threshold_circles=0.75,
     eps=1e-4,
+    exclusion_mask=None,
+    predicate="intersects",
 ):
     # Merge nearby nodes (up to double of distance used in skeleton).
     roads = consolidate_nodes(roads, tolerance=max_segment_length * 2.1)
@@ -438,6 +440,8 @@ def simplify_network(
         isoareal_threshold_blocks=isoareal_threshold_blocks,
         area_threshold_circles=area_threshold_circles,
         isoareal_threshold_circles=isoareal_threshold_circles,
+        exclusion_mask=exclusion_mask,
+        predicate=predicate,
     )
 
     # Loop 1
@@ -460,6 +464,8 @@ def simplify_network(
         isoareal_threshold_blocks=isoareal_threshold_blocks,
         area_threshold_circles=area_threshold_circles,
         isoareal_threshold_circles=isoareal_threshold_circles,
+        exclusion_mask=exclusion_mask,
+        predicate=predicate,
     )
 
     # Loop 2

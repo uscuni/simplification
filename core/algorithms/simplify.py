@@ -1,4 +1,5 @@
 import logging
+import warnings
 
 import geopandas as gpd
 import momepy
@@ -89,47 +90,55 @@ def simplify_singletons(
         # get edges relevant for an artifact
         edges = roads.iloc[roads.sindex.query(artifact.buffered, predicate="covers")]
 
-        if (artifact.node_count == 1) and (artifact.stroke_count == 1):
-            logger.debug("FUNCTION n1_g1_identical")
-            n1_g1_identical(
-                edges,
-                to_drop=to_drop,
-                to_add=to_add,
-                geom=artifact.geometry,
-                max_segment_length=max_segment_length,
-                limit_distance=limit_distance,
-            )
+        try:
+            if (artifact.node_count == 1) and (artifact.stroke_count == 1):
+                logger.debug("FUNCTION n1_g1_identical")
+                n1_g1_identical(
+                    edges,
+                    to_drop=to_drop,
+                    to_add=to_add,
+                    geom=artifact.geometry,
+                    max_segment_length=max_segment_length,
+                    limit_distance=limit_distance,
+                )
 
-        elif (artifact.node_count > 1) and (len(set(artifact.ces_type[1:])) == 1):
-            logger.debug("FUNCTION nx_gx_identical")
-            nx_gx_identical(
-                edges,
-                geom=artifact.geometry,
-                to_add=to_add,
-                to_drop=to_drop,
-                nodes=nodes,
-                angle=75,
-                max_segment_length=max_segment_length,
-                limit_distance=limit_distance,
-                consolidation_tolerance=consolidation_tolerance,
-            )
+            elif (artifact.node_count > 1) and (len(set(artifact.ces_type[1:])) == 1):
+                logger.debug("FUNCTION nx_gx_identical")
+                nx_gx_identical(
+                    edges,
+                    geom=artifact.geometry,
+                    to_add=to_add,
+                    to_drop=to_drop,
+                    nodes=nodes,
+                    angle=75,
+                    max_segment_length=max_segment_length,
+                    limit_distance=limit_distance,
+                    consolidation_tolerance=consolidation_tolerance,
+                )
 
-        elif (artifact.node_count > 1) and (len(artifact.ces_type) > 2):
-            logger.debug("FUNCTION nx_gx")
-            nx_gx(
-                edges,
-                artifact=artifact,
-                to_drop=to_drop,
-                to_add=to_add,
-                split_points=split_points,
-                nodes=nodes,
-                max_segment_length=max_segment_length,
-                limit_distance=limit_distance,
-                min_dangle_length=min_dangle_length,
-                consolidation_tolerance=consolidation_tolerance,
+            elif (artifact.node_count > 1) and (len(artifact.ces_type) > 2):
+                logger.debug("FUNCTION nx_gx")
+                nx_gx(
+                    edges,
+                    artifact=artifact,
+                    to_drop=to_drop,
+                    to_add=to_add,
+                    split_points=split_points,
+                    nodes=nodes,
+                    max_segment_length=max_segment_length,
+                    limit_distance=limit_distance,
+                    min_dangle_length=min_dangle_length,
+                    consolidation_tolerance=consolidation_tolerance,
+                )
+            else:
+                logger.debug("NON PLANAR")
+        except Exception as e:
+            warnings.warn(
+                f"An error occured at location {artifact.geometry.centroid}. "
+                f"The artifact has not been simplified. The original message:\n{e}",
+                UserWarning,
+                stacklevel=2,
             )
-        else:
-            logger.debug("NON PLANAR")
 
     cleaned_roads = roads.drop(to_drop)
     # split lines on new nodes

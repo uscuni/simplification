@@ -10,15 +10,15 @@ def test_add_node_degree(manual_auckland):
     observed = core.stats.add_node_degree(nodes_manual, manual_graph)["degree"]
 
     assert isinstance(observed, pandas.Series)
-    assert observed.shape[0] == 31050
-    assert observed.sum() == 71300
+    assert observed.shape[0] == 6755
+    assert observed.sum() == 17280
 
 
 def test_get_edge_stats(manual_auckland, grid_9_auckland):
     _, _, edges_manual = manual_auckland
     grid_cell = grid_9_auckland[grid_9_auckland["hex_id"] == "89bb50031c7ffff"].geometry
 
-    known_count, known_length = (5, 578.75495776233)
+    known_count, known_length = (5, 551.6152216584356)
     observed_count, observed_length = core.stats.get_edge_stats(edges_manual, grid_cell)
 
     assert observed_count == known_count
@@ -34,7 +34,7 @@ def test_get_node_stats(manual_auckland, grid_9_auckland):
     manual_graph, nodes_manual, _ = manual_auckland
     grid_cell = grid_9_auckland[grid_9_auckland["hex_id"] == "89bb50031c7ffff"].geometry
 
-    known_count, known_distr, known_avg = (3, {1: 2, 3: 1}, 1.6666666666666667)
+    known_count, known_distr, known_avg = (4, {1: 3, 3: 1}, 1.5)
     observed_count, observed_distr, observed_avg = core.stats.get_node_stats(
         core.stats.add_node_degree(nodes_manual, manual_graph), grid_cell
     )

@@ -193,7 +193,17 @@ def fix_topology(roads, eps=1e-4, **kwargs):
     3. removing duplicated geometries (irrespective of orientation).
     """
     roads = roads[~roads.geometry.normalize().duplicated()].copy()
+    roads_w_nodes = induce_nodes(roads, eps=eps)
+    return remove_false_nodes(roads_w_nodes, **kwargs)
 
+
+def induce_nodes(roads, eps=1e-4):
+    """
+    adding potentially missing nodes
+    on intersections of individual LineString endpoints with the remaining network. The
+    idea behind is that if a line ends on an intersection with another, there should be
+    a node on both of them.
+    """
     nodes_w_degree = momepy.nx_to_gdf(
         momepy.node_degree(momepy.gdf_to_nx(roads)), lines=False
     )
@@ -209,8 +219,7 @@ def fix_topology(roads, eps=1e-4, **kwargs):
     nodes_to_induce = nodes_w_degree[
         nodes_w_degree.degree != nodes_w_degree.expected_degree
     ]
-    roads_w_nodes = split(nodes_to_induce.geometry, roads, roads.crs, eps=eps)
-    return remove_false_nodes(roads_w_nodes, **kwargs)
+    return split(nodes_to_induce.geometry, roads, roads.crs, eps=eps)
 
 
 def consolidate_nodes(gdf, tolerance=2, preserve_ends=False):
@@ -297,6 +306,7 @@ def consolidate_nodes(gdf, tolerance=2, preserve_ends=False):
             geom.iloc[inds] = geom.iloc[inds].difference(
                 cookie
             )  # TODO: this may result in MultiLineString - we need to avoid that
+            # TODO: It is temporarily fixed by that explode in return
             status.iloc[inds] = "snapped"
             midpoint = np.mean(shapely.get_coordinates(cluster), axis=0)
             midpoints.append(midpoint)
@@ -325,6 +335,6 @@ def consolidate_nodes(gdf, tolerance=2, preserve_ends=False):
         )
 
     return remove_false_nodes(
-        gdf[~gdf.geometry.is_empty],
+        gdf[~gdf.geometry.is_empty].explode(),
         aggfunc={"_status": _status},
     )

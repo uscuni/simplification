@@ -16,7 +16,14 @@ from .artifacts import (
     nx_gx_identical,
 )
 from .common import continuity, get_stroke_info
-from .nodes import _status, consolidate_nodes, fix_topology, remove_false_nodes, split
+from .nodes import (
+    _status,
+    consolidate_nodes,
+    fix_topology,
+    induce_nodes,
+    remove_false_nodes,
+    split,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -468,6 +475,10 @@ def simplify_network(
         eps=eps,
     )
 
+    # this is potentially fixing some minor erroneous edges coming from Voronoi
+    new_roads = induce_nodes(new_roads, eps=eps)
+    new_roads = new_roads[~new_roads.geometry.normalize().duplicated()].copy()
+
     # Identify artifacts based on the first loop network
     artifacts, _ = get_artifacts(
         new_roads,
@@ -491,6 +502,10 @@ def simplify_network(
         consolidation_tolerance=consolidation_tolerance,
         eps=eps,
     )
+
+    # this is potentially fixing some minor erroneous edges coming from Voronoi
+    final_roads = induce_nodes(final_roads, eps=eps)
+    final_roads = final_roads[~final_roads.geometry.normalize().duplicated()].copy()
 
     return final_roads
 

@@ -147,7 +147,10 @@ def simplify_singletons(
     if to_add:
         # create new roads with fixed geometry. Note that to_add and to_drop lists shall
         # be global and this step should happen only once, not for every artifact
-        new = gpd.GeoDataFrame(geometry=to_add, crs=roads.crs)
+        new = gpd.GeoDataFrame(
+            geometry=gpd.GeoSeries(to_add).line_merge(), crs=roads.crs
+        ).explode()
+        new = new[~new.normalize().duplicated()].copy()
         new["_status"] = "new"
         new.geometry = new.simplify(max_segment_length * simplification_factor)
         new_roads = pd.concat(

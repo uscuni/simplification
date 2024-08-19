@@ -17,7 +17,7 @@ from .artifacts import (
     split,
 )
 from .common import continuity, get_stroke_info
-from .nodes import _status, consolidate_nodes, remove_false_nodes
+from .nodes import _status, consolidate_nodes, fix_topology, remove_false_nodes
 
 logger = logging.getLogger(__name__)
 
@@ -442,6 +442,7 @@ def simplify_network(
     exclusion_mask=None,
     predicate="intersects",
 ):
+    roads = fix_topology(roads, eps=eps)
     # Merge nearby nodes (up to double of distance used in skeleton).
     roads = consolidate_nodes(roads, tolerance=max_segment_length * 2.1)
 

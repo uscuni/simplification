@@ -14,10 +14,9 @@ from .artifacts import (
     nx_gx,
     nx_gx_cluster,
     nx_gx_identical,
-    split,
 )
 from .common import continuity, get_stroke_info
-from .nodes import _status, consolidate_nodes, fix_topology, remove_false_nodes
+from .nodes import _status, consolidate_nodes, fix_topology, remove_false_nodes, split
 
 logger = logging.getLogger(__name__)
 

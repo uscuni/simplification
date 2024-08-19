@@ -142,7 +142,7 @@ def simplify_singletons(
 
     cleaned_roads = roads.drop(to_drop)
     # split lines on new nodes
-    cleaned_roads = split(split_points, cleaned_roads, roads)
+    cleaned_roads = split(split_points, cleaned_roads, roads.crs)
 
     if to_add:
         # create new roads with fixed geometry. Note that to_add and to_drop lists shall

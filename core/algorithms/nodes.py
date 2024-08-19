@@ -4,6 +4,9 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 import shapely
+from scipy import sparse
+
+from .artifacts import split
 
 
 def _status(x):
@@ -134,6 +137,42 @@ def remove_false_nodes(gdf, aggfunc="first", **kwargs):
 
     aggregated.loc[loops.index[fixed_index], aggregated.geometry.name] = fixed_loops
     return aggregated
+
+
+def fix_topology(roads, eps=1e-4, **kwargs):
+    """Fix road network topology
+
+    This ensures correct topology of the network by:
+
+    1.  adding potentially missing nodes
+    on intersections of individual LineString endpoints with the remaining network. The
+    idea behind is that if a line ends on an intersection with another, there should be
+    a node on both of them.
+
+    2. removing nodes of degree 2 that have no meaning in the network
+    used within our framework.
+
+    3. removing duplicated geometries (irrespective of orientation).
+    """
+    roads = roads[~roads.geometry.normalize().duplicated()].copy()
+
+    nodes_w_degree = momepy.nx_to_gdf(
+        momepy.node_degree(momepy.gdf_to_nx(roads)), lines=False
+    )
+    nodes_ix, roads_ix = roads.sindex.query(
+        nodes_w_degree.geometry, predicate="dwithin", distance=1e-4
+    )
+    intersects = sparse.coo_array(
+        ([True] * len(nodes_ix), (nodes_ix, roads_ix)),
+        shape=(len(nodes_w_degree), len(roads)),
+        dtype=np.bool_,
+    )
+    nodes_w_degree["expected_degree"] = intersects.sum(axis=1)
+    nodes_to_induce = nodes_w_degree[
+        nodes_w_degree.degree != nodes_w_degree.expected_degree
+    ]
+    roads_w_nodes = split(nodes_to_induce.geometry, roads, roads.crs, eps=eps)
+    return remove_false_nodes(roads_w_nodes, **kwargs)
 
 
 def consolidate_nodes(gdf, tolerance=2, preserve_ends=False):

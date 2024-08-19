@@ -4,6 +4,47 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 import shapely
+from scipy import sparse
+
+
+def split(split_points, cleaned_roads, crs, eps=1e-4):
+    # split lines on new nodes
+    split_points = gpd.GeoSeries(split_points)
+    for split in split_points.drop_duplicates():
+        _, ix = cleaned_roads.sindex.nearest(split, max_distance=eps)
+        edge = cleaned_roads.geometry.iloc[ix]
+        if edge.shape[0] == 1:
+            snapped = shapely.snap(edge.item(), split, tolerance=eps)
+            lines_split = shapely.get_parts(shapely.ops.split(snapped, split))
+            lines_split = lines_split[~shapely.is_empty(lines_split)]
+            if lines_split.shape[0] > 1:
+                gdf_split = gpd.GeoDataFrame(geometry=lines_split, crs=crs)
+                gdf_split["_status"] = "changed"
+                cleaned_roads = pd.concat(
+                    [
+                        cleaned_roads.drop(edge.index[0]),
+                        gdf_split,
+                    ],
+                    ignore_index=True,
+                )
+        else:
+            for i, e in edge.items():
+                # TODO: deduplicate this code
+                snapped = shapely.snap(e, split, tolerance=eps)
+                lines_split = shapely.get_parts(shapely.ops.split(snapped, split))
+                lines_split = lines_split[~shapely.is_empty(lines_split)]
+                if lines_split.shape[0] > 1:
+                    gdf_split = gpd.GeoDataFrame(geometry=lines_split, crs=crs)
+                    gdf_split["_status"] = "changed"
+                    cleaned_roads = pd.concat(
+                        [
+                            cleaned_roads.drop(i),
+                            gdf_split,
+                        ],
+                        ignore_index=True,
+                    )
+
+    return cleaned_roads
 
 
 def _status(x):
@@ -136,6 +177,51 @@ def remove_false_nodes(gdf, aggfunc="first", **kwargs):
     return aggregated
 
 
+def fix_topology(roads, eps=1e-4, **kwargs):
+    """Fix road network topology
+
+    This ensures correct topology of the network by:
+
+    1.  adding potentially missing nodes
+    on intersections of individual LineString endpoints with the remaining network. The
+    idea behind is that if a line ends on an intersection with another, there should be
+    a node on both of them.
+
+    2. removing nodes of degree 2 that have no meaning in the network
+    used within our framework.
+
+    3. removing duplicated geometries (irrespective of orientation).
+    """
+    roads = roads[~roads.geometry.normalize().duplicated()].copy()
+    roads_w_nodes = induce_nodes(roads, eps=eps)
+    return remove_false_nodes(roads_w_nodes, **kwargs)
+
+
+def induce_nodes(roads, eps=1e-4):
+    """
+    adding potentially missing nodes
+    on intersections of individual LineString endpoints with the remaining network. The
+    idea behind is that if a line ends on an intersection with another, there should be
+    a node on both of them.
+    """
+    nodes_w_degree = momepy.nx_to_gdf(
+        momepy.node_degree(momepy.gdf_to_nx(roads)), lines=False
+    )
+    nodes_ix, roads_ix = roads.sindex.query(
+        nodes_w_degree.geometry, predicate="dwithin", distance=1e-4
+    )
+    intersects = sparse.coo_array(
+        ([True] * len(nodes_ix), (nodes_ix, roads_ix)),
+        shape=(len(nodes_w_degree), len(roads)),
+        dtype=np.bool_,
+    )
+    nodes_w_degree["expected_degree"] = intersects.sum(axis=1)
+    nodes_to_induce = nodes_w_degree[
+        nodes_w_degree.degree != nodes_w_degree.expected_degree
+    ]
+    return split(nodes_to_induce.geometry, roads, roads.crs, eps=eps)
+
+
 def consolidate_nodes(gdf, tolerance=2, preserve_ends=False):
     """Return geometry with consolidated nodes.
 
@@ -220,6 +306,7 @@ def consolidate_nodes(gdf, tolerance=2, preserve_ends=False):
             geom.iloc[inds] = geom.iloc[inds].difference(
                 cookie
             )  # TODO: this may result in MultiLineString - we need to avoid that
+            # TODO: It is temporarily fixed by that explode in return
             status.iloc[inds] = "snapped"
             midpoint = np.mean(shapely.get_coordinates(cluster), axis=0)
             midpoints.append(midpoint)
@@ -248,6 +335,6 @@ def consolidate_nodes(gdf, tolerance=2, preserve_ends=False):
         )
 
     return remove_false_nodes(
-        gdf[~gdf.geometry.is_empty],
+        gdf[~gdf.geometry.is_empty].explode(),
         aggfunc={"_status": _status},
     )

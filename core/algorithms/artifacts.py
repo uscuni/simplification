@@ -486,30 +486,6 @@ def loop(
     return to_add
 
 
-def split(split_points, cleaned_roads, roads, eps=1e-4):
-    # split lines on new nodes
-    split_points = gpd.GeoSeries(split_points)
-    for split in split_points.drop_duplicates():
-        _, ix = cleaned_roads.sindex.nearest(split, max_distance=eps)
-        edge = cleaned_roads.geometry.iloc[ix]
-        if edge.shape[0] == 1:
-            snapped = shapely.snap(edge.item(), split, tolerance=eps)
-            lines_split = shapely.get_parts(shapely.ops.split(snapped, split))
-            lines_split = lines_split[~shapely.is_empty(lines_split)]
-            if lines_split.shape[0] > 1:
-                gdf_split = gpd.GeoDataFrame(geometry=lines_split, crs=roads.crs)
-                gdf_split["_status"] = "changed"
-                cleaned_roads = pd.concat(
-                    [
-                        cleaned_roads.drop(edge.index[0]),
-                        gdf_split,
-                    ],
-                    ignore_index=True,
-                )
-
-    return cleaned_roads
-
-
 def n1_g1_identical(
     edges,
     *,

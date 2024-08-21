@@ -28,7 +28,7 @@ def get_artifacts(
     area_threshold_blocks=1e5,
     isoareal_threshold_blocks=0.5,
     area_threshold_circles=5e4,
-    isoareal_threshold_circles=0.75,
+    # isoareal_threshold_circles=0.75,
     exclusion_mask=None,
     predicate="intersects",
 ):
@@ -87,7 +87,14 @@ def get_artifacts(
         polygons.loc[
             (polygons.enclosed)
             & (polygons.area_sqm < area_threshold_circles)
-            & (polygons.isoareal_index > isoareal_threshold_circles),
+            & (polygons.isoareal_index > 0.75),
+            "is_artifact",
+        ] = True
+
+        polygons.loc[
+            (polygons.touching)
+            & (polygons.area_sqm < area_threshold_circles)
+            & (polygons.isoareal_index > 0.9),
             "is_artifact",
         ] = True
 

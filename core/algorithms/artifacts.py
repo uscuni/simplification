@@ -1081,6 +1081,17 @@ def nx_gx_cluster(
     # those edges_kept.endpoints and
     non_planar_connections = shapely.shortest_line(skel_nodes, to_reconnect)
 
+    # keep only those that are within
+    conn_within = is_within(non_planar_connections, cluster_geom)
+    if not all(conn_within):
+        warnings.warn(
+            "Could not create a connection as it would lead outside "
+            "of the artifact.",
+            UserWarning,
+            stacklevel=2,
+        )
+    non_planar_connections = non_planar_connections[conn_within]
+
     ### extend our list "to_add" with this artifact clusters' contribution:
     lines_to_add.extend(non_planar_connections)
     to_add.extend(lines_to_add)

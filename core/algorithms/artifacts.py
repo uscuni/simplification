@@ -8,7 +8,7 @@ import momepy
 import numpy as np
 import pandas as pd
 import shapely
-from esda.shape import isoareal_quotient
+from esda import shape
 from libpysal import graph
 from scipy import sparse
 
@@ -28,7 +28,8 @@ def get_artifacts(
     area_threshold_blocks=1e5,
     isoareal_threshold_blocks=0.5,
     area_threshold_circles=5e4,
-    isoareal_threshold_circles=0.75,
+    isoareal_threshold_circles_enclosed=0.75,
+    isoperimetric_threshold_circles_touching=0.9,
     exclusion_mask=None,
     predicate="intersects",
 ):
@@ -50,7 +51,8 @@ def get_artifacts(
 
     # compute area and isoareal quotient:
     polygons["area_sqm"] = polygons.area
-    polygons["isoareal_index"] = isoareal_quotient(polygons.geometry)
+    polygons["isoareal_index"] = shape.isoareal_quotient(polygons.geometry)
+    polygons["isoperimetric_quotient"] = shape.isoperimetric_quotient(polygons.geometry)
 
     # iterate (to account for artifacts that become enclosed or touching
     # by new designation)
@@ -87,7 +89,17 @@ def get_artifacts(
         polygons.loc[
             (polygons.enclosed)
             & (polygons.area_sqm < area_threshold_circles)
-            & (polygons.isoareal_index > isoareal_threshold_circles),
+            & (polygons.isoareal_index > isoareal_threshold_circles_enclosed),
+            "is_artifact",
+        ] = True
+
+        polygons.loc[
+            (polygons.touching)
+            & (polygons.area_sqm < area_threshold_circles)
+            & (
+                polygons.isoperimetric_quotient
+                > isoperimetric_threshold_circles_touching
+            ),
             "is_artifact",
         ] = True
 

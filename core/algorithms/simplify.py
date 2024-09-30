@@ -14,10 +14,16 @@ from .artifacts import (
     nx_gx,
     nx_gx_cluster,
     nx_gx_identical,
-    split,
 )
 from .common import continuity, get_stroke_info
-from .nodes import _status, consolidate_nodes, remove_false_nodes
+from .nodes import (
+    _status,
+    consolidate_nodes,
+    fix_topology,
+    induce_nodes,
+    remove_false_nodes,
+    split,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -142,12 +148,15 @@ def simplify_singletons(
 
     cleaned_roads = roads.drop(to_drop)
     # split lines on new nodes
-    cleaned_roads = split(split_points, cleaned_roads, roads)
+    cleaned_roads = split(split_points, cleaned_roads, roads.crs)
 
     if to_add:
         # create new roads with fixed geometry. Note that to_add and to_drop lists shall
         # be global and this step should happen only once, not for every artifact
-        new = gpd.GeoDataFrame(geometry=to_add, crs=roads.crs)
+        new = gpd.GeoDataFrame(
+            geometry=gpd.GeoSeries(to_add).line_merge(), crs=roads.crs
+        ).explode()
+        new = new[~new.normalize().duplicated()].copy()
         new["_status"] = "new"
         new.geometry = new.simplify(max_segment_length * simplification_factor)
         new_roads = pd.concat(
@@ -434,11 +443,13 @@ def simplify_network(
     area_threshold_blocks=1e5,
     isoareal_threshold_blocks=0.5,
     area_threshold_circles=5e4,
-    isoareal_threshold_circles=0.75,
+    isoareal_threshold_circles_enclosed=0.75,
+    isoperimetric_threshold_circles_touching=0.9,
     eps=1e-4,
     exclusion_mask=None,
     predicate="intersects",
 ):
+    roads = fix_topology(roads, eps=eps)
     # Merge nearby nodes (up to double of distance used in skeleton).
     roads = consolidate_nodes(roads, tolerance=max_segment_length * 2.1)
 
@@ -448,7 +459,8 @@ def simplify_network(
         area_threshold_blocks=area_threshold_blocks,
         isoareal_threshold_blocks=isoareal_threshold_blocks,
         area_threshold_circles=area_threshold_circles,
-        isoareal_threshold_circles=isoareal_threshold_circles,
+        isoareal_threshold_circles_enclosed=isoareal_threshold_circles_enclosed,
+        isoperimetric_threshold_circles_touching=isoperimetric_threshold_circles_touching,
         exclusion_mask=exclusion_mask,
         predicate=predicate,
     )
@@ -465,6 +477,10 @@ def simplify_network(
         eps=eps,
     )
 
+    # this is potentially fixing some minor erroneous edges coming from Voronoi
+    new_roads = induce_nodes(new_roads, eps=eps)
+    new_roads = new_roads[~new_roads.geometry.normalize().duplicated()].copy()
+
     # Identify artifacts based on the first loop network
     artifacts, _ = get_artifacts(
         new_roads,
@@ -472,7 +488,8 @@ def simplify_network(
         area_threshold_blocks=area_threshold_blocks,
         isoareal_threshold_blocks=isoareal_threshold_blocks,
         area_threshold_circles=area_threshold_circles,
-        isoareal_threshold_circles=isoareal_threshold_circles,
+        isoareal_threshold_circles_enclosed=isoareal_threshold_circles_enclosed,
+        isoperimetric_threshold_circles_touching=isoperimetric_threshold_circles_touching,
         exclusion_mask=exclusion_mask,
         predicate=predicate,
     )
@@ -488,6 +505,10 @@ def simplify_network(
         consolidation_tolerance=consolidation_tolerance,
         eps=eps,
     )
+
+    # this is potentially fixing some minor erroneous edges coming from Voronoi
+    final_roads = induce_nodes(final_roads, eps=eps)
+    final_roads = final_roads[~final_roads.geometry.normalize().duplicated()].copy()
 
     return final_roads
 

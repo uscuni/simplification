@@ -16,7 +16,7 @@ def test_read_sample_data():
 cities = list(core.utils.city_fua.keys())
 osm_records = [78_908, 60_364, 79_317, 84_819, 79_907, 50_917, 92_667]
 xnd2_records = [43_233, 12_439, 16_302, 30_552, 16_554, 13_468, 29_314]
-man_records = [41_481, 35_650, 20_347, 30_647, 25_133, 43_955, numpy.nan]
+man_records = [38_772, 8_640, 14_170, 29_252, 13_508, 11_032, numpy.nan]
 
 
 @pytest.mark.parametrize("city, n_records", zip(cities, osm_records, strict=True))

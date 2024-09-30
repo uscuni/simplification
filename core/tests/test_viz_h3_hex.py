@@ -5,10 +5,6 @@ from matplotlib.testing.exceptions import ImageComparisonFailure
 import core
 
 
-@pytest.mark.xfail(
-    reason="Needs updated Manual & Parenx -- See GH#131.",
-    raises=ImageComparisonFailure,
-)
 @image_comparison(
     baseline_images=["test_viz_h3_hex_plot_aoi.png"],
     style="mpl20",
@@ -18,6 +14,10 @@ def test_viz_h3_hex_plot_aoi(grid_8_auckland):
     core.viz.h3_hex.plot_aoi(grid_8_auckland, "Auckland", 8)
 
 
+@pytest.mark.xfail(
+    reason="Needs updated Manual & Parenx -- See GH#131.",
+    raises=ImageComparisonFailure,
+)
 @image_comparison(
     baseline_images=["test_viz_h3_hex_plot_analysis.png"],
     style="mpl20",

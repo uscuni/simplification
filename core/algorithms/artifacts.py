@@ -8,7 +8,7 @@ import momepy
 import numpy as np
 import pandas as pd
 import shapely
-from esda.shape import isoareal_quotient
+from esda import shape
 from libpysal import graph
 from scipy import sparse
 
@@ -28,7 +28,8 @@ def get_artifacts(
     area_threshold_blocks=1e5,
     isoareal_threshold_blocks=0.5,
     area_threshold_circles=5e4,
-    isoareal_threshold_circles=0.75,
+    isoareal_threshold_circles_enclosed=0.75,
+    isoperimetric_threshold_circles_touching=0.9,
     exclusion_mask=None,
     predicate="intersects",
 ):
@@ -50,7 +51,8 @@ def get_artifacts(
 
     # compute area and isoareal quotient:
     polygons["area_sqm"] = polygons.area
-    polygons["isoareal_index"] = isoareal_quotient(polygons.geometry)
+    polygons["isoareal_index"] = shape.isoareal_quotient(polygons.geometry)
+    polygons["isoperimetric_quotient"] = shape.isoperimetric_quotient(polygons.geometry)
 
     # iterate (to account for artifacts that become enclosed or touching
     # by new designation)
@@ -87,7 +89,17 @@ def get_artifacts(
         polygons.loc[
             (polygons.enclosed)
             & (polygons.area_sqm < area_threshold_circles)
-            & (polygons.isoareal_index > isoareal_threshold_circles),
+            & (polygons.isoareal_index > isoareal_threshold_circles_enclosed),
+            "is_artifact",
+        ] = True
+
+        polygons.loc[
+            (polygons.touching)
+            & (polygons.area_sqm < area_threshold_circles)
+            & (
+                polygons.isoperimetric_quotient
+                > isoperimetric_threshold_circles_touching
+            ),
             "is_artifact",
         ] = True
 
@@ -484,30 +496,6 @@ def loop(
                 to_add.append(candidate)
 
     return to_add
-
-
-def split(split_points, cleaned_roads, roads, eps=1e-4):
-    # split lines on new nodes
-    split_points = gpd.GeoSeries(split_points)
-    for split in split_points.drop_duplicates():
-        _, ix = cleaned_roads.sindex.nearest(split, max_distance=eps)
-        edge = cleaned_roads.geometry.iloc[ix]
-        if edge.shape[0] == 1:
-            snapped = shapely.snap(edge.item(), split, tolerance=eps)
-            lines_split = shapely.get_parts(shapely.ops.split(snapped, split))
-            lines_split = lines_split[~shapely.is_empty(lines_split)]
-            if lines_split.shape[0] > 1:
-                gdf_split = gpd.GeoDataFrame(geometry=lines_split, crs=roads.crs)
-                gdf_split["_status"] = "changed"
-                cleaned_roads = pd.concat(
-                    [
-                        cleaned_roads.drop(edge.index[0]),
-                        gdf_split,
-                    ],
-                    ignore_index=True,
-                )
-
-    return cleaned_roads
 
 
 def n1_g1_identical(
@@ -1104,6 +1092,17 @@ def nx_gx_cluster(
     # nearest skel node: from those nodes, we need to add shapely shortest lines between
     # those edges_kept.endpoints and
     non_planar_connections = shapely.shortest_line(skel_nodes, to_reconnect)
+
+    # keep only those that are within
+    conn_within = is_within(non_planar_connections, cluster_geom)
+    if not all(conn_within):
+        warnings.warn(
+            "Could not create a connection as it would lead outside "
+            "of the artifact.",
+            UserWarning,
+            stacklevel=2,
+        )
+    non_planar_connections = non_planar_connections[conn_within]
 
     ### extend our list "to_add" with this artifact clusters' contribution:
     lines_to_add.extend(non_planar_connections)

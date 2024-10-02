@@ -9,6 +9,7 @@ dependencies:
   - dask
   - dask-geopandas
   - esda=2.5.1
+  - fiona=1.9
   - geopandas=0.13.0
   - graphblas-algorithms
   - h3-py

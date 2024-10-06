@@ -38,4 +38,4 @@ dependencies:
     - cityseer
     - parenx
     # from bleeding edge functionality
-    - git+https://github.com/pysal/momepy.git
+    - git+https://github.com/uscuni/sgeop.git

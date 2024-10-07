@@ -15,7 +15,7 @@ dependencies:
   - ipykernel
   - jupyterlab
   - matplotlib>=3.9
-  - momepy
+  - momepy>=0.8.1
   - osmnx>=1.9.1
   - pointpats>=2.3.0
   - pip
@@ -38,4 +38,4 @@ dependencies:
     - cityseer
     - parenx
     # from bleeding edge functionality
-    - git+https://github.com/pysal/momepy.git
+    - git+https://github.com/uscuni/sgeop.git

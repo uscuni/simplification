@@ -96,6 +96,11 @@ lint.select = ["E", "F", "W", "I", "UP", "N", "B", "A", "C4", "SIM", "ARG"]
      "F401",  # imported but unused
      "F403",  # star import; unable to detect undefined names
  ]
+ "*.ipynb" = [
+    "C408",  # Unnecessary `dict` call
+    "E501",  # Line too long
+    "F401",  # imported but unused
+]
 
 [tool.coverage.run]
 source = ["./core"]

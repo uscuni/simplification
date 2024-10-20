@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from libpysal import graph
 from scipy import sparse
+from sgeop.continuity import continuity, get_stroke_info
 
 from .artifacts import (
     get_artifacts,
@@ -15,7 +16,6 @@ from .artifacts import (
     nx_gx_cluster,
     nx_gx_identical,
 )
-from .common import continuity, get_stroke_info
 from .nodes import (
     _status,
     consolidate_nodes,

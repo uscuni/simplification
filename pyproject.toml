@@ -36,7 +36,7 @@ dependencies = [
     "geopandas>=0.13.0",
     "graphblas-algorithms",
     #"h3-py", # -- via conda
-    "h3<=3.7", # -- via PyPI
+    "h3==3.7.7", # -- via PyPI
     "ipykernel",
     "jupyterlab",
     "matplotlib>=3.9",

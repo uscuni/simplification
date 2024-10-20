@@ -1,9 +1,8 @@
 import geopandas as gpd
 import pandas as pd
 import shapely
+from sgeop.geometry import _is_within
 from tqdm.auto import tqdm
-
-from ..geometry import is_within
 
 
 def case_1(edges, *, geom, to_drop, to_add, nodes, distance_threshold=1.05):
@@ -45,7 +44,7 @@ def case_1(edges, *, geom, to_drop, to_add, nodes, distance_threshold=1.05):
 
     if (
         shortest_line.length * distance_threshold < existing_link.length.item()
-        and is_within(shortest_line, geom)
+        and _is_within(shortest_line, geom)
     ):
         to_drop.append(existing_link.index[0])
         to_add.append(shortest_line)
@@ -119,7 +118,7 @@ def case_5(edges, *, geom, to_drop, to_add, roads, nodes):
             entry_node.item(), main_road.geometry.item()
         )
 
-        if is_within(shortest_line, geom):
+        if _is_within(shortest_line, geom):
             to_add.append(shortest_line)
             to_drop.extend(edges[edges.coins_group != main_group].index.to_list())
         else:
@@ -170,7 +169,7 @@ def case_7(edges, *, geom, to_drop, to_add, nodes):
     relevant_nodes = nodes.iloc[nodes.sindex.query(geom, predicate="intersects")]
     entry_node = relevant_nodes[relevant_nodes.disjoint(main_road.geometry.item())]
     shortest_line = shapely.shortest_line(entry_node.item(), main_road.geometry.item())
-    if is_within(shortest_line, geom):
+    if _is_within(shortest_line, geom):
         to_add.append(shortest_line)
         to_drop.extend(edges.index.drop([longest]).to_list())
     else:

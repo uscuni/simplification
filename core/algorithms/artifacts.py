@@ -11,12 +11,12 @@ import shapely
 from esda import shape
 from libpysal import graph
 from scipy import sparse
-
-from ..geometry import (
-    is_within,
+from sgeop.geometry import (
+    _is_within,
     snap_to_targets,
     voronoi_skeleton,
 )
+
 from .nodes import weld_edges
 
 logger = logging.getLogger(__name__)
@@ -328,7 +328,7 @@ def one_remaining(
         relevant_targets.geometry.iloc[target_nearest].values,
     )
     # check if the new connection is within the artifact
-    connections_within = is_within(new_connections, artifact.geometry, 0.1)
+    connections_within = _is_within(new_connections, artifact.geometry, 0.1)
     # if it is not within, discard it and use the skeleton instead
     if not connections_within.all():
         logger.debug("CONDITION is_within False")
@@ -392,7 +392,7 @@ def one_remaining_c(
     )
     splitters = shapely.get_point(new_connections, -1)
     # check if the new connection is within the artifact
-    connections_within = is_within(new_connections, artifact.geometry, 0.1)
+    connections_within = _is_within(new_connections, artifact.geometry, 0.1)
     # if it is not within, discard it and use the skeleton instead
     if not connections_within.all():
         logger.debug("CONDITION is_within False")
@@ -593,7 +593,7 @@ def nx_gx_identical(
     to_drop.extend(edges.index.to_list())
     lines = shapely.shortest_line(relevant_nodes, centroid)
 
-    if not is_within(lines, geom).all():
+    if not _is_within(lines, geom).all():
         logger.debug("NOT WITHIN replacing with skeleton")
         lines, _ = voronoi_skeleton(
             edges.geometry,  # use edges that are being dropped
@@ -907,7 +907,7 @@ def nx_gx(
 
         if (
             (artifact.interstitial_nodes == 0)
-            and is_within(sl, artifact.geometry)
+            and _is_within(sl, artifact.geometry)
             and (sl.length * 1.1) < highest_hierarchy.length.sum()
         ):
             logger.debug("DEVIATION replacing with shortest")
@@ -935,7 +935,7 @@ def nx_gx(
             relevant_nodes.geometry.iloc[0], relevant_nodes.geometry.iloc[1]
         )
         if (
-            is_within(sl, artifact.geometry)
+            _is_within(sl, artifact.geometry)
             and (sl.length * 1.1) < highest_hierarchy.length.sum()
         ):
             logger.debug("DEVIATION replacing with shortest")
@@ -1094,7 +1094,7 @@ def nx_gx_cluster(
     non_planar_connections = shapely.shortest_line(skel_nodes, to_reconnect)
 
     # keep only those that are within
-    conn_within = is_within(non_planar_connections, cluster_geom)
+    conn_within = _is_within(non_planar_connections, cluster_geom)
     if not all(conn_within):
         warnings.warn(
             "Could not create a connection as it would lead outside "

@@ -11,7 +11,7 @@ dependencies:
   - esda
   - geopandas
   - graphblas-algorithms
-  - h3-py
+  - h3-py<=3.7
   - ipykernel
   - jupyterlab
   - matplotlib>=3.9

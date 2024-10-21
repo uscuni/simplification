@@ -17,19 +17,12 @@ The curated & tested code base for the project & publication, including:
 
 Parameterized notebooks.
 
-* `_addartifacts_8989.ipynb` – ...
-* `cityseer_*.ipynb` – explorations of the [`cityseer`](https://github.com/benchmark-urbanism/cityseer-api) package
-* `_clip_networks.ipynb` – ...
-* `clustering.ipynb` – deadend
-* `_convert.ipynb` – ...
-* `evaluate_h3cells.ipynb` – evaluation of Uber's H3 data and demonstration
-* `momepy.ipynb` – exploration of the [`momepy`](https://github.com/pysal/momepy) package
-* `osmnx.ipynb` – exploration of the [`osmnx.simplification`](https://github.com/gboeing/osmnx/blob/main/osmnx/simplification.py) module
-* `parenx.ipynb` & `parenx-run.sh` - exploration of the [`parenx`](https://github.com/anisotropi4/parenx) package (skeletonization & line voronoi diagrams)
-* `remove_degree_2_nodes.ipynb` - removing degree 2 nodes from FUA road networks
-* `simplification_protocol.ipynb` – demonstration of the manual simplification protocol
-* `triangles.ipynb` – ...
-* `usecases.ipynb` – interesting example case locations; add more as desired
+* `/preprocessing/`: workflows used to preprocess [raw data](https://github.com/martinfleis/urban-block-artifacts) (clipping and removing degree 2 nodes)
+* `/methods/`: exploration of different simplification methods, including the new method proposed here, `sgeop`
+* `/evaluation/`: comparative evaluation of each simplification method
+* `/usecases/`: collection of use cases
+* `/typology/`: exploration of different types of face artifacts, foundational to the `sgeop` algorithm
+* `/archive/`: archived notebooks
 
 ### `./data/`
 
@@ -50,7 +43,7 @@ Each FUA directory contains (or will contain) the following items housing bespok
 * `manual/`
 * `no_degree_2/`
 * `original/`
-* `parenex/`
+* `parenx/`
 * `polygons/`
 
 ### `./notes/`

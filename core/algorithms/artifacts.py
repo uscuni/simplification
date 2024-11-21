@@ -16,8 +16,7 @@ from sgeop.geometry import (
     snap_to_targets,
     voronoi_skeleton,
 )
-
-from .nodes import weld_edges
+from sgeop.nodes import weld_edges
 
 logger = logging.getLogger(__name__)
 

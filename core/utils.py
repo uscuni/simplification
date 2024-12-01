@@ -88,6 +88,13 @@ def read_manual(fua: int, proj_crs: str | int | pyproj.CRS) -> geopandas.GeoData
     )
 
 
+def read_osmnx(
+    fua: int | str, proj_crs: str | int | pyproj.CRS
+) -> geopandas.GeoDataFrame:
+    """Read OSM roads from parquet format; return bare columns."""
+    return geopandas.read_parquet(_fua_path(fua, "osmnx")).to_crs(proj_crs)
+
+
 def read_parenx(
     fua: int, option: str, proj_crs: str | int | pyproj.CRS
 ) -> geopandas.GeoDataFrame:

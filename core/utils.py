@@ -59,11 +59,11 @@ def _fua_code(fua: int | str) -> int:
     return fua
 
 
-def _fua_path(fua: int, dataset: str, option: None | str = None) -> pathlib.Path:
+def _fua_path(fua: int, dataset: str) -> pathlib.Path:
     """Helper for parsing input dataset paths."""
     fua = _fua_code(fua)
     dset = data_dir / pathlib.Path(f"{fua}", dataset)
-    return dset / f"{option}.{parq}" if option else dset / f"{fua}.{parq}"
+    return dset / f"{fua}.{parq}"
 
 
 def read_original(fua: int | str, geom_only: bool = True) -> geopandas.GeoDataFrame:
@@ -96,15 +96,21 @@ def read_osmnx(
 
 
 def read_parenx(
-    fua: int, option: str, proj_crs: str | int | pyproj.CRS
+    fua: int, proj_crs: str | int | pyproj.CRS, option: str
 ) -> geopandas.GeoDataFrame:
     """Read in prepared parenx data."""
 
     return (
-        geopandas.read_parquet(_fua_path(fua, "parenx", option=option))
+        geopandas.read_parquet(_fua_path(fua, f"parenx-{option}"))
         .explode(ingore_index=True, index_parts=False)
         .to_crs(proj_crs)
     )
+
+
+def read_sgeop(fua: int, proj_crs: str | int | pyproj.CRS) -> geopandas.GeoDataFrame:
+    """Read in prepared sgeop data."""
+
+    return geopandas.read_parquet(_fua_path(fua, "sgeop")).to_crs(proj_crs)
 
 
 def graph_size(info: str, g: networkx.Graph) -> str:

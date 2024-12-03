@@ -14,7 +14,9 @@ __all__ = [
     "read_original",
     "read_no_degree_2",
     "read_manual",
+    "read_osmnx",
     "read_parenx",
+    "read_sgeop",
     "graph_size",
     "load_usecases",
     "make_grid",
@@ -59,11 +61,11 @@ def _fua_code(fua: int | str) -> int:
     return fua
 
 
-def _fua_path(fua: int, dataset: str, option: None | str = None) -> pathlib.Path:
+def _fua_path(fua: int, dataset: str) -> pathlib.Path:
     """Helper for parsing input dataset paths."""
     fua = _fua_code(fua)
     dset = data_dir / pathlib.Path(f"{fua}", dataset)
-    return dset / f"{option}.{parq}" if option else dset / f"{fua}.{parq}"
+    return dset / f"{fua}.{parq}"
 
 
 def read_original(fua: int | str, geom_only: bool = True) -> geopandas.GeoDataFrame:
@@ -88,14 +90,38 @@ def read_manual(fua: int, proj_crs: str | int | pyproj.CRS) -> geopandas.GeoData
     )
 
 
+def read_osmnx(
+    fua: int | str, proj_crs: str | int | pyproj.CRS
+) -> geopandas.GeoDataFrame:
+    """Read OSM roads from parquet format; return bare columns."""
+    return (
+        geopandas.read_parquet(_fua_path(fua, "osmnx"))
+        .explode(ignore_index=True, index_parts=False)
+        .to_crs(proj_crs)
+    )
+
+
 def read_parenx(
     fua: int, option: str, proj_crs: str | int | pyproj.CRS
 ) -> geopandas.GeoDataFrame:
-    """Read in prepared parenx data."""
+    """
+    Read in prepared parenx data.
+    option is one of: voronoi, skeletonize
+    """
 
     return (
-        geopandas.read_parquet(_fua_path(fua, "parenx", option=option))
+        geopandas.read_parquet(_fua_path(fua, f"parenx-{option}"))
         .explode(ingore_index=True, index_parts=False)
+        .to_crs(proj_crs)
+    )
+
+
+def read_sgeop(fua: int, proj_crs: str | int | pyproj.CRS) -> geopandas.GeoDataFrame:
+    """Read in prepared sgeop data."""
+
+    return (
+        geopandas.read_parquet(_fua_path(fua, "sgeop"))
+        .explode(ignore_index=True, index_parts=False)
         .to_crs(proj_crs)
     )
 

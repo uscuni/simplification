@@ -104,7 +104,10 @@ def read_osmnx(
 def read_parenx(
     fua: int, proj_crs: str | int | pyproj.CRS, option: str
 ) -> geopandas.GeoDataFrame:
-    """Read in prepared parenx data."""
+    """
+    Read in prepared parenx data.
+    option is one of: voronoi, skeletonize
+    """
 
     return (
         geopandas.read_parquet(_fua_path(fua, f"parenx-{option}"))

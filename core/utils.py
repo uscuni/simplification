@@ -102,7 +102,7 @@ def read_osmnx(
 
 
 def read_parenx(
-    fua: int, proj_crs: str | int | pyproj.CRS, option: str
+    fua: int, option: str, proj_crs: str | int | pyproj.CRS
 ) -> geopandas.GeoDataFrame:
     """
     Read in prepared parenx data.

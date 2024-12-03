@@ -81,9 +81,9 @@ def test_read_osmnx(city, n_records):
 def test_read_parenx_voronoi(city, n_records):
     fua = core.utils.city_fua[city]
     option = "voronoi"
-    gdf_1 = core.utils.read_parenx(fua, pytest.epsg_4326, option=option)
+    gdf_1 = core.utils.read_parenx(fua, proj_crs=pytest.epsg_4326, option=option)
     gdf_2 = core.utils.read_parenx(
-        core.utils.fua_city[fua], pytest.epsg_4326, option=option
+        core.utils.fua_city[fua], proj_crs=pytest.epsg_4326, option=option
     )
 
     geopandas.testing.assert_geodataframe_equal(gdf_1, gdf_2)
@@ -98,9 +98,9 @@ def test_read_parenx_voronoi(city, n_records):
 def test_read_parenx_skeletonize(city, n_records):
     fua = core.utils.city_fua[city]
     option = "skeletonize"
-    gdf_1 = core.utils.read_parenx(fua, pytest.epsg_4326, option=option)
+    gdf_1 = core.utils.read_parenx(fua, proj_crs=pytest.epsg_4326, option=option)
     gdf_2 = core.utils.read_parenx(
-        core.utils.fua_city[fua], pytest.epsg_4326, option=option
+        core.utils.fua_city[fua], proj_crs=pytest.epsg_4326, option=option
     )
 
     geopandas.testing.assert_geodataframe_equal(gdf_1, gdf_2)

@@ -14,7 +14,9 @@ __all__ = [
     "read_original",
     "read_no_degree_2",
     "read_manual",
+    "read_osmnx",
     "read_parenx",
+    "read_sgeop",
     "graph_size",
     "load_usecases",
     "make_grid",
@@ -92,7 +94,11 @@ def read_osmnx(
     fua: int | str, proj_crs: str | int | pyproj.CRS
 ) -> geopandas.GeoDataFrame:
     """Read OSM roads from parquet format; return bare columns."""
-    return geopandas.read_parquet(_fua_path(fua, "osmnx")).to_crs(proj_crs)
+    return (
+        geopandas.read_parquet(_fua_path(fua, "osmnx"))
+        .explode(ignore_index=True, index_parts=False)
+        .to_crs(proj_crs)
+    )
 
 
 def read_parenx(
@@ -110,7 +116,11 @@ def read_parenx(
 def read_sgeop(fua: int, proj_crs: str | int | pyproj.CRS) -> geopandas.GeoDataFrame:
     """Read in prepared sgeop data."""
 
-    return geopandas.read_parquet(_fua_path(fua, "sgeop")).to_crs(proj_crs)
+    return (
+        geopandas.read_parquet(_fua_path(fua, "sgeop"))
+        .explode(ignore_index=True, index_parts=False)
+        .to_crs(proj_crs)
+    )
 
 
 def graph_size(info: str, g: networkx.Graph) -> str:

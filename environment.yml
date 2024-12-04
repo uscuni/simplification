@@ -15,7 +15,7 @@ dependencies:
   - ipykernel
   - jupyterlab
   - matplotlib>=3.9
-  - momepy>=0.8.1
+  - momepy>=0.9.0
   - osmnx>=1.9.1
   - pointpats>=2.3.0
   - pip

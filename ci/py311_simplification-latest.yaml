@@ -38,4 +38,4 @@ dependencies:
     - cityseer
     - parenx
     # from bleeding edge functionality
-    - git+https://github.com/uscuni/sgeop.git
+    - git+https://github.com/uscuni/neatnet.git

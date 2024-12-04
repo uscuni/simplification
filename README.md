@@ -18,10 +18,10 @@ The curated & tested code base for the project & publication, including:
 Parameterized notebooks.
 
 * `/preprocessing/`: workflows used to preprocess [raw data](https://github.com/martinfleis/urban-block-artifacts) (clipping and removing degree 2 nodes)
-* `/methods/`: exploration of different simplification methods, including the new method proposed here, `sgeop`
+* `/methods/`: exploration of different simplification methods, including the new method proposed here, `neatnet`
 * `/evaluation/`: comparative evaluation of each simplification method
 * `/usecases/`: collection of use cases
-* `/typology/`: exploration of different types of face artifacts, foundational to the `sgeop` algorithm
+* `/typology/`: exploration of different types of face artifacts, foundational to the `neatnet` algorithm
 * `/archive/`: archived notebooks
 
 ### `./data/`

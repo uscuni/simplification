@@ -20,7 +20,7 @@ man_records = [38_772, 8_640, 14_170, 29_252, 13_508, 11_032, numpy.nan]
 parenx_voronoi_records = [42_302, 9_569, 16_844, 29_446, 15_516, 14_242, 35_694]
 parenx_skeletonize_records = [44_294, 9_561, 17_469, 30_641, 16_075, 14_784, 37_557]
 osmnx_records = [43_451, 15_770, 24_025, 37_954, 21_755, 17_704, 30_156]
-sgeop_records = [39_489, 8_229, 13_587, 29_028, 12_395, 11_059, 16_298]
+neatnet_records = [39_489, 8_229, 13_587, 29_028, 12_395, 11_059, 16_298]
 
 
 @pytest.mark.parametrize("city, n_records", zip(cities, osm_records, strict=True))
@@ -109,12 +109,12 @@ def test_read_parenx_skeletonize(city, n_records):
     assert gdf_1.crs == gdf_2.crs == pytest.epsg_4326
 
 
-@pytest.mark.parametrize("city, n_records", zip(cities, sgeop_records, strict=True))
-def test_read_sgeop(city, n_records):
+@pytest.mark.parametrize("city, n_records", zip(cities, neatnet_records, strict=True))
+def test_read_neatnet(city, n_records):
     fua = core.utils.city_fua[city]
 
-    gdf_1 = core.utils.read_sgeop(fua, pytest.epsg_4326)
-    gdf_2 = core.utils.read_sgeop(core.utils.fua_city[fua], pytest.epsg_4326)
+    gdf_1 = core.utils.read_neatnet(fua, pytest.epsg_4326)
+    gdf_2 = core.utils.read_neatnet(core.utils.fua_city[fua], pytest.epsg_4326)
 
     geopandas.testing.assert_geodataframe_equal(gdf_1, gdf_2)
 

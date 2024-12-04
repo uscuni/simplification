@@ -1,7 +1,7 @@
 import geopandas as gpd
 import pandas as pd
 import shapely
-from sgeop.geometry import _is_within
+from neatnet.geometry import _is_within
 from tqdm.auto import tqdm
 
 

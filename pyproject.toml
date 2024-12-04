@@ -65,7 +65,7 @@ dependencies = [
     "cityseer",
     "parenx",
     # bleeding edge functionality
-    "sgeop @ git+https://github.com/uscuni/sgeop.git",
+    "neatnet @ git+https://github.com/uscuni/neatnet.git",
 ]
 
 

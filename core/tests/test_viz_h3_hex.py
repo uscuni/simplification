@@ -1,6 +1,5 @@
 import pytest
 from matplotlib.testing.decorators import image_comparison
-from matplotlib.testing.exceptions import ImageComparisonFailure
 
 import core
 
@@ -14,10 +13,6 @@ def test_viz_h3_hex_plot_aoi(grid_8_auckland):
     core.viz.h3_hex.plot_aoi(grid_8_auckland, "Auckland", 8)
 
 
-@pytest.mark.xfail(
-    reason="Needs updated Manual & Parenx -- See GH#131.",
-    raises=ImageComparisonFailure,
-)
 @image_comparison(
     baseline_images=["test_viz_h3_hex_plot_analysis.png"],
     style="mpl20",
@@ -60,10 +55,6 @@ class TestVizH3HexPlotCell:
         self._m = "manual"
         self._p = "parenx-voronoi"
 
-    @pytest.mark.xfail(
-        reason="Needs updated Manual & Parenx -- See GH#131.",
-        raises=ImageComparisonFailure,
-    )
     @image_comparison(
         baseline_images=["test_viz_h3_hex_plot_cell_loc_id.png"], style="mpl20", tol=tol
     )
@@ -79,10 +70,6 @@ class TestVizH3HexPlotCell:
             self._p,
         )
 
-    @pytest.mark.xfail(
-        reason="Needs updated Manual & Parenx -- See GH#131.",
-        raises=ImageComparisonFailure,
-    )
     @image_comparison(
         baseline_images=["test_viz_h3_hex_plot_cell_hex_id.png"],
         style="mpl20",

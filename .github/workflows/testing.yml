@@ -47,7 +47,7 @@
        - name: run tests
          run:
            pixi run -e tests \
-           pytest \
+           pytest . \
            --verbose \
            -r a \
            --numprocesses logical \

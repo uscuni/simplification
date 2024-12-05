@@ -44,14 +44,10 @@
        - name: spatial versions
          run: 'pixi run -e tests python -c "import geopandas; geopandas.show_versions();"'
 
-       - name: debug
-         run: pixi run -e tests ls
-
        - name: run tests
          run:
            pixi run -e tests \
            pytest \
-           core/ \
            --verbose \
            -r a \
            --numprocesses logical \

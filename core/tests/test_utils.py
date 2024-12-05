@@ -14,7 +14,7 @@ def test_read_sample_data():
 
 
 cities = list(core.utils.city_fua.keys())
-cityseer_records = [41165, 11057, 15665, 29537, 16245, 13598, 33765]  # needs updating
+cityseer_records = [40591, 10083, 14659, 28940, 14893, 12796, 26070]
 osm_records = [78_908, 60_364, 79_317, 84_819, 79_907, 50_917, 92_667]
 xnd2_records = [43_233, 12_439, 16_302, 30_552, 16_554, 13_468, 29_314]
 man_records = [38_772, 8_640, 14_170, 29_252, 13_508, 11_032, numpy.nan]

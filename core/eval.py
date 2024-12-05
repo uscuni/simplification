@@ -3,6 +3,8 @@ from core import utils
 
 def read_method_outputs(fua, method, proj_crs=None):
     match method:
+        case "cityseer":
+            gdf = utils.read_cityseer(fua, proj_crs)
         case "orig":
             gdf = utils.read_original(fua)
         case "manual":

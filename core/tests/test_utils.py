@@ -14,6 +14,7 @@ def test_read_sample_data():
 
 
 cities = list(core.utils.city_fua.keys())
+cityseer_records = [41165, 11057, 15665, 29537, 16245, 13598, 33765]  # needs updating
 osm_records = [78_908, 60_364, 79_317, 84_819, 79_907, 50_917, 92_667]
 xnd2_records = [43_233, 12_439, 16_302, 30_552, 16_554, 13_468, 29_314]
 man_records = [38_772, 8_640, 14_170, 29_252, 13_508, 11_032, numpy.nan]
@@ -55,6 +56,19 @@ def test_read_manual(city, n_records):
 
     gdf_1 = core.utils.read_manual(fua, pytest.epsg_4326)
     gdf_2 = core.utils.read_manual(core.utils.fua_city[fua], pytest.epsg_4326)
+
+    geopandas.testing.assert_geodataframe_equal(gdf_1, gdf_2)
+
+    assert gdf_1.shape[0] == gdf_2.shape[0] == n_records
+    assert gdf_1.crs == gdf_2.crs == pytest.epsg_4326
+
+
+@pytest.mark.parametrize("city, n_records", zip(cities, cityseer_records, strict=True))
+def test_read_cityseer(city, n_records):
+    fua = core.utils.city_fua[city]
+
+    gdf_1 = core.utils.read_cityseer(fua, pytest.epsg_4326)
+    gdf_2 = core.utils.read_cityseer(core.utils.fua_city[fua], pytest.epsg_4326)
 
     geopandas.testing.assert_geodataframe_equal(gdf_1, gdf_2)
 

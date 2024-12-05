@@ -14,6 +14,7 @@ __all__ = [
     "read_original",
     "read_no_degree_2",
     "read_manual",
+    "read_cityseer",
     "read_osmnx",
     "read_parenx",
     "read_sgeop",
@@ -85,6 +86,17 @@ def read_manual(fua: int, proj_crs: str | int | pyproj.CRS) -> geopandas.GeoData
     """Read in manually prepared simplified road data."""
     return (
         geopandas.read_parquet(_fua_path(fua, "manual"))[["geometry"]]
+        .explode(ignore_index=True, index_parts=False)
+        .to_crs(proj_crs)
+    )
+
+
+def read_cityseer(
+    fua: int | str, proj_crs: str | int | pyproj.CRS
+) -> geopandas.GeoDataFrame:
+    """Read in cityseer data."""
+    return (
+        geopandas.read_parquet(_fua_path(fua, "cityseer"))
         .explode(ignore_index=True, index_parts=False)
         .to_crs(proj_crs)
     )

@@ -10,13 +10,13 @@ import pandas as pd
 import shapely
 from esda import shape
 from libpysal import graph
-from scipy import sparse
-from sgeop.geometry import (
+from neatnet.geometry import (
     _is_within,
     snap_to_targets,
     voronoi_skeleton,
 )
-from sgeop.nodes import weld_edges
+from neatnet.nodes import weld_edges
+from scipy import sparse
 
 logger = logging.getLogger(__name__)
 

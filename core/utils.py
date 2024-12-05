@@ -17,7 +17,7 @@ __all__ = [
     "read_cityseer",
     "read_osmnx",
     "read_parenx",
-    "read_sgeop",
+    "read_neatnet",
     "graph_size",
     "load_usecases",
     "make_grid",
@@ -128,11 +128,11 @@ def read_parenx(
     )
 
 
-def read_sgeop(fua: int, proj_crs: str | int | pyproj.CRS) -> geopandas.GeoDataFrame:
-    """Read in prepared sgeop data."""
+def read_neatnet(fua: int, proj_crs: str | int | pyproj.CRS) -> geopandas.GeoDataFrame:
+    """Read in prepared neatnet data."""
 
     return (
-        geopandas.read_parquet(_fua_path(fua, "sgeop"))
+        geopandas.read_parquet(_fua_path(fua, "neatnet"))
         .explode(ignore_index=True, index_parts=False)
         .to_crs(proj_crs)
     )

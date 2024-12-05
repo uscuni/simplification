@@ -6,9 +6,8 @@ import momepy
 import numpy as np
 import pandas as pd
 from libpysal import graph
-from scipy import sparse
-from sgeop.continuity import continuity, get_stroke_info
-from sgeop.nodes import (
+from neatnet.continuity import continuity, get_stroke_info
+from neatnet.nodes import (
     _status,
     consolidate_nodes,
     fix_topology,
@@ -16,6 +15,7 @@ from sgeop.nodes import (
     remove_false_nodes,
     split,
 )
+from scipy import sparse
 
 from .artifacts import (
     get_artifacts,

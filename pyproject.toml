@@ -25,7 +25,7 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: GIS",
 ]
-requires-python = ">=3.11,<3.12"
+requires-python = ">=3.11"
 dependencies = [
     "bokeh",
     "clustergram",
@@ -40,7 +40,7 @@ dependencies = [
     "ipykernel",
     "jupyterlab",
     "matplotlib>=3.9",
-    "momepy>=0.8.1",
+    "momepy>=0.9.0",
     "osmnx>=1.9.1",
     "pointpats>=2.3.0",
     "pip",
@@ -65,7 +65,7 @@ dependencies = [
     "cityseer",
     "parenx",
     # bleeding edge functionality
-    "sgeop @ git+https://github.com/uscuni/sgeop.git",
+    "neatnet @ git+https://github.com/uscuni/neatnet.git",
 ]
 
 
@@ -115,3 +115,45 @@ exclude_lines = [
 ]
 ignore_errors = true
 omit = ["core/tests/*"]
+
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
+
+[tool.pixi.dependencies]
+python = "3.12.*"
+bokeh = "*"
+clustergram = "*"
+contextily = "*"
+dask = "*"
+dask-geopandas = "*"
+esda = "*"
+geopandas = "*"
+h3-py = "3.7.7.*"
+ipykernel = "*"
+jupyterlab = "*"
+matplotlib = ">=3.9"
+momepy = ">=0.9.0"
+osmnx = "*"
+pip = "*"
+pointpats = "*"
+pyarrow = "*"
+pyogrio = "*"
+rasterio = "*"
+scikit-learn = "*"
+tobler = "*"
+tqdm = "*"
+watermark = "*"
+pre-commit = "*"
+ruff = "*"
+jupyter = "*"
+ipywidgets = "*"
+
+[tool.pixi.pypi-dependencies]
+core = { path = ".", editable = true }
+
+[tool.pixi.environments]
+default = { solve-group = "default" }
+tests = { features = ["tests"], solve-group = "default" }
+
+[tool.pixi.tasks]

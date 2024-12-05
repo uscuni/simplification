@@ -98,6 +98,12 @@ pixi install
 
 #### Development
 
+To install the development environment allowing testing:
+
+```sh
+pixi install -e tests
+```
+
 If you would like to run the tests, use the `tests` Pixi environment:
 
 ```sh

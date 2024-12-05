@@ -4,11 +4,7 @@ import geopandas
 import networkx
 import shapely
 
-__all__ = [
-    "add_node_degree",
-    "get_edge_stats",
-    "get_node_stats",
-]
+__all__ = ["add_node_degree", "get_edge_stats", "get_node_stats", "get_stroke_stats"]
 
 
 def add_node_degree(
@@ -91,3 +87,40 @@ def get_node_stats(
     degree_distr = dict(Counter(cell["degree"]))
     avg_degree = _avg_degree(degree_distr)
     return node_count, degree_distr, avg_degree
+
+
+def get_stroke_stats(
+    edge_gdf: geopandas.GeoDataFrame,
+    stroke_gdf: geopandas.GeoDataFrame,
+    geom: shapely.Polygon,
+) -> tuple[int, float, float]:
+    """Calculate basic stroke stats for a single H3 hex cell.
+
+    Parameters
+    ----------
+    edge_gdf : geopandas.GeoDataFrame
+        Edge data. Needs to have a column "stroke_id".
+    stroke_gdf : geopandas.GeoDataFrame
+        Stroke data (from momepy.COINS(edge_gdf).stroke_gdf)
+    geom: shapely.Polygon
+        Single H3 hex cell.
+
+    Returns
+    -------
+    stroke_count : int
+        Number of strokes intersecting the cell.
+    stroke_length_sum : float
+        Sum of length of all strokes intersecting the cell.
+    stroke_length_max : float
+        Maximum of lengths of strokes intersecting the cell.
+    """
+
+    cell = edge_gdf.clip(geom)
+    stroke_ids = set(cell.stroke_id)
+    strokes_cell = stroke_gdf[stroke_gdf.index.isin(stroke_ids)].copy()
+
+    stroke_count = len(stroke_ids)
+    stroke_length_sum = strokes_cell.length.sum()
+    stroke_length_max = strokes_cell.length.max()
+
+    return stroke_count, stroke_length_sum, stroke_length_max

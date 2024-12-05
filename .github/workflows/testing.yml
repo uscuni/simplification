@@ -46,16 +46,7 @@
 
        - name: run tests
          run:
-           pixi run -e tests pytest -v
-          #  pytest
-          #  --verbose \
-          #  -r a \
-          #  --numprocesses logical \
-          #  --color yes \
-          #  --cov core \
-          #  --cov-append \
-          #  --cov-report term-missing \
-          #  --cov-report xml . \
+           pixi run -e tests pytest -v -r a -n logical --color yes --cov code --cov-append --cov-report term-missing --cov-report xml .
 
        - name: codecov
          uses: codecov/codecov-action@v4

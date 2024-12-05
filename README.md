@@ -88,11 +88,30 @@ Demonstration visualizations on specific types of urban form.
     * `roandabout.mp4`
   * `points.json` - use case locations
 
-### `environment.yml`
+### Reproducible environment
 
-Install and activate the `conda` (or mamba) environment, which creates an environment name `simplification`:
+This project uses reproducible multi-platform environments using [Pixi](https://pixi.sh). To create an environment able to run all the code in the repository, clone the repository and install the locked environment using:
 
+```sh
+pixi install
 ```
-conda env create -f environment.yml
-conda activate simplification
+
+#### Development
+
+To install the development environment allowing testing:
+
+```sh
+pixi install -e tests
+```
+
+If you would like to run the tests, use the `tests` Pixi environment:
+
+```sh
+pixi run -e tests pytest
+```
+
+Installing pre-commit hook to the env:
+
+```sh
+pixi run pre-commit install
 ```

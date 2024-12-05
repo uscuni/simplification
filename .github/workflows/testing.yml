@@ -1,5 +1,5 @@
  name: Continuous Integration
- 
+
  on:
    push:
      branches: [main]
@@ -17,15 +17,12 @@
 
  jobs:
    tests:
-     name: ${{ matrix.os }}, ${{ matrix.environment-file }}
+     name: ${{ matrix.os }}
      runs-on: ${{ matrix.os }}
      timeout-minutes: 30
      strategy:
        matrix:
-         os: [ubuntu-latest]
-         environment-file: [
-            ci/py311_simplification-latest.yaml,
-         ]
+         os: [ubuntu-latest, macos-latest, macos-14, windows-latest]
        fail-fast: false
 
      defaults:
@@ -37,41 +34,20 @@
          uses: actions/checkout@v4
          with:
            fetch-depth: 0 # Fetch all history for all branches and tags.
-       
-       - name: setup micromamba
-         uses: mamba-org/setup-micromamba@v1
+
+       - name: Setup Pixi
+         uses: prefix-dev/setup-pixi@v0.8.1
          with:
-           environment-file: ${{ matrix.environment-file }}
-           micromamba-version: "latest"
+            cache: true
+            environments: "tests"
 
-       # - must be editable install for current tests to pass
-       # - due to data & pathing; probably need to:
-       #    1. rethink current 'convenience' funcs;
-       #    2. move `data/` into `core/data/`
-       #    3. something else
-       - name: install package
-         run: "pip install -e .[tests]"
-
-       - name: environment info
-         run: "micromamba info && micromamba list"
-       
        - name: spatial versions
-         run: 'python -c "import geopandas; geopandas.show_versions();"'
-       
+         run: 'pixi run -e tests python -c "import geopandas; geopandas.show_versions();"'
+
        - name: run tests
-         run: |
-           pytest \
-           core/ \
-           --verbose \
-           -r a \
-           --numprocesses logical \
-           --color yes \
-           --cov core \
-           --cov-append \
-           --cov-report term-missing \
-           --cov-report xml . \
-           --env_type ${{ matrix.environment-file }}
-       
+         run:
+           pixi run -e tests pytest -v -r a -n logical --color yes --cov code --cov-append --cov-report term-missing --cov-report xml .
+
        - name: codecov
          uses: codecov/codecov-action@v4
          with:

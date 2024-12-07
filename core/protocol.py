@@ -5,7 +5,7 @@ import momepy
 import pandas
 import shapely
 
-from .utils import read_manual, read_original
+from .utils import read_original, read_results
 from .viz.protocol import plot_case
 
 __all__ = [
@@ -266,7 +266,7 @@ def process_case(
         in_data = read_original(city)
         remove_false_nodes = True
     else:
-        in_data = read_manual(city, read_original(city).crs)
+        in_data = read_results(city, "manual", read_original(city).crs)
         remove_false_nodes = False
 
     # generate the type-case roads & intersections

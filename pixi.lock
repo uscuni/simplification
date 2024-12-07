@@ -5569,8 +5569,8 @@ packages:
   timestamp: 1731428831843
 - pypi: .
   name: core
-  version: 0.1.dev184+g5df42aa.d20241207
-  sha256: 7419bfe7ef8a993b0f0cabf0776af8469d0f3e9931d3fba0341a45c66eac07f1
+  version: 0.1.dev185+g292adc1
+  sha256: 12fdce14feb2779974ede5f66e3a23cce5b25bffb5f6953d7ea8eba5a4fc7a18
   requires_dist:
   - bokeh
   - clustergram
@@ -15102,8 +15102,6 @@ packages:
   - typing-extensions >=4.6.0,!=4.7.0
   constrains:
   - __glibc >=2.17
-  arch: x86_64
-  platform: linux
   license: MIT
   license_family: MIT
   purls:
@@ -15120,8 +15118,6 @@ packages:
   - typing-extensions >=4.6.0,!=4.7.0
   constrains:
   - __osx >=10.13
-  arch: x86_64
-  platform: osx
   license: MIT
   license_family: MIT
   purls:
@@ -15139,8 +15135,6 @@ packages:
   - typing-extensions >=4.6.0,!=4.7.0
   constrains:
   - __osx >=11.0
-  arch: arm64
-  platform: osx
   license: MIT
   license_family: MIT
   purls:
@@ -15157,8 +15151,6 @@ packages:
   - ucrt >=10.0.20348.0
   - vc >=14.2,<15
   - vc14_runtime >=14.29.30139
-  arch: x86_64
-  platform: win
   license: MIT
   license_family: MIT
   purls:

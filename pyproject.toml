@@ -27,12 +27,9 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-    "bokeh",
-    "clustergram",
     "contextily",
     "dask",
     "dask-geopandas",
-    "esda>=2.5.1",
     "geopandas>=0.13.0",
     "graphblas-algorithms",
     #"h3-py", # -- via conda
@@ -42,11 +39,9 @@ dependencies = [
     "matplotlib>=3.9",
     "momepy>=0.9.0",
     "osmnx>=1.9.1",
-    "pointpats>=2.3.0",
     "pip",
     "pyarrow",
     "pyogrio",
-    "scikit-learn>=1.2",
     "tobler>=0.11.3",
     "tqdm>=4.63.0",
     "watermark",
@@ -122,12 +117,9 @@ platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
 
 [tool.pixi.dependencies]
 python = "3.12.*"
-bokeh = "*"
-clustergram = "*"
 contextily = "*"
 dask = "*"
 dask-geopandas = "*"
-esda = "*"
 geopandas = "*"
 h3-py = "3.7.7.*"
 ipykernel = "*"
@@ -136,11 +128,9 @@ matplotlib = ">=3.9"
 momepy = ">=0.9.0"
 osmnx = "*"
 pip = "*"
-pointpats = "*"
 pyarrow = "*"
 pyogrio = "*"
 rasterio = "*"
-scikit-learn = "*"
 tobler = "*"
 tqdm = "*"
 watermark = "*"

@@ -13,11 +13,7 @@ __all__ = [
     "read_sample_data",
     "read_original",
     "read_no_degree_2",
-    "read_manual",
-    "read_cityseer",
-    "read_osmnx",
-    "read_parenx",
-    "read_neatnet",
+    "read_results",
     "graph_size",
     "load_usecases",
     "make_grid",
@@ -82,58 +78,29 @@ def read_no_degree_2(fua: int | str) -> geopandas.GeoDataFrame:
     return geopandas.read_parquet(_fua_path(fua, "no_degree_2"))
 
 
-def read_manual(fua: int, proj_crs: str | int | pyproj.CRS) -> geopandas.GeoDataFrame:
-    """Read in manually prepared simplified road data."""
-    return (
-        geopandas.read_parquet(_fua_path(fua, "manual"))[["geometry"]]
-        .explode(ignore_index=True, index_parts=False)
-        .to_crs(proj_crs)
-    )
-
-
-def read_cityseer(
-    fua: int | str, proj_crs: str | int | pyproj.CRS
+def read_results(
+    fua: int | str, method: str, proj_crs: str | int | pyproj.CRS
 ) -> geopandas.GeoDataFrame:
-    """Read in cityseer data."""
-    return (
-        geopandas.read_parquet(_fua_path(fua, "cityseer"))
-        .explode(ignore_index=True, index_parts=False)
-        .to_crs(proj_crs)
-    )
+    """Read results parquet format.
 
+    Parameters
+    -----------
+    fua : int | str
+        Code or name of FUA.
+    method : str
+        Simplification method used.
+    proj_crs : str | int | pyproj.CRS
+        Projected CRS information.
 
-def read_osmnx(
-    fua: int | str, proj_crs: str | int | pyproj.CRS
-) -> geopandas.GeoDataFrame:
-    """Read OSM roads from parquet format; return bare columns."""
-    return (
-        geopandas.read_parquet(_fua_path(fua, "osmnx"))
-        .explode(ignore_index=True, index_parts=False)
-        .to_crs(proj_crs)
-    )
-
-
-def read_parenx(
-    fua: int, option: str, proj_crs: str | int | pyproj.CRS
-) -> geopandas.GeoDataFrame:
-    """
-    Read in prepared parenx data.
-    option is one of: voronoi, skeletonize
+    Returns
+    --------
+    geopandas.GeoDataFrame
+        Simplified results from ``fua`` by ``method``.
     """
 
     return (
-        geopandas.read_parquet(_fua_path(fua, f"parenx-{option}"))
+        geopandas.read_parquet(_fua_path(fua, method))
         .explode(ingore_index=True, index_parts=False)
-        .to_crs(proj_crs)
-    )
-
-
-def read_neatnet(fua: int, proj_crs: str | int | pyproj.CRS) -> geopandas.GeoDataFrame:
-    """Read in prepared neatnet data."""
-
-    return (
-        geopandas.read_parquet(_fua_path(fua, "neatnet"))
-        .explode(ignore_index=True, index_parts=False)
         .to_crs(proj_crs)
     )
 

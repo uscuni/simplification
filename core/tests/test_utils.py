@@ -14,14 +14,34 @@ def test_read_sample_data():
 
 
 cities = list(core.utils.city_fua.keys())
-cityseer_records = [40591, 10083, 14659, 28940, 14893, 12796, 26070]
+methods = [
+    "cityseer",
+    "manual",
+    "neatnet",
+    "osmnx",
+    "parenx-skeletonize",
+    "parenx-voronoi",
+]
+
 osm_records = [78_908, 60_364, 79_317, 84_819, 79_907, 50_917, 92_667]
 xnd2_records = [43_233, 12_439, 16_302, 30_552, 16_554, 13_468, 29_314]
-man_records = [38_772, 8_640, 14_170, 29_252, 13_508, 11_032, numpy.nan]
-parenx_voronoi_records = [42_302, 9_569, 16_844, 29_446, 15_516, 14_242, 35_694]
-parenx_skeletonize_records = [44_294, 9_561, 17_469, 30_641, 16_075, 14_784, 37_557]
-osmnx_records = [43_451, 15_770, 24_025, 37_954, 21_755, 17_704, 30_156]
+
+# results records
+cityseer_records = [39_715, 9740, 14_130, 28_187, 14_325, 12_382, 25_666]
+man_records = [38_772, 8_640, 14_170, 29_252, 13_508, 11_032, 30_225]
 neatnet_records = [39_489, 8_229, 13_587, 29_028, 12_395, 11_059, 16_298]
+osmnx_records = [43_451, 15_770, 24_025, 37_954, 21_755, 17_704, 30_156]
+parenx_skeletonize_records = [44_294, 9_561, 17_469, 30_641, 16_075, 14_784, 37_557]
+parenx_voronoi_records = [42_302, 9_569, 16_844, 29_446, 15_516, 14_242, 35_694]
+
+method_records = [
+    *cityseer_records,
+    *man_records,
+    *neatnet_records,
+    *osmnx_records,
+    *parenx_skeletonize_records,
+    *parenx_voronoi_records,
+]
 
 
 @pytest.mark.parametrize("city, n_records", zip(cities, osm_records, strict=True))
@@ -49,86 +69,19 @@ def test_read_no_degree_2(city, n_records):
 
 
 @pytest.mark.parametrize(
-    "city, n_records", zip(cities[:-1], man_records[:-1], strict=True)
+    "city, method, n_records",
+    zip(
+        cities * len(methods),
+        [m for m in methods for _ in range(len(cities))],
+        method_records,
+        strict=True,
+    ),
 )
-def test_read_manual(city, n_records):
+def test_read_results(city, method, n_records):
     fua = core.utils.city_fua[city]
 
-    gdf_1 = core.utils.read_manual(fua, pytest.epsg_4326)
-    gdf_2 = core.utils.read_manual(core.utils.fua_city[fua], pytest.epsg_4326)
-
-    geopandas.testing.assert_geodataframe_equal(gdf_1, gdf_2)
-
-    assert gdf_1.shape[0] == gdf_2.shape[0] == n_records
-    assert gdf_1.crs == gdf_2.crs == pytest.epsg_4326
-
-
-@pytest.mark.parametrize("city, n_records", zip(cities, cityseer_records, strict=True))
-def test_read_cityseer(city, n_records):
-    fua = core.utils.city_fua[city]
-
-    gdf_1 = core.utils.read_cityseer(fua, pytest.epsg_4326)
-    gdf_2 = core.utils.read_cityseer(core.utils.fua_city[fua], pytest.epsg_4326)
-
-    geopandas.testing.assert_geodataframe_equal(gdf_1, gdf_2)
-
-    assert gdf_1.shape[0] == gdf_2.shape[0] == n_records
-    assert gdf_1.crs == gdf_2.crs == pytest.epsg_4326
-
-
-@pytest.mark.parametrize("city, n_records", zip(cities, osmnx_records, strict=True))
-def test_read_osmnx(city, n_records):
-    fua = core.utils.city_fua[city]
-
-    gdf_1 = core.utils.read_osmnx(fua, pytest.epsg_4326)
-    gdf_2 = core.utils.read_osmnx(core.utils.fua_city[fua], pytest.epsg_4326)
-
-    geopandas.testing.assert_geodataframe_equal(gdf_1, gdf_2)
-
-    assert gdf_1.shape[0] == gdf_2.shape[0] == n_records
-    assert gdf_1.crs == gdf_2.crs == pytest.epsg_4326
-
-
-@pytest.mark.parametrize(
-    "city, n_records", zip(cities, parenx_voronoi_records, strict=True)
-)
-def test_read_parenx_voronoi(city, n_records):
-    fua = core.utils.city_fua[city]
-    option = "voronoi"
-    gdf_1 = core.utils.read_parenx(fua, proj_crs=pytest.epsg_4326, option=option)
-    gdf_2 = core.utils.read_parenx(
-        core.utils.fua_city[fua], proj_crs=pytest.epsg_4326, option=option
-    )
-
-    geopandas.testing.assert_geodataframe_equal(gdf_1, gdf_2)
-
-    assert gdf_1.shape[0] == gdf_2.shape[0] == n_records
-    assert gdf_1.crs == gdf_2.crs == pytest.epsg_4326
-
-
-@pytest.mark.parametrize(
-    "city, n_records", zip(cities, parenx_skeletonize_records, strict=True)
-)
-def test_read_parenx_skeletonize(city, n_records):
-    fua = core.utils.city_fua[city]
-    option = "skeletonize"
-    gdf_1 = core.utils.read_parenx(fua, proj_crs=pytest.epsg_4326, option=option)
-    gdf_2 = core.utils.read_parenx(
-        core.utils.fua_city[fua], proj_crs=pytest.epsg_4326, option=option
-    )
-
-    geopandas.testing.assert_geodataframe_equal(gdf_1, gdf_2)
-
-    assert gdf_1.shape[0] == gdf_2.shape[0] == n_records
-    assert gdf_1.crs == gdf_2.crs == pytest.epsg_4326
-
-
-@pytest.mark.parametrize("city, n_records", zip(cities, neatnet_records, strict=True))
-def test_read_neatnet(city, n_records):
-    fua = core.utils.city_fua[city]
-
-    gdf_1 = core.utils.read_neatnet(fua, pytest.epsg_4326)
-    gdf_2 = core.utils.read_neatnet(core.utils.fua_city[fua], pytest.epsg_4326)
+    gdf_1 = core.utils.read_results(fua, method, pytest.epsg_4326)
+    gdf_2 = core.utils.read_results(core.utils.fua_city[fua], method, pytest.epsg_4326)
 
     geopandas.testing.assert_geodataframe_equal(gdf_1, gdf_2)
 

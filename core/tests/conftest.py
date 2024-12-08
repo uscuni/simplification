@@ -46,7 +46,7 @@ def osm_auckland():
 @pytest.fixture
 def manual_auckland():
     """Helper for setup of 'manual' Auckland network."""
-    roads = core.utils.read_manual(pytest.auckland, _osm_auckland().crs)
+    roads = core.utils.read_results(pytest.auckland, "manual", _osm_auckland().crs)
     graph = momepy.gdf_to_nx(roads, length="length", integer_labels=True)
     nodes, edges = momepy.nx_to_gdf(graph)
     return graph, nodes, edges
@@ -55,7 +55,9 @@ def manual_auckland():
 @pytest.fixture
 def parenx_auckland():
     """Helper for setup of parenx voronoi Auckland network."""
-    roads = core.utils.read_parenx(pytest.auckland, "voronoi", _osm_auckland().crs)
+    roads = core.utils.read_results(
+        pytest.auckland, "parenx-voronoi", _osm_auckland().crs
+    )
     graph = momepy.gdf_to_nx(roads, length="length", integer_labels=True)
     nodes, edges = momepy.nx_to_gdf(graph)
     return graph, nodes, edges

@@ -45,8 +45,8 @@
          run: 'pixi run -e tests python -c "import geopandas; geopandas.show_versions();"'
 
        - name: run tests
-         run:
-           pixi run -e tests pytest -v -r a -n logical --color yes --cov code --cov-append --cov-report term-missing --cov-report xml .
+         run: |
+           pixi run -e tests pytest core -v -r a -n logical --color yes --cov core --cov-append --cov-report term-missing --cov-report xml .
 
        - name: codecov
          uses: codecov/codecov-action@v4

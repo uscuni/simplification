@@ -27,6 +27,8 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 dependencies = [
+    "bokeh",
+    "clustergram",
     "contextily",
     "dask",
     "dask-geopandas",
@@ -42,6 +44,7 @@ dependencies = [
     "pip",
     "pyarrow",
     "pyogrio",
+    "scikit-learn>=1.2",
     "tobler>=0.11.3",
     "tqdm>=4.63.0",
     "watermark",
@@ -117,6 +120,8 @@ platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
 
 [tool.pixi.dependencies]
 python = "3.12.*"
+bokeh = "*"
+clustergram = "*"
 contextily = "*"
 dask = "*"
 dask-geopandas = "*"
@@ -131,6 +136,7 @@ pip = "*"
 pyarrow = "*"
 pyogrio = "*"
 rasterio = "*"
+scikit-learn = "*"
 tobler = "*"
 tqdm = "*"
 watermark = "*"

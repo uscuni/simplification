@@ -32,7 +32,6 @@ dependencies = [
     "contextily",
     "dask",
     "dask-geopandas",
-    "esda>=2.5.1",
     "geopandas>=0.13.0",
     "graphblas-algorithms",
     #"h3-py", # -- via conda
@@ -42,7 +41,6 @@ dependencies = [
     "matplotlib>=3.9",
     "momepy>=0.9.0",
     "osmnx>=1.9.1",
-    "pointpats>=2.3.0",
     "pip",
     "pyarrow",
     "pyogrio",
@@ -127,7 +125,6 @@ clustergram = "*"
 contextily = "*"
 dask = "*"
 dask-geopandas = "*"
-esda = "*"
 geopandas = "*"
 h3-py = "3.7.7.*"
 ipykernel = "*"
@@ -136,7 +133,6 @@ matplotlib = ">=3.9"
 momepy = ">=0.9.0"
 osmnx = "*"
 pip = "*"
-pointpats = "*"
 pyarrow = "*"
 pyogrio = "*"
 rasterio = "*"

@@ -77,8 +77,7 @@ def test_viz_context_param_plot_video():
     # make class-param plot
     buff_pad_3 = f"{contains_buffer_dist:03d}"
     fmt_title = (
-        f"Contains Buffer Dist: {buff_pad_3}m\n"
-        f"Merge Edges by Midline: {merge_midline}"
+        f"Contains Buffer Dist: {buff_pad_3}m\nMerge Edges by Midline: {merge_midline}"
     )
     fmt_fname = f"{buff_pad_3}_{merge_midline}"
     core.viz.context.param_plot(

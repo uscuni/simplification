@@ -1,10 +1,17 @@
-files: "core\/|notebooks\/"
+---
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.8.6"
+    rev: "v0.9.2"
     hooks:
       - id: ruff
+        files: "core\/|notebooks\/"
       - id: ruff-format
+        files: "core\/|notebooks\/"
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: "v5.0.0"
+    hooks:
+      - id: check-toml
+        files: "."
 
 ci:
   autofix_prs: false

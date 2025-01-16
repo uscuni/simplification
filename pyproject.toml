@@ -120,7 +120,7 @@ omit = ["core/tests/*"]
 channels = ["conda-forge"]
 platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
 
-[tool.pixi.dependencies]
+  [tool.pixi.dependencies]
 python = "3.12.*"
 bokeh = "*"
 clustergram = "*"

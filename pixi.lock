@@ -411,7 +411,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/fc/d7/c98979217e0bc3fb066601eba26c75ec865b9560a4700a99c1cb87fe4dc4/graphblas_algorithms-2023.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5c/f9/f78e7f5ac8077c481bf6b43b8bc736605363034b3d5eb3ce8eb79f53f5f1/imageio-2.36.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/83/60/d497a310bde3f01cb805196ac61b7ad6dc5dcf8dce66634dc34364b20b4f/lazy_loader-0.4-py3-none-any.whl
-      - pypi: git+https://github.com/uscuni/neatnet.git@9d4643e4f11f0f584b8f567c365754285fdab59b
+      - pypi: git+https://github.com/uscuni/neatnet#c1c91bafea024c2d9af5d7ae182bc8207fe3a61a
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/3f/a4/d2537f47fd7fcfba966bd806e3ec18e7ee1681056d4b0a9c8d983983e4d5/opencv_python-4.10.0.84-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/c0/99/a294ce97eb8d960de2912838bc6d9d0ea8a4cbfb9ba735806db4049a33d2/parenx-0.6.1-py3-none-any.whl
@@ -758,7 +758,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/fc/d7/c98979217e0bc3fb066601eba26c75ec865b9560a4700a99c1cb87fe4dc4/graphblas_algorithms-2023.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5c/f9/f78e7f5ac8077c481bf6b43b8bc736605363034b3d5eb3ce8eb79f53f5f1/imageio-2.36.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/83/60/d497a310bde3f01cb805196ac61b7ad6dc5dcf8dce66634dc34364b20b4f/lazy_loader-0.4-py3-none-any.whl
-      - pypi: git+https://github.com/uscuni/neatnet.git@9d4643e4f11f0f584b8f567c365754285fdab59b
+      - pypi: git+https://github.com/uscuni/neatnet#c1c91bafea024c2d9af5d7ae182bc8207fe3a61a
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/64/4a/016cda9ad7cf18c58ba074628a4eaae8aa55f3fd06a266398cef8831a5b9/opencv_python-4.10.0.84-cp37-abi3-macosx_12_0_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/c0/99/a294ce97eb8d960de2912838bc6d9d0ea8a4cbfb9ba735806db4049a33d2/parenx-0.6.1-py3-none-any.whl
@@ -1105,7 +1105,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/fc/d7/c98979217e0bc3fb066601eba26c75ec865b9560a4700a99c1cb87fe4dc4/graphblas_algorithms-2023.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5c/f9/f78e7f5ac8077c481bf6b43b8bc736605363034b3d5eb3ce8eb79f53f5f1/imageio-2.36.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/83/60/d497a310bde3f01cb805196ac61b7ad6dc5dcf8dce66634dc34364b20b4f/lazy_loader-0.4-py3-none-any.whl
-      - pypi: git+https://github.com/uscuni/neatnet.git@9d4643e4f11f0f584b8f567c365754285fdab59b
+      - pypi: git+https://github.com/uscuni/neatnet#c1c91bafea024c2d9af5d7ae182bc8207fe3a61a
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/66/82/564168a349148298aca281e342551404ef5521f33fba17b388ead0a84dc5/opencv_python-4.10.0.84-cp37-abi3-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/c0/99/a294ce97eb8d960de2912838bc6d9d0ea8a4cbfb9ba735806db4049a33d2/parenx-0.6.1-py3-none-any.whl
@@ -1463,7 +1463,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/fc/d7/c98979217e0bc3fb066601eba26c75ec865b9560a4700a99c1cb87fe4dc4/graphblas_algorithms-2023.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5c/f9/f78e7f5ac8077c481bf6b43b8bc736605363034b3d5eb3ce8eb79f53f5f1/imageio-2.36.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/83/60/d497a310bde3f01cb805196ac61b7ad6dc5dcf8dce66634dc34364b20b4f/lazy_loader-0.4-py3-none-any.whl
-      - pypi: git+https://github.com/uscuni/neatnet.git@9d4643e4f11f0f584b8f567c365754285fdab59b
+      - pypi: git+https://github.com/uscuni/neatnet#c1c91bafea024c2d9af5d7ae182bc8207fe3a61a
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ec/6c/fab8113424af5049f85717e8e527ca3773299a3c6b02506e66436e19874f/opencv_python-4.10.0.84-cp37-abi3-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/c0/99/a294ce97eb8d960de2912838bc6d9d0ea8a4cbfb9ba735806db4049a33d2/parenx-0.6.1-py3-none-any.whl
@@ -1887,7 +1887,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/5c/f9/f78e7f5ac8077c481bf6b43b8bc736605363034b3d5eb3ce8eb79f53f5f1/imageio-2.36.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/83/60/d497a310bde3f01cb805196ac61b7ad6dc5dcf8dce66634dc34364b20b4f/lazy_loader-0.4-py3-none-any.whl
-      - pypi: git+https://github.com/uscuni/neatnet.git@9d4643e4f11f0f584b8f567c365754285fdab59b
+      - pypi: git+https://github.com/uscuni/neatnet#c1c91bafea024c2d9af5d7ae182bc8207fe3a61a
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/3f/a4/d2537f47fd7fcfba966bd806e3ec18e7ee1681056d4b0a9c8d983983e4d5/opencv_python-4.10.0.84-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/c0/99/a294ce97eb8d960de2912838bc6d9d0ea8a4cbfb9ba735806db4049a33d2/parenx-0.6.1-py3-none-any.whl
@@ -2242,7 +2242,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/5c/f9/f78e7f5ac8077c481bf6b43b8bc736605363034b3d5eb3ce8eb79f53f5f1/imageio-2.36.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/83/60/d497a310bde3f01cb805196ac61b7ad6dc5dcf8dce66634dc34364b20b4f/lazy_loader-0.4-py3-none-any.whl
-      - pypi: git+https://github.com/uscuni/neatnet.git@9d4643e4f11f0f584b8f567c365754285fdab59b
+      - pypi: git+https://github.com/uscuni/neatnet#c1c91bafea024c2d9af5d7ae182bc8207fe3a61a
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/64/4a/016cda9ad7cf18c58ba074628a4eaae8aa55f3fd06a266398cef8831a5b9/opencv_python-4.10.0.84-cp37-abi3-macosx_12_0_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/c0/99/a294ce97eb8d960de2912838bc6d9d0ea8a4cbfb9ba735806db4049a33d2/parenx-0.6.1-py3-none-any.whl
@@ -2597,7 +2597,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/5c/f9/f78e7f5ac8077c481bf6b43b8bc736605363034b3d5eb3ce8eb79f53f5f1/imageio-2.36.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/83/60/d497a310bde3f01cb805196ac61b7ad6dc5dcf8dce66634dc34364b20b4f/lazy_loader-0.4-py3-none-any.whl
-      - pypi: git+https://github.com/uscuni/neatnet.git@9d4643e4f11f0f584b8f567c365754285fdab59b
+      - pypi: git+https://github.com/uscuni/neatnet#c1c91bafea024c2d9af5d7ae182bc8207fe3a61a
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/66/82/564168a349148298aca281e342551404ef5521f33fba17b388ead0a84dc5/opencv_python-4.10.0.84-cp37-abi3-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/c0/99/a294ce97eb8d960de2912838bc6d9d0ea8a4cbfb9ba735806db4049a33d2/parenx-0.6.1-py3-none-any.whl
@@ -2963,7 +2963,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/5c/f9/f78e7f5ac8077c481bf6b43b8bc736605363034b3d5eb3ce8eb79f53f5f1/imageio-2.36.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/83/60/d497a310bde3f01cb805196ac61b7ad6dc5dcf8dce66634dc34364b20b4f/lazy_loader-0.4-py3-none-any.whl
-      - pypi: git+https://github.com/uscuni/neatnet.git@9d4643e4f11f0f584b8f567c365754285fdab59b
+      - pypi: git+https://github.com/uscuni/neatnet#c1c91bafea024c2d9af5d7ae182bc8207fe3a61a
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ec/6c/fab8113424af5049f85717e8e527ca3773299a3c6b02506e66436e19874f/opencv_python-4.10.0.84-cp37-abi3-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/c0/99/a294ce97eb8d960de2912838bc6d9d0ea8a4cbfb9ba735806db4049a33d2/parenx-0.6.1-py3-none-any.whl
@@ -5041,7 +5041,7 @@ packages:
   timestamp: 1731428831843
 - pypi: .
   name: core
-  version: 0.1.dev189+gf461f20.d20250116
+  version: 0.1.dev193+gf46f84a
   sha256: 5a6492ae5014a7f62d81f8a60fcd729acff726f5a411b12a2151011568ac1dca
   requires_dist:
   - bokeh
@@ -11491,9 +11491,9 @@ packages:
   purls: []
   size: 802321
   timestamp: 1724658775723
-- pypi: git+https://github.com/uscuni/neatnet.git@9d4643e4f11f0f584b8f567c365754285fdab59b
+- pypi: git+https://github.com/uscuni/neatnet#c1c91bafea024c2d9af5d7ae182bc8207fe3a61a
   name: neatnet
-  version: 0.0.1.post2
+  version: 0.0.1.post3.dev1+gc1c91ba
   requires_dist:
   - esda>=2.6.0
   - geopandas>=1.0.1

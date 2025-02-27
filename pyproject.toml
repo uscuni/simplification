@@ -147,6 +147,7 @@ ruff = "*"
 jupyter = "*"
 ipywidgets = "*"
 pixi-kernel = ">=0.5.2,<0.6"
+seaborn = ">=0.13.2,<0.14"
 
 [tool.pixi.pypi-dependencies]
 core = { path = ".", editable = true }

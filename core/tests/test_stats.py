@@ -18,11 +18,14 @@ def test_get_edge_stats(manual_auckland, grid_9_auckland):
     _, _, edges_manual = manual_auckland
     grid_cell = grid_9_auckland[grid_9_auckland["hex_id"] == "89bb50031c7ffff"].geometry
 
-    known_count, known_length = (5, 551.6152216584356)
-    observed_count, observed_length = core.stats.get_edge_stats(edges_manual, grid_cell)
+    known_count, known_length, known_coord_count = (5, 551.6152216584356, 15)
+    observed_count, observed_length, observed_coord_count = core.stats.get_edge_stats(
+        edges_manual, grid_cell
+    )
 
     assert observed_count == known_count
     assert known_length == pytest.approx(observed_length)
+    assert known_coord_count == observed_coord_count
 
 
 def test_avg_degree():

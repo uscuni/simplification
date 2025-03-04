@@ -27,7 +27,7 @@ def test_viz_h3_hex_plot_analysis(manual_auckland, parenx_auckland, grid_7_auckl
     _p = "parenx"
     var = "edge_count"
     for dname, df in [[_m, edges_manual], [_p, edges_parenx]]:
-        grid[[f"{var}_{dname}", "IGNORE"]] = grid.apply(
+        grid[[f"{var}_{dname}", "IGNORE", "ALSO_IGNORE"]] = grid.apply(
             lambda x: core.stats.get_edge_stats(df, x.geometry),  # noqa: B023
             axis=1,
             result_type="expand",

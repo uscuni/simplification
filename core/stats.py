@@ -51,7 +51,8 @@ def get_edge_stats(
     cell = geopandas.clip(edge_gdf, geom)
     edge_count = len(cell)
     edge_length = cell.length.sum()
-    return edge_count, edge_length
+    coord_count = cell.count_coordinates().sum()
+    return edge_count, edge_length, coord_count
 
 
 def _avg_degree(histdict: dict) -> int | float:

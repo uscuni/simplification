@@ -115,3 +115,7 @@ Installing pre-commit hook to the env:
 ```sh
 pixi run pre-commit install
 ```
+
+## Funding
+
+The work has been supported by the Charles University’s Primus program through the project "Influence of Socioeconomic and Cultural Factors on Urban Structure in Central Europe", project reference `PRIMUS/24/SCI/023`.

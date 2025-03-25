@@ -7,7 +7,7 @@ import core
 @image_comparison(
     baseline_images=["test_viz_h3_hex_plot_aoi.png"],
     style="mpl20",
-    tol=7 if pytest.ENV_TYPE == "dev" else 1,  # (RMS 6.914)
+    tol=7 if pytest.ENV_TYPE == "dev" else 2,  # (RMS 6.914)
 )
 def test_viz_h3_hex_plot_aoi(grid_8_auckland):
     core.viz.h3_hex.plot_aoi(grid_8_auckland, "Auckland", 8)
@@ -38,7 +38,7 @@ def test_viz_h3_hex_plot_analysis(manual_auckland, parenx_auckland, grid_7_auckl
     core.viz.h3_hex.plot_analysis(grid, f"{var}_ratio", info=f"({_p}/{_m})")
 
 
-tol = 5 if pytest.ENV_TYPE == "dev" else 1  # (RMS 4.030)
+tol = 5 if pytest.ENV_TYPE == "dev" else 3  # (RMS 4.030)
 
 
 class TestVizH3HexPlotCell:

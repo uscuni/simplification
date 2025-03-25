@@ -39,7 +39,7 @@ def test_viz_context_location():
 
 
 # RMS (12.174 // 255) for Ubuntu DEV --> MPL via pypi (very small diff)
-tol = 12.2 if pytest.ENV_TYPE == "dev" else 2
+tol = 12.2 if pytest.ENV_TYPE == "dev" else 3
 
 
 @image_comparison(

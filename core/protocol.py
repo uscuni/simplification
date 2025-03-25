@@ -220,7 +220,6 @@ def process_case(
     city: int | str,
     coordinates: tuple[float],
     buffer: int | float,
-    title: str,
     **savefig_kwargs: dict,
 ) -> None:
     """
@@ -274,6 +273,5 @@ def process_case(
         in_data, coordinates, buffer, remove_false_nodes=remove_false_nodes
     )
     # plot the type-case
-    title = title.format(protocol_case, protocol_type.capitalize())
     image_fpath = protocol_images_dir / f"{protocol_case}_{protocol_type}.png"
-    plot_case(lines, verts, title, image_fpath, **savefig_kwargs)
+    plot_case(lines, verts, image_fpath, **savefig_kwargs)

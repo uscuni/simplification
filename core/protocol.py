@@ -83,8 +83,8 @@ protocol_cases = {
     },
     "09": {
         "types": ["original", "manual"],
-        "city": "Aleppo",
-        "coordinates": (36.9760168, 36.1273910),
+        "city": "Liège",
+        "coordinates": (5.631484, 50.605893),
         "buffer": 200,
         "title": "Case {} - Cul-de-sac - {}",
     },

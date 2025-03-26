@@ -64,6 +64,7 @@ dependencies = [
     "parenx",
     # bleeding edge functionality
     "neatnet @ git+https://github.com/uscuni/neatnet.git",
+    "memory-profiler>=0.61.0,<0.62",
 ]
 
 

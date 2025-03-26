@@ -19,8 +19,7 @@ def test_plot_case():
     verts = geopandas.GeoDataFrame(geometry=[p1, p2])
 
     protocol_case, protocol_type = "test_case", "test_type"
-    title = f"Case {protocol_case} - TEST CASE - {protocol_type}"
     image_fpath = pathlib.Path(f"{protocol_case}_{protocol_type}.png")
-    core.viz.protocol.plot_case(lines, verts, title, image_fpath)
+    core.viz.protocol.plot_case(lines, verts, image_fpath)
 
     image_fpath.unlink()

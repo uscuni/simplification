@@ -52,7 +52,6 @@ def test_process_case_invalid_type():
             _case["city"],
             _case["coordinates"],
             _case["buffer"],
-            _case["title"],
         )
 
 
@@ -71,7 +70,6 @@ def test_process_case_original():
         _case["city"],
         _case["coordinates"],
         _case["buffer"],
-        _case["title"],
     )
 
 
@@ -90,5 +88,4 @@ def test_process_case_manual():
         _case["city"],
         _case["coordinates"],
         _case["buffer"],
-        _case["title"],
     )

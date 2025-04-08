@@ -413,7 +413,8 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/fc/d7/c98979217e0bc3fb066601eba26c75ec865b9560a4700a99c1cb87fe4dc4/graphblas_algorithms-2023.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5c/f9/f78e7f5ac8077c481bf6b43b8bc736605363034b3d5eb3ce8eb79f53f5f1/imageio-2.36.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/83/60/d497a310bde3f01cb805196ac61b7ad6dc5dcf8dce66634dc34364b20b4f/lazy_loader-0.4-py3-none-any.whl
-      - pypi: git+https://github.com/uscuni/neatnet.git#68544a4a8ed6035d270421ffde758dc67d9c1466
+      - pypi: https://files.pythonhosted.org/packages/49/26/aaca612a0634ceede20682e692a6c55e35a94c21ba36b807cc40fe910ae1/memory_profiler-0.61.0-py3-none-any.whl
+      - pypi: git+https://github.com/uscuni/neatnet.git#d6f3131bc653ef9892903a0308c92130be398ec2
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/3f/a4/d2537f47fd7fcfba966bd806e3ec18e7ee1681056d4b0a9c8d983983e4d5/opencv_python-4.10.0.84-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/c0/99/a294ce97eb8d960de2912838bc6d9d0ea8a4cbfb9ba735806db4049a33d2/parenx-0.6.1-py3-none-any.whl
@@ -762,7 +763,8 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/fc/d7/c98979217e0bc3fb066601eba26c75ec865b9560a4700a99c1cb87fe4dc4/graphblas_algorithms-2023.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5c/f9/f78e7f5ac8077c481bf6b43b8bc736605363034b3d5eb3ce8eb79f53f5f1/imageio-2.36.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/83/60/d497a310bde3f01cb805196ac61b7ad6dc5dcf8dce66634dc34364b20b4f/lazy_loader-0.4-py3-none-any.whl
-      - pypi: git+https://github.com/uscuni/neatnet.git#68544a4a8ed6035d270421ffde758dc67d9c1466
+      - pypi: https://files.pythonhosted.org/packages/49/26/aaca612a0634ceede20682e692a6c55e35a94c21ba36b807cc40fe910ae1/memory_profiler-0.61.0-py3-none-any.whl
+      - pypi: git+https://github.com/uscuni/neatnet.git#d6f3131bc653ef9892903a0308c92130be398ec2
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/64/4a/016cda9ad7cf18c58ba074628a4eaae8aa55f3fd06a266398cef8831a5b9/opencv_python-4.10.0.84-cp37-abi3-macosx_12_0_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/c0/99/a294ce97eb8d960de2912838bc6d9d0ea8a4cbfb9ba735806db4049a33d2/parenx-0.6.1-py3-none-any.whl
@@ -1111,7 +1113,8 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/fc/d7/c98979217e0bc3fb066601eba26c75ec865b9560a4700a99c1cb87fe4dc4/graphblas_algorithms-2023.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5c/f9/f78e7f5ac8077c481bf6b43b8bc736605363034b3d5eb3ce8eb79f53f5f1/imageio-2.36.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/83/60/d497a310bde3f01cb805196ac61b7ad6dc5dcf8dce66634dc34364b20b4f/lazy_loader-0.4-py3-none-any.whl
-      - pypi: git+https://github.com/uscuni/neatnet.git#68544a4a8ed6035d270421ffde758dc67d9c1466
+      - pypi: https://files.pythonhosted.org/packages/49/26/aaca612a0634ceede20682e692a6c55e35a94c21ba36b807cc40fe910ae1/memory_profiler-0.61.0-py3-none-any.whl
+      - pypi: git+https://github.com/uscuni/neatnet.git#d6f3131bc653ef9892903a0308c92130be398ec2
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/66/82/564168a349148298aca281e342551404ef5521f33fba17b388ead0a84dc5/opencv_python-4.10.0.84-cp37-abi3-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/c0/99/a294ce97eb8d960de2912838bc6d9d0ea8a4cbfb9ba735806db4049a33d2/parenx-0.6.1-py3-none-any.whl
@@ -1471,7 +1474,8 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/fc/d7/c98979217e0bc3fb066601eba26c75ec865b9560a4700a99c1cb87fe4dc4/graphblas_algorithms-2023.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5c/f9/f78e7f5ac8077c481bf6b43b8bc736605363034b3d5eb3ce8eb79f53f5f1/imageio-2.36.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/83/60/d497a310bde3f01cb805196ac61b7ad6dc5dcf8dce66634dc34364b20b4f/lazy_loader-0.4-py3-none-any.whl
-      - pypi: git+https://github.com/uscuni/neatnet.git#68544a4a8ed6035d270421ffde758dc67d9c1466
+      - pypi: https://files.pythonhosted.org/packages/49/26/aaca612a0634ceede20682e692a6c55e35a94c21ba36b807cc40fe910ae1/memory_profiler-0.61.0-py3-none-any.whl
+      - pypi: git+https://github.com/uscuni/neatnet.git#d6f3131bc653ef9892903a0308c92130be398ec2
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ec/6c/fab8113424af5049f85717e8e527ca3773299a3c6b02506e66436e19874f/opencv_python-4.10.0.84-cp37-abi3-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/c0/99/a294ce97eb8d960de2912838bc6d9d0ea8a4cbfb9ba735806db4049a33d2/parenx-0.6.1-py3-none-any.whl
@@ -1897,7 +1901,8 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/5c/f9/f78e7f5ac8077c481bf6b43b8bc736605363034b3d5eb3ce8eb79f53f5f1/imageio-2.36.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/83/60/d497a310bde3f01cb805196ac61b7ad6dc5dcf8dce66634dc34364b20b4f/lazy_loader-0.4-py3-none-any.whl
-      - pypi: git+https://github.com/uscuni/neatnet.git#68544a4a8ed6035d270421ffde758dc67d9c1466
+      - pypi: https://files.pythonhosted.org/packages/49/26/aaca612a0634ceede20682e692a6c55e35a94c21ba36b807cc40fe910ae1/memory_profiler-0.61.0-py3-none-any.whl
+      - pypi: git+https://github.com/uscuni/neatnet.git#d6f3131bc653ef9892903a0308c92130be398ec2
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/3f/a4/d2537f47fd7fcfba966bd806e3ec18e7ee1681056d4b0a9c8d983983e4d5/opencv_python-4.10.0.84-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/c0/99/a294ce97eb8d960de2912838bc6d9d0ea8a4cbfb9ba735806db4049a33d2/parenx-0.6.1-py3-none-any.whl
@@ -2254,7 +2259,8 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/5c/f9/f78e7f5ac8077c481bf6b43b8bc736605363034b3d5eb3ce8eb79f53f5f1/imageio-2.36.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/83/60/d497a310bde3f01cb805196ac61b7ad6dc5dcf8dce66634dc34364b20b4f/lazy_loader-0.4-py3-none-any.whl
-      - pypi: git+https://github.com/uscuni/neatnet.git#68544a4a8ed6035d270421ffde758dc67d9c1466
+      - pypi: https://files.pythonhosted.org/packages/49/26/aaca612a0634ceede20682e692a6c55e35a94c21ba36b807cc40fe910ae1/memory_profiler-0.61.0-py3-none-any.whl
+      - pypi: git+https://github.com/uscuni/neatnet.git#d6f3131bc653ef9892903a0308c92130be398ec2
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/64/4a/016cda9ad7cf18c58ba074628a4eaae8aa55f3fd06a266398cef8831a5b9/opencv_python-4.10.0.84-cp37-abi3-macosx_12_0_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/c0/99/a294ce97eb8d960de2912838bc6d9d0ea8a4cbfb9ba735806db4049a33d2/parenx-0.6.1-py3-none-any.whl
@@ -2611,7 +2617,8 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/5c/f9/f78e7f5ac8077c481bf6b43b8bc736605363034b3d5eb3ce8eb79f53f5f1/imageio-2.36.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/83/60/d497a310bde3f01cb805196ac61b7ad6dc5dcf8dce66634dc34364b20b4f/lazy_loader-0.4-py3-none-any.whl
-      - pypi: git+https://github.com/uscuni/neatnet.git#68544a4a8ed6035d270421ffde758dc67d9c1466
+      - pypi: https://files.pythonhosted.org/packages/49/26/aaca612a0634ceede20682e692a6c55e35a94c21ba36b807cc40fe910ae1/memory_profiler-0.61.0-py3-none-any.whl
+      - pypi: git+https://github.com/uscuni/neatnet.git#d6f3131bc653ef9892903a0308c92130be398ec2
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/66/82/564168a349148298aca281e342551404ef5521f33fba17b388ead0a84dc5/opencv_python-4.10.0.84-cp37-abi3-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/c0/99/a294ce97eb8d960de2912838bc6d9d0ea8a4cbfb9ba735806db4049a33d2/parenx-0.6.1-py3-none-any.whl
@@ -2979,7 +2986,8 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/5c/f9/f78e7f5ac8077c481bf6b43b8bc736605363034b3d5eb3ce8eb79f53f5f1/imageio-2.36.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/83/60/d497a310bde3f01cb805196ac61b7ad6dc5dcf8dce66634dc34364b20b4f/lazy_loader-0.4-py3-none-any.whl
-      - pypi: git+https://github.com/uscuni/neatnet.git#68544a4a8ed6035d270421ffde758dc67d9c1466
+      - pypi: https://files.pythonhosted.org/packages/49/26/aaca612a0634ceede20682e692a6c55e35a94c21ba36b807cc40fe910ae1/memory_profiler-0.61.0-py3-none-any.whl
+      - pypi: git+https://github.com/uscuni/neatnet.git#d6f3131bc653ef9892903a0308c92130be398ec2
       - pypi: https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ec/6c/fab8113424af5049f85717e8e527ca3773299a3c6b02506e66436e19874f/opencv_python-4.10.0.84-cp37-abi3-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/c0/99/a294ce97eb8d960de2912838bc6d9d0ea8a4cbfb9ba735806db4049a33d2/parenx-0.6.1-py3-none-any.whl
@@ -5057,8 +5065,8 @@ packages:
   timestamp: 1731428831843
 - pypi: .
   name: core
-  version: 0.1.dev201+g3473b8f
-  sha256: c0c1463b6358e5435ec80a9dfd01f3726ad630b042640bc611836a91ac2e0c4a
+  version: 0.1.dev211+g73764a9
+  sha256: aadcdf7f1a4c80e394afab7841a1f725a54d76b637635d7df4e178ed114d6f01
   requires_dist:
   - bokeh
   - clustergram
@@ -5088,6 +5096,7 @@ packages:
   - cityseer
   - parenx
   - neatnet @ git+https://github.com/uscuni/neatnet.git
+  - memory-profiler>=0.61.0,<0.62
   - codecov ; extra == 'tests'
   - coverage ; extra == 'tests'
   - pytest ; extra == 'tests'
@@ -11200,6 +11209,13 @@ packages:
   - pkg:pypi/matplotlib-inline?source=hash-mapping
   size: 14467
   timestamp: 1733417051523
+- pypi: https://files.pythonhosted.org/packages/49/26/aaca612a0634ceede20682e692a6c55e35a94c21ba36b807cc40fe910ae1/memory_profiler-0.61.0-py3-none-any.whl
+  name: memory-profiler
+  version: 0.61.0
+  sha256: 400348e61031e3942ad4d4109d18753b2fb08c2f6fb8290671c5513a34182d84
+  requires_dist:
+  - psutil
+  requires_python: '>=3.5'
 - conda: https://conda.anaconda.org/conda-forge/noarch/mercantile-1.2.1-pyhd8ed1ab_0.tar.bz2
   sha256: 372275c3b0b0e5028cd25a87a23b23311b3412e556f8ee1768473e7634fb94ea
   md5: aa20d014b5bd1924727dd86467648a27
@@ -11507,19 +11523,31 @@ packages:
   purls: []
   size: 802321
   timestamp: 1724658775723
-- pypi: git+https://github.com/uscuni/neatnet.git#68544a4a8ed6035d270421ffde758dc67d9c1466
+- pypi: git+https://github.com/uscuni/neatnet.git#d6f3131bc653ef9892903a0308c92130be398ec2
   name: neatnet
-  version: 0.0.1.post3.dev11+g68544a4
+  version: 0.0.1.post3.dev25+gd6f3131
   requires_dist:
   - esda>=2.6.0
   - geopandas>=1.0.1
   - libpysal>=4.12.1
   - momepy>=0.9.0
   - networkx>=3.3
-  - numpy>=1.26.4
+  - numpy>=2
   - pandas>=2.2.3
   - scipy>=1.14.1
   - shapely>=2.0.6
+  - scikit-learn>=1.2.0
+  - codecov ; extra == 'tests'
+  - coverage ; extra == 'tests'
+  - matplotlib ; extra == 'tests'
+  - mypy ; extra == 'tests'
+  - pre-commit ; extra == 'tests'
+  - pyarrow>=17.0 ; extra == 'tests'
+  - pytest ; extra == 'tests'
+  - pytest-cov ; extra == 'tests'
+  - pytest-xdist ; extra == 'tests'
+  - ruff ; extra == 'tests'
+  - yamllint ; extra == 'tests'
   - sphinx ; extra == 'docs'
   - numpydoc ; extra == 'docs'
   - myst-nb ; extra == 'docs'
@@ -11528,15 +11556,8 @@ packages:
   - sphinx-copybutton ; extra == 'docs'
   - sphinx-book-theme ; extra == 'docs'
   - ipykernel ; extra == 'docs'
-  - codecov ; extra == 'tests'
-  - coverage ; extra == 'tests'
-  - pre-commit ; extra == 'tests'
-  - pyarrow>=17.0 ; extra == 'tests'
-  - pytest ; extra == 'tests'
-  - pytest-cov ; extra == 'tests'
-  - pytest-xdist ; extra == 'tests'
-  - ruff ; extra == 'tests'
-  - yamllint ; extra == 'tests'
+  - ipywidgets ; extra == 'docs'
+  - jupyterlab ; extra == 'docs'
   requires_python: '>=3.11'
 - conda: https://conda.anaconda.org/conda-forge/noarch/nest-asyncio-1.6.0-pyhd8ed1ab_1.conda
   sha256: bb7b21d7fd0445ddc0631f64e66d91a179de4ba920b8381f29b9d006a42788c0
@@ -14521,8 +14542,6 @@ packages:
   - numpy >=1.23.5
   - python >=3.12,<3.13.0a0
   - python_abi 3.12.* *_cp312
-  arch: x86_64
-  platform: linux
   license: BSD-3-Clause
   license_family: BSD
   purls:
@@ -14545,8 +14564,6 @@ packages:
   - numpy >=1.23.5
   - python >=3.12,<3.13.0a0
   - python_abi 3.12.* *_cp312
-  arch: x86_64
-  platform: osx
   license: BSD-3-Clause
   license_family: BSD
   purls:
@@ -14570,8 +14587,6 @@ packages:
   - python >=3.12,<3.13.0a0
   - python >=3.12,<3.13.0a0 *_cpython
   - python_abi 3.12.* *_cp312
-  arch: arm64
-  platform: osx
   license: BSD-3-Clause
   license_family: BSD
   purls:
@@ -14593,8 +14608,6 @@ packages:
   - ucrt >=10.0.20348.0
   - vc >=14.2,<15
   - vc14_runtime >=14.29.30139
-  arch: x86_64
-  platform: win
   license: BSD-3-Clause
   license_family: BSD
   purls:

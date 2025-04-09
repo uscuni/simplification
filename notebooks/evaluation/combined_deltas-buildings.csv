@@ -1,0 +1,57 @@
+variable,case,original,neatnet,neatnet-buildings
+avg_degree,Aleppo,85.59,22.85,22.38
+avg_degree,Auckland,33.7,18.4,16.43
+avg_degree,Bucaramanga,65.62,15.97,16.15
+avg_degree,Douala,38.65,8.19,8.81
+avg_degree,Liège,83.43,31.75,30.78
+avg_degree,Salt Lake City,43.51,26.45,25.97
+avg_degree,Wuhan,130.35,71.62,70.02
+coordinate_count,Aleppo,1382.17,356.36,334.88
+coordinate_count,Auckland,2454.29,634.07,468.56
+coordinate_count,Bucaramanga,2164.92,631.22,509.44
+coordinate_count,Douala,1614.9,212.21,188.2
+coordinate_count,Liège,2273.62,500.08,455.81
+coordinate_count,Salt Lake City,1647.17,469.12,457.49
+coordinate_count,Wuhan,2223.1,884.07,831.37
+edge_count,Aleppo,1061.56,103.06,97.31
+edge_count,Auckland,1891.28,74.94,65.63
+edge_count,Bucaramanga,1900.47,107.46,70.13
+edge_count,Douala,1414.4,39.64,34.5
+edge_count,Liège,1718.62,109.4,96.64
+edge_count,Salt Lake City,1252.82,84.32,82.47
+edge_count,Wuhan,1436.56,278.81,250.48
+edge_length,Aleppo,16519.57,6913.86,7062.86
+edge_length,Auckland,6512.24,10848.2,8296.57
+edge_length,Bucaramanga,7616.64,6299.12,5366.06
+edge_length,Douala,5597.17,3270.91,2890.56
+edge_length,Liège,12283.41,8162.74,7860.69
+edge_length,Salt Lake City,16890.06,9569.32,9472.46
+edge_length,Wuhan,36486.56,20878.5,20403.46
+node_count,Aleppo,976.61,59.61,56.12
+node_count,Auckland,1816.19,43.24,42.0
+node_count,Bucaramanga,1851.55,77.3,43.93
+node_count,Douala,1384.78,24.39,21.14
+node_count,Liège,1651.35,64.51,56.84
+node_count,Salt Lake City,1171.78,54.19,53.27
+node_count,Wuhan,1278.59,148.38,133.29
+stroke_count,Aleppo,104.24,46.25,45.9
+stroke_count,Auckland,83.91,44.54,34.87
+stroke_count,Bucaramanga,59.97,50.26,35.94
+stroke_count,Douala,46.78,22.58,19.67
+stroke_count,Liège,99.29,49.84,45.62
+stroke_count,Salt Lake City,85.6,49.56,49.44
+stroke_count,Wuhan,181.31,113.38,106.06
+stroke_length_max,Aleppo,274171.86,589014.38,578767.76
+stroke_length_max,Auckland,103500.48,218436.45,219818.29
+stroke_length_max,Bucaramanga,136894.67,242635.81,231986.18
+stroke_length_max,Douala,224463.2,224007.23,226454.62
+stroke_length_max,Liège,232284.04,635367.95,616142.51
+stroke_length_max,Salt Lake City,240447.83,278424.21,270152.46
+stroke_length_max,Wuhan,1025821.94,1486867.33,1479680.61
+stroke_length_sum,Aleppo,400970.27,630464.03,602266.62
+stroke_length_sum,Auckland,177731.19,481993.11,468431.09
+stroke_length_sum,Bucaramanga,155142.15,261674.97,249148.34
+stroke_length_sum,Douala,233675.13,252159.87,251750.97
+stroke_length_sum,Liège,811448.09,658572.98,628429.74
+stroke_length_sum,Salt Lake City,331715.47,335921.57,318067.4
+stroke_length_sum,Wuhan,1208455.49,1840665.25,1827882.64

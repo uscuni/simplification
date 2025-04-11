@@ -54,7 +54,7 @@ method_color = {
     "parenx-voronoi": "#E73F74",
     "parenx-skeletonize": "#3969AC",
     "neatnet": "#F2B701",
-    "neatnet-buildings": "#80BA5A",
+    "neatnet-buildings": "#008695",
 }
 
 

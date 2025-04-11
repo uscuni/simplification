@@ -46,6 +46,17 @@ fua_city = {
 # dict of cityname: fua ID
 city_fua = {c: f for f, c in fua_city.items()}
 
+# dict of method: color in plot
+method_color = {
+    "original": "#bbbbbb",
+    "cityseer": "#11A579",
+    "osmnx": "#7F3C8D",
+    "parenx-voronoi": "#E73F74",
+    "parenx-skeletonize": "#3969AC",
+    "neatnet": "#F2B701",
+    "neatnet-buildings": "#80BA5A",
+}
+
 
 def read_sample_data() -> geopandas.GeoDataFrame:
     return geopandas.read_parquet(data_dir / f"sample.{parq}")

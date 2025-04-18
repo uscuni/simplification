@@ -96,8 +96,8 @@ use_cases = {
     },
     13: {
         "coords": (-73.16139, 7.06444),
-        "buffer": 160,
-        "situation": "Parallel roads connected \n with a linking road",
+        "buffer": 170,
+        "situation": "Parallel and linking roads",
     },
     14: {"coords": (-73.1275, 7.12528), "buffer": 90, "situation": "Outliers"},
     15: {
@@ -108,7 +108,7 @@ use_cases = {
     16: {
         "coords": (37.17978, 36.20862),
         "buffer": 100,
-        "situation": "Roundabout with roads \n on different levels",
+        "situation": "Multi-level roundabout",
     },
     17: {
         "coords": (36.99121, 36.09677),

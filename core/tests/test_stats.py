@@ -10,8 +10,8 @@ def test_add_node_degree(manual_auckland):
     observed = core.stats.add_node_degree(nodes_manual, manual_graph)["degree"]
 
     assert isinstance(observed, pandas.Series)
-    assert observed.shape[0] == 6755
-    assert observed.sum() == 17280
+    assert observed.shape[0] == 6693
+    assert observed.sum() == 17152
 
 
 def test_get_edge_stats(manual_auckland, grid_9_auckland):

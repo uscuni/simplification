@@ -3,7 +3,7 @@ import pandas as pd
 import shapely
 
 
-def plot_ces(roads, geom, ax):
+def plot_ces(roads, geom, ax, **kwargs):
     edges = roads.iloc[roads.sindex.query(geom, predicate="covers")].copy()
     edges_touching = roads.iloc[
         roads.sindex.query(edges.union_all(), predicate="touches")
@@ -45,12 +45,9 @@ def plot_ces(roads, geom, ax):
     for e in ["C", "E", "S", "-"]:
         sub = combined[combined.ces == e]
         if not sub.empty:
-            sub.clip(geom.buffer(15)).plot(
-                ax=ax,
-                color=colors[e],
-            )
+            sub.clip(geom.buffer(15)).plot(ax=ax, color=colors[e], **kwargs)
     gpd.GeoSeries([geom]).plot(
-        ax=ax, edgecolor="lightgray", hatch="..", facecolor="none"
+        ax=ax, edgecolor="lightgray", hatch="///", facecolor="none"
     )
     vertices.plot(ax=ax, facecolor="lightgrey", edgecolor="k", markersize=25, zorder=2)
 
@@ -70,11 +67,11 @@ def plot_ces(roads, geom, ax):
     )
 
 
-def plot_simplified(roads, geom, ax):
+def plot_simplified(roads, geom, ax, **kwargs):
     edges = roads.iloc[roads.sindex.query(geom, predicate="intersects")]
-    edges.clip(geom.buffer(15)).plot(ax=ax, color="#F2B701")
+    edges.clip(geom.buffer(15)).plot(ax=ax, color="#F2B701", **kwargs)
     gpd.GeoSeries([geom]).plot(
-        ax=ax, edgecolor="lightgray", hatch="..", facecolor="none", linewidth=0
+        ax=ax, edgecolor="lightgray", hatch="///", facecolor="none", linewidth=0
     )
 
     # Extract vertices
@@ -90,7 +87,9 @@ def plot_simplified(roads, geom, ax):
     vertices.plot(ax=ax, facecolor="lightgrey", edgecolor="k", markersize=25, zorder=2)
     # ensure we always plot a rectangle
     bounds = (
-        pd.concat([gpd.GeoSeries([geom]), edges]).clip(geom.buffer(15)).total_bounds
+        pd.concat([gpd.GeoSeries([geom], crs=edges.crs), edges.geometry])
+        .clip(geom.buffer(15))
+        .total_bounds
     )
     center_x = (bounds[0] + bounds[2]) / 2
     center_y = (bounds[1] + bounds[3]) / 2

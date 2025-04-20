@@ -12,10 +12,14 @@ def plot_ces(roads, geom, ax, **kwargs):
     edges["ces"] = None
     edges.loc[edges.coins_count == 1, "ces"] = "S"
     ecg = edges.coins_group
-    all_ends = edges[edges.coins_end]
-    ae_cg = all_ends.coins_group
-    edges.loc[~ecg.isin(ae_cg), "ces"] = "C"
-    edges.loc[edges.ces.isna(), "ces"] = "E"
+    if ecg.nunique() == 1 and edges.shape[0] == edges.coins_count.iloc[0]:
+        # roundabout special case
+        edges["ces"] = "S"
+    else:
+        all_ends = edges[edges.coins_end]
+        ae_cg = all_ends.coins_group
+        edges.loc[~ecg.isin(ae_cg), "ces"] = "C"
+        edges.loc[edges.ces.isna(), "ces"] = "E"
 
     ces = []
     for _, row in edges_touching.iterrows():

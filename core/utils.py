@@ -59,26 +59,67 @@ method_color = {
 }
 
 # dict of use cases
+# dict of use cases
 use_cases = {
-    0: {"coords": (9.81981, 4.00249), "buffer": 220},
-    1: {"coords": (9.82132, 4.00986), "buffer": 100},
-    2: {"coords": (37.06837, 36.31436), "buffer": 200},
-    3: {"coords": (174.7512, -36.88972), "buffer": 100},
-    4: {"coords": (37.06599, 36.31055), "buffer": 120},
-    5: {"coords": (9.74106, 4.09687), "buffer": 80},
-    6: {"coords": (37.1427, 36.23658), "buffer": 30},
-    7: {"coords": (37.13986, 36.24012), "buffer": 220},
-    8: {"coords": (5.631484, 50.605893), "buffer": 110},
-    9: {"coords": (37.16807, 36.19395), "buffer": 130},
-    10: {"coords": (37.22222, 36.19417), "buffer": 200},
-    11: {"coords": (174.84, -36.91861), "buffer": 200},
-    12: {"coords": (5.61551, 50.67645), "buffer": 100},
-    13: {"coords": (-73.16139, 7.06444), "buffer": 160},
-    14: {"coords": (-73.1275, 7.12528), "buffer": 90},
-    15: {"coords": (9.66117, 4.08809), "buffer": 200},
-    16: {"coords": (37.17978, 36.20862), "buffer": 100},
-    17: {"coords": (36.99121, 36.09677), "buffer": 560},
-    18: {"coords": (174.7616667, -36.7991667), "buffer": 550},
+    0: {"coords": (9.81981, 4.00249), "buffer": 220, "situation": "Parallel roads"},
+    1: {"coords": (9.82132, 4.00986), "buffer": 100, "situation": "Roundabouts"},
+    2: {"coords": (37.06837, 36.31436), "buffer": 200, "situation": "Diverging roads"},
+    3: {"coords": (174.7512, -36.88972), "buffer": 100, "situation": "T-junction"},
+    4: {
+        "coords": (37.06599, 36.31055),
+        "buffer": 120,
+        "situation": "Simple intersection",
+    },
+    5: {
+        "coords": (9.74106, 4.09687),
+        "buffer": 80,
+        "situation": "Cross-shaped intersection",
+    },
+    6: {"coords": (37.1427, 36.23658), "buffer": 30, "situation": "Intersection"},
+    7: {"coords": (37.13986, 36.24012), "buffer": 220, "situation": "Side roads"},
+    8: {"coords": (5.631484, 50.605893), "buffer": 110, "situation": "Cul-de-sac"},
+    9: {"coords": (37.16807, 36.19395), "buffer": 130, "situation": "Ovalabout"},
+    10: {
+        "coords": (37.22222, 36.19417),
+        "buffer": 200,
+        "situation": "Cloverleaf interchange",
+    },
+    11: {
+        "coords": (174.84, -36.91861),
+        "buffer": 200,
+        "situation": "Multi-level carriageway",
+    },
+    12: {
+        "coords": (5.61551, 50.67645),
+        "buffer": 100,
+        "situation": "Special case roundabouts",
+    },
+    13: {
+        "coords": (-73.16139, 7.06444),
+        "buffer": 170,
+        "situation": "Parallel and linking roads",
+    },
+    14: {"coords": (-73.1275, 7.12528), "buffer": 90, "situation": "Outliers"},
+    15: {
+        "coords": (9.66117, 4.08809),
+        "buffer": 200,
+        "situation": "Parallel road leading to different levels",
+    },
+    16: {
+        "coords": (37.17978, 36.20862),
+        "buffer": 100,
+        "situation": "Multi-level roundabout",
+    },
+    17: {
+        "coords": (36.99121, 36.09677),
+        "buffer": 560,
+        "situation": "Partial cloverleaf interchange",
+    },
+    18: {
+        "coords": (174.7616667, -36.7991667),
+        "buffer": 550,
+        "situation": "Complicated freeway intersection",
+    },
 }
 
 

@@ -48,7 +48,7 @@ city_fua = {c: f for f, c in fua_city.items()}
 
 # dict of method: color in plot
 method_color = {
-    "original": "#bbbbbb",
+    "original": "#999999",
     "cityseer": "#11A579",
     "osmnx": "#7F3C8D",
     "parenx-voronoi": "#E73F74",
@@ -61,9 +61,13 @@ method_color = {
 # dict of use cases
 # dict of use cases
 use_cases = {
-    0: {"coords": (9.81981, 4.00249), "buffer": 220, "situation": "Parallel roads"},
+    0: {"coords": (9.81981, 4.00249), "buffer": 220, "situation": "Parallel edges"},
     1: {"coords": (9.82132, 4.00986), "buffer": 100, "situation": "Roundabouts"},
-    2: {"coords": (37.06837, 36.31436), "buffer": 200, "situation": "Diverging roads"},
+    2: {
+        "coords": (37.06837, 36.31436),
+        "buffer": 200,
+        "situation": "Diverging streets",
+    },
     3: {"coords": (174.7512, -36.88972), "buffer": 100, "situation": "T-junction"},
     4: {
         "coords": (37.06599, 36.31055),
@@ -76,7 +80,7 @@ use_cases = {
         "situation": "Cross-shaped intersection",
     },
     6: {"coords": (37.1427, 36.23658), "buffer": 30, "situation": "Intersection"},
-    7: {"coords": (37.13986, 36.24012), "buffer": 220, "situation": "Side roads"},
+    7: {"coords": (37.13986, 36.24012), "buffer": 220, "situation": "Side edges"},
     8: {"coords": (5.631484, 50.605893), "buffer": 110, "situation": "Cul-de-sac"},
     9: {"coords": (37.16807, 36.19395), "buffer": 130, "situation": "Ovalabout"},
     10: {
@@ -97,13 +101,13 @@ use_cases = {
     13: {
         "coords": (-73.16139, 7.06444),
         "buffer": 170,
-        "situation": "Parallel and linking roads",
+        "situation": "Parallel and linking edges",
     },
     14: {"coords": (-73.1275, 7.12528), "buffer": 90, "situation": "Outliers"},
     15: {
         "coords": (9.66117, 4.08809),
         "buffer": 200,
-        "situation": "Parallel road leading to different levels",
+        "situation": "Parallel edges leading to different levels",
     },
     16: {
         "coords": (37.17978, 36.20862),

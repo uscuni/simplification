@@ -48,7 +48,7 @@ city_fua = {c: f for f, c in fua_city.items()}
 
 # dict of method: color in plot
 method_color = {
-    "original": "#bbbbbb",
+    "original": "#999999",
     "cityseer": "#11A579",
     "osmnx": "#7F3C8D",
     "parenx-voronoi": "#E73F74",

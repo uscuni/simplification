@@ -7,7 +7,7 @@
      branches:
        - "*"
    schedule:
-     - cron: '59 23 * * *'
+     - cron: '59 23 1 * *' # Monthly on the 1st at 23:59
    workflow_dispatch:
     inputs:
       version:
@@ -22,7 +22,7 @@
      timeout-minutes: 30
      strategy:
        matrix:
-         os: [ubuntu-latest, macos-latest, macos-14, windows-latest]
+         os: [ubuntu-latest, macos-14, windows-latest]
        fail-fast: false
 
      defaults:

@@ -6,8 +6,6 @@
    pull_request:
      branches:
        - "*"
-   schedule:
-     - cron: '59 23 1 * *' # Monthly on the 1st at 23:59
    workflow_dispatch:
     inputs:
       version:

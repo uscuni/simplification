@@ -4,10 +4,12 @@ from matplotlib.testing.decorators import image_comparison
 import core
 
 
+# (RMS 6.914)
+# -- more diff -- simplification#285
 @image_comparison(
     baseline_images=["test_viz_h3_hex_plot_aoi.png"],
     style="mpl20",
-    tol=7 if pytest.ENV_TYPE == "dev" else 2,  # (RMS 6.914)
+    tol=7 if pytest.ENV_TYPE == "dev" else 3,
 )
 def test_viz_h3_hex_plot_aoi(grid_8_auckland):
     core.viz.h3_hex.plot_aoi(grid_8_auckland, "Auckland", 8)
@@ -38,7 +40,9 @@ def test_viz_h3_hex_plot_analysis(manual_auckland, parenx_auckland, grid_7_auckl
     core.viz.h3_hex.plot_analysis(grid, f"{var}_ratio", info=f"({_p}/{_m})")
 
 
-tol = 5 if pytest.ENV_TYPE == "dev" else 3  # (RMS 4.030)
+# (RMS 4.030)
+# -- more diff -- simplification#285
+tol = 5 if pytest.ENV_TYPE == "dev" else 4
 
 
 class TestVizH3HexPlotCell:
